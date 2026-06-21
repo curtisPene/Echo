@@ -1,0 +1,37 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: var(--space-2);
+  gap: var(--space-1);
+}
+
+.root.mine {
+  align-items: start;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bubble {
+  border-radius: var(--space-1);
+  background-color: var(--primary);
+  padding: var(--space-2) var(--space-2);
+}
+
+.bubble.mine {
+  background-color: var(--surface-inset);
+}
+
+.timestamp {
+  opacity: 60%;
+  font-size: var(--font-size-caption);
+  align-self: flex-start;
+}
+
+.timestamp.mine {
+  align-self: flex-end;
+}

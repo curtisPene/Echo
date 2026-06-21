@@ -1,0 +1,61 @@
+.button {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+}
+
+/* primary */
+
+.primary {
+  padding: var(--space-sm) var(--space-sm);
+  font-size: var(--font-size-label);
+  font-weight: var(--weight-semibold);
+  color: var(--primary-fg);
+  background-color: var(--primary);
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+
+.primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.primary:active {
+  opacity: 0.9;
+}
+
+/* icon */
+
+.icon {
+  background: none;
+  padding: var(--space-2);
+  color: inherit;
+}
+
+.icon:hover {
+  background-color: var(--);
+  border: 1px solid var(--border);
+  background-color: var(--surface-inset);
+  border-radius: var(--radius-md);
+}
+
+/* menu icon */
+
+.menuIcon {
+  background: none;
+  padding: var(--space-2);
+  color: inherit;
+}
+
+.menuIcon:hover {
+  background-color: var(--primary-hover);
+  border-radius: var(--radius-md);
+}
+
+.menuIcon[aria-pressed="true"] {
+  background-color: var(--primary);
+  border-radius: var(--radius-md);
+}

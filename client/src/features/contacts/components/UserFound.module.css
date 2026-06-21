@@ -1,0 +1,10 @@
+.root {
+  display: flex;
+  flex-direction: row;
+  gap: (var(--space-md));
+  align-items: center;
+}
+
+.email {
+  flex: 1 0 85%;
+}

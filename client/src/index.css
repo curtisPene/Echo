@@ -1,0 +1,316 @@
+/* ─── Fonts ──────────────────────────────────────────────── */
+@import "@fontsource-variable/inter";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+dialog {
+  margin: auto;
+  width: min(90vw, 480px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text);
+  padding: var(--space-6);
+}
+
+dialog:not([open]) {
+  display: none;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#root {
+  isolation: isolate;
+}
+
+/* ─── Primitives ─────────────────────────────────────────── */
+:root {
+  /* Primary — modern blue */
+  --blue-light: #0765d8;
+  --blue: #0941a2;
+  --blue-dark: #0c2e79;
+
+  /* Accent — emerald */
+  --emerald-light: #09a23f;
+  --emerald: #088032;
+  --emerald-dark: #066628;
+
+  /* Success */
+  --green-light: #4ade80;
+  --green: #16a34a;
+
+  /* Danger */
+  --red-light: #f87171;
+  --red: #dc2626;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Typography — scale (minor third, ratio 1.2, base 1rem/16px) */
+  --text-xs: 0.694rem; /* 11.11px */
+  --text-sm: 0.833rem; /* 13.33px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.2rem; /* 19.2px */
+  --text-xl: 1.44rem; /* 23.04px */
+  --text-2xl: 1.728rem; /* 27.65px */
+  --text-3xl: 2.074rem; /* 33.18px */
+
+  /* Typography — weight */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Typography — line height */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Neutrals */
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #333333;
+  --neutral-800: #1f1f1f;
+  --neutral-900: #111111;
+}
+
+/* ─── Semantic typography + spacing tokens — mobile ─────── */
+/* Each role sits one scale-step below tablet's, so headings/titles actually
+   grow across breakpoints instead of staying frozen between tiers. */
+:root {
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+
+  --font-size-caption: var(--text-xs);
+  --font-size-label: var(--text-sm);
+  --font-size-body: var(--text-sm);
+  --font-size-heading: var(--text-lg);
+  --font-size-title: var(--text-xl);
+
+  --font-weight-body: var(--weight-regular);
+  --font-weight-label: var(--weight-medium);
+  --font-weight-heading: var(--weight-semibold);
+
+  --line-height-body: var(--leading-normal);
+  --line-height-heading: var(--leading-tight);
+
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-3);
+  --space-lg: var(--space-4);
+  --space-xl: var(--space-6);
+  --space-2xl: var(--space-8);
+}
+
+/* ─── Semantic typography + spacing tokens — tablet ─────── */
+/* --font-size-body anchors on --text-base (1rem/16px) here - this is the tier
+   the base scale was tuned against. */
+@media (min-width: 768px) {
+  :root {
+    --font-size-caption: var(--text-xs);
+    --font-size-label: var(--text-sm);
+    --font-size-body: var(--text-base);
+    --font-size-heading: var(--text-xl);
+    --font-size-title: var(--text-2xl);
+
+    --space-xs: var(--space-1);
+    --space-sm: var(--space-2);
+    --space-md: var(--space-4);
+    --space-lg: var(--space-6);
+    --space-xl: var(--space-8);
+    --space-2xl: var(--space-12);
+  }
+}
+
+/* ─── Semantic typography + spacing tokens — desktop ────── */
+@media (min-width: 1024px) {
+  :root {
+    --font-size-caption: var(--text-xs);
+    --font-size-label: var(--text-sm);
+    --font-size-body: var(--text-base);
+    --font-size-heading: var(--text-2xl);
+    --font-size-title: var(--text-3xl);
+
+    --space-xs: var(--space-2);
+    --space-sm: var(--space-3);
+    --space-md: var(--space-4);
+    --space-lg: var(--space-6);
+    --space-xl: var(--space-10);
+    --space-2xl: var(--space-16);
+  }
+}
+
+/* ─── Base styles ────────────────────────────────────────── */
+html {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+/* ─── Semantic tokens — light ────────────────────────────── */
+:root {
+  --bg: #ffffff;
+  --surface-inset: var(--neutral-100); /* recessed surfaces sunk below bg: inputs, message bubbles, secondary buttons */
+  --surface: #e0e4ec; /* panels sitting on top of bg: cards, shells, modals */
+  --surface-raised: var(--neutral-100); /* elevated above surface: avatars, list item hover */
+  --surface-hover: var(--neutral-100);
+  --surface-active: var(--neutral-200);
+
+  --border: var(--neutral-200);
+  --border-strong: var(--neutral-300);
+  --border-focus: var(--blue);
+
+  --text: var(--neutral-900);
+  --text-subtle: var(--neutral-500); /* de-emphasized text: timestamps, captions, helper text */
+  --text-disabled: var(--neutral-400);
+  --text-inverse: #ffffff; /* text on top of a solid --primary/--accent fill */
+
+  --primary: var(--blue-dark);
+  --primary-hover: var(--blue);
+  --primary-fg: #ffffff;
+
+  --accent: var(--emerald);
+  --accent-hover: var(--emerald-dark);
+  --accent-fg: #ffffff;
+
+  --success: var(--green);
+  --success-subtle: var(--green-light);
+  --danger: var(--red);
+  --danger-subtle: var(--red-light);
+}
+
+/* ─── Semantic tokens — dark ─────────────────────────────── */
+/* Same values appear under two selectors on purpose: OS preference (applies
+   only when no manual theme is set) and an explicit manual override (always
+   wins regardless of OS preference). Plain CSS has no mixin/reuse construct
+   to share the block without a preprocessor, so keep both in sync by hand. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: var(--neutral-900);
+    --surface-inset: var(--neutral-800);
+    --surface: var(--neutral-800);
+    --surface-raised: var(--neutral-700);
+    --surface-hover: var(--neutral-700);
+    --surface-active: var(--neutral-600);
+
+    --border: var(--neutral-700);
+    --border-strong: var(--neutral-600);
+    --border-focus: var(--blue-light);
+
+    --text: var(--neutral-100);
+    --text-subtle: var(--neutral-400);
+    --text-disabled: var(--neutral-500);
+    --text-inverse: var(--neutral-900);
+
+    --primary: var(--blue);
+    --primary-hover: var(--blue-light);
+    --primary-fg: #ffffff;
+
+    --accent: var(--emerald-light);
+    --accent-hover: var(--emerald);
+    --accent-fg: #ffffff;
+
+    --success: var(--green-light);
+    --success-subtle: var(--green);
+    --danger: var(--red-light);
+    --danger-subtle: var(--red);
+  }
+}
+
+[data-theme="dark"] {
+  --bg: var(--neutral-900);
+  --surface-inset: var(--neutral-800);
+  --surface: var(--neutral-800);
+  --surface-raised: var(--neutral-700);
+  --surface-hover: var(--neutral-700);
+  --surface-active: var(--neutral-600);
+
+  --border: var(--neutral-700);
+  --border-strong: var(--neutral-600);
+  --border-focus: var(--blue-light);
+
+  --text: var(--neutral-100);
+  --text-subtle: var(--neutral-400);
+  --text-disabled: var(--neutral-500);
+  --text-inverse: var(--neutral-900);
+
+  --primary: var(--blue);
+  --primary-hover: var(--blue-light);
+  --primary-fg: #ffffff;
+
+  --accent: var(--emerald-light);
+  --accent-hover: var(--emerald);
+  --accent-fg: #ffffff;
+
+  --success: var(--green-light);
+  --success-subtle: var(--green);
+  --danger: var(--red-light);
+  --danger-subtle: var(--red);
+}
