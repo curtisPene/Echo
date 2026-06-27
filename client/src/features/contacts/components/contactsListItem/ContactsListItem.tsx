@@ -1,15 +1,13 @@
 import clsx from "clsx";
 import { Avatar } from "@/components/avatar/Avatar";
 import styles from "./ContactsListItem.module.css";
+import type { Contact } from "../../types";
 
-export type Contact = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  online: boolean;
-};
-
-export const ContactsListItem = ({ contact }: { contact: Contact }) => (
+export const ContactsListItem = ({
+  contact,
+}: {
+  contact: Contact & { online: boolean };
+}) => (
   <div className={clsx(styles.root, "contactsListItem")}>
     <div className={styles.avatarWrapper}>
       <Avatar firstName={contact.firstName} lastName={contact.lastName} />

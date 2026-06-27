@@ -1,6 +1,6 @@
 import styles from "./ContactsHeader.module.css";
 import clsx from "clsx";
-import { AddContactModal } from "./AddContactModal";
+import { AddContactModal } from "@/features/contacts/components/addContactModal/AddContactModal";
 
 export const ContactsHeader = () => {
   return (

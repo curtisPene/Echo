@@ -5,6 +5,7 @@ import { useAppStatus } from "./stores/useAppStatus";
 import { SplashScreen } from "./app/components/splashScreen/SplashScreen";
 import { useAppBootstrap } from "./app/hooks/useAppBootstrap";
 import { useContactsObserver } from "./features/contacts/hooks/useContactsObserver";
+import { useRoomsObserver } from "./features/rooms/hooks/useRoomsObserver";
 
 function App() {
   const auth = useAuth((state) => state);
@@ -15,7 +16,8 @@ function App() {
   console.log("authStatus", authStatus);
 
   useAppBootstrap({ appStatus, auth, setAuth, setAppStatus });
-  useContactsObserver();
+  useContactsObserver({ appStatus });
+  useRoomsObserver({ appStatus });
 
   if (authStatus === "unverified") return <SplashScreen />;
 

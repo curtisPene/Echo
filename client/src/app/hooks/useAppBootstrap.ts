@@ -4,6 +4,9 @@ import { useEffect } from "react";
 import { verifyRefreshTokenGateway } from "@/features/auth/gateway/authGateway";
 import { appSyncGateway } from "../gateway/appGateway";
 import { getAppContext, updateAppContext } from "../repo/appRepo";
+import { syncRoomsRepo } from "@/features/rooms/repo/roomsRepo";
+import { syncContactsRepo } from "@/features/contacts/repo/contactsRepo";
+import { syncMessagesRepo } from "@/features/messaging/repo/messagesRepo";
 
 export const useAppBootstrap = ({
   appStatus,
@@ -53,10 +56,17 @@ export const useAppBootstrap = ({
 
       if (!context) return;
 
-      await appSyncGateway({ since: context.lastSync ?? undefined });
+      const syncResponse = await appSyncGateway({
+        since: undefined,
+      });
+
+      if (!syncResponse.success) return;
 
       const lastSync = new Date().toISOString();
       await updateAppContext({ user: auth.user, lastSync });
+      await syncRoomsRepo({ rooms: syncResponse.data.rooms });
+      await syncContactsRepo({ contacts: syncResponse.data.contacts });
+      await syncMessagesRepo({ messages: syncResponse.data.messages });
 
       setAppStatus("synced");
     };

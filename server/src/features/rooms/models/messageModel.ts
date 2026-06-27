@@ -19,6 +19,8 @@ export interface Message {
   text: string;
   reactions: MessageReaction[];
   readBy: MessageRead[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const messageReactionSchema = new Schema<MessageReaction>(

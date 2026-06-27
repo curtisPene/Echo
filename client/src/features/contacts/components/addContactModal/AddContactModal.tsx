@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./AddContactModal.module.css";
 import clsx from "clsx";
 import { Form, Input } from "@/components/form/Form";
-import { useAddContact } from "../hooks/useAddContact";
-import { UserFound } from "./UserFound";
+import { useAddContact } from "../../hooks/useAddContact";
+import { UserFound } from "../userFound/UserFound";
 
 export const AddContactModal = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);

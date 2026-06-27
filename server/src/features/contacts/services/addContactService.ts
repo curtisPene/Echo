@@ -1,6 +1,6 @@
-import { toPublicUser } from "../../users/models/userModel";
+import { toPublicUser } from "../../users/presenters/usersPresenter";
 import { findUserById } from "../../users/repo/mongooseUserRepo";
-import { findContactsByUserId } from "../repo/mongooseContactsRepo";
+import { addContact } from "../repo/mongooseContactsRepo";
 
 export async function addContactService({
   userId,
@@ -10,13 +10,11 @@ export async function addContactService({
   contactId: string;
 }) {
   const addedUser = await findUserById({ id: contactId });
-  const contactsList = await findContactsByUserId({ userId });
+  if (!addedUser) return;
 
-  if (!addedUser || !contactsList) return;
+  const contactsDoc = await addContact({ userId, contactId });
 
-  contactsList?.contacts.push(addedUser._id);
-
-  await contactsList.save();
+  if (!contactsDoc) return;
 
   return toPublicUser(addedUser);
 }

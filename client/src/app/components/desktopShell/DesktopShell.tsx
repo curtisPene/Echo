@@ -19,11 +19,11 @@ import {
 } from "react";
 import { Avatar } from "@/components/avatar/Avatar";
 import { Button } from "@/components/button/Button";
-import { ConversationList } from "@/features/messaging/components/ConversationList";
-import { ContactsList } from "@/features/contacts/components/ContactsList";
-import { ConversationsHeader } from "@/features/messaging/components/ConversationsHeader";
-import { ContactsHeader } from "@/features/contacts/components/ContactsHeader";
-import { Composer } from "@/features/messaging/components/Composer";
+import { ConversationList } from "@/features/rooms/components/conversationList/ConversationList";
+import { ContactsList } from "@/features/contacts/components/contactsList/ContactsList";
+import { ConversationsHeader } from "@/features/rooms/components/conversationsHeader/ConversationsHeader";
+import { ContactsHeader } from "@/features/contacts/components/contactsHeader/ContactsHeader";
+import { Composer } from "@/features/messaging/components/composer/Composer";
 
 export const DesktopSidebar = ({
   ref,
@@ -49,7 +49,10 @@ export const DesktopSidebar = ({
           <div className={clsx(styles.iconBarContent, "iconBarContent")}>
             {Object.entries(NAV_BAR_CONFIG).map(([key, config]) => (
               <Button
-                onClick={() => setActive(key as keyof typeof NAV_BAR_CONFIG)}
+                onClick={() => {
+                  setActive(key as keyof typeof NAV_BAR_CONFIG);
+                  ref.current?.style.setProperty("--sidebarOpen", "1");
+                }}
                 aria-pressed={key === active}
                 key={key}
                 variant="menuIcon"
@@ -103,7 +106,7 @@ const NAV_BAR_CONFIG: Record<
     icon: LucideIcon;
     label: string;
     render: () => JSX.Element;
-    renderHeader?: () => JSX.Element;
+    renderHeader: () => JSX.Element;
   }
 > = {
   conversations: {
@@ -126,6 +129,9 @@ export const DesktopShell = () => {
   const [active, setActive] =
     useState<keyof typeof NAV_BAR_CONFIG>("conversations");
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  const [activeRoom] = useState<string | null>(null);
+  console.log("activeRoom: ", activeRoom);
 
   const onToggleSidebar = () => {
     if (!wrapperRef.current) return;

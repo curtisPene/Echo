@@ -1,17 +1,26 @@
 import { Room, RoomParticipant } from "../models/roomModel";
+import { User } from "../../users/models/userModel";
+
+export interface RoomWithPopulatedParticipants extends Omit<
+  Room,
+  "participants"
+> {
+  participants: (Omit<RoomParticipant, "user"> & { user: User })[];
+}
 
 export async function findRoomsWithUserId({
   userId,
   since,
 }: {
   userId: string;
-  since?: string;
-}): Promise<Room[]> {
-  const sinceDate = since ? new Date(since) : undefined;
+  since?: Date;
+}): Promise<RoomWithPopulatedParticipants[]> {
   const roomsDocs = await Room.find({
     participants: { $elemMatch: { user: userId } },
-    ...(sinceDate ? { updatedAt: { $gt: sinceDate } } : {}),
-  });
+    ...(since ? { updatedAt: { $gt: since } } : {}),
+  }).populate<{
+    participants: (Omit<RoomParticipant, "user"> & { user: User })[];
+  }>("participants.user");
 
   return roomsDocs;
 }

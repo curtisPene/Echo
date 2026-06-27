@@ -36,17 +36,3 @@ const userSchema = new Schema<User>(
 );
 
 export const User = model<User>("User", userSchema);
-
-export type PublicUser = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-};
-
-export const toPublicUser = (user: User): PublicUser => ({
-  id: user._id.toString(),
-  firstName: user.firstName,
-  lastName: user.lastName,
-  email: user.email,
-});

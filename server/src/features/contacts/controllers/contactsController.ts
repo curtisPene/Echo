@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { findUserService } from "../../users/services/findUserService";
 import { searchContactsRequestSchema } from "../types";
 import { addContactService } from "../services/addContactService";
-import { toPublicUser } from "../../users/models/userModel";
 
 export const searchContactController = async (
   req: Request,
@@ -62,6 +61,14 @@ export const addContactController = async (
   }
 
   const addeduser = await addContactService({ userId: req.user.id, contactId });
+
+  if (!addeduser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+      data: null,
+    });
+  }
 
   res.status(201).json({
     success: true,

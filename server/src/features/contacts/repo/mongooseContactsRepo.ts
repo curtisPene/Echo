@@ -1,11 +1,25 @@
-import { Contacts, contactsSchema } from "../models/contactsModel";
+import { User } from "../../users/models/userModel";
+import { Contacts } from "../models/contactsModel";
 
-export async function findContactsByUserId({ userId }: { userId: string }) {
+export type ContactsWithPopulatedUsers = Omit<Contacts, "contacts"> & {
+  contacts: User[];
+};
+
+export async function findContactsByUserId({
+  userId,
+  since,
+}: {
+  userId: string;
+  since?: string;
+}): Promise<ContactsWithPopulatedUsers> {
   const contacts = await Contacts.findOne({
     user: userId,
-  });
+    // ...(since ? { updatedAt: { $gt: since } } : {}),
+  }).populate<{ contacts: User[] }>("contacts");
 
-  return contacts;
+  if (!contacts) throw new Error("Contacts list for user not found");
+
+  return contacts.toJSON();
 }
 
 export async function createContacts({ userId }: { userId: string }) {
@@ -24,6 +38,9 @@ export async function addContact({
     { user: userId },
     { $addToSet: { contacts: contactId } },
     { new: true },
-  );
-  return contacts;
+  ).populate("contacts");
+
+  if (!contacts) throw new Error("User created without a contacts object");
+
+  return contacts.toJSON();
 }

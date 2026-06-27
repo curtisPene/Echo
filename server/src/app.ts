@@ -6,6 +6,7 @@ import UserRouter from "./features/users/router/userRouter";
 import RoomsRouter from "./features/rooms/router/roomsRouter";
 import cookieParser from "cookie-parser";
 import { authMiddleware } from "./features/auth/middleware/authMiddleware";
+import { errorHandler } from "./middleware/errorHandler";
 
 export const createApp = () => {
   const app = express();
@@ -24,6 +25,8 @@ export const createApp = () => {
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
+
+  app.use(errorHandler);
 
   return app;
 };

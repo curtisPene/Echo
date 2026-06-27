@@ -1,5 +1,5 @@
 import { Schema, Types } from "mongoose";
-import { User } from "../../models/userModel";
+import { User } from "../../users/models/userModel";
 
 export interface ContactRequest {
   _id: Types.ObjectId;

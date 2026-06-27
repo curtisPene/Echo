@@ -1,5 +1,8 @@
-import { PublicUser, toPublicUser } from "../../users/models/userModel";
 import { ServiceResult } from "../../../types";
+import {
+  PublicUser,
+  toPublicUser,
+} from "../../users/presenters/usersPresenter";
 import { findUserById } from "../../users/repo/mongooseUserRepo";
 import {
   signAccessToken,
@@ -29,9 +32,11 @@ export async function verifyRefreshTokenService({
     return { success: false, message: "Invalid token", data: undefined };
   const accessToken = signAccessToken(payload);
 
+  const publicUser = toPublicUser(user);
+
   return {
     success: true,
     message: "Authorized",
-    data: { accessToken, user: toPublicUser(user) },
+    data: { accessToken, user: publicUser },
   };
 }

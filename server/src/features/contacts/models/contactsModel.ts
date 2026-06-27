@@ -2,7 +2,7 @@ import { model, Schema, Types } from "mongoose";
 import { User } from "../../users/models/userModel";
 
 export interface Contacts {
-  _id: Types.ObjectId;
+  id: Types.ObjectId;
   user: User["_id"];
   contacts: User["_id"][];
   blocked: User["_id"][];

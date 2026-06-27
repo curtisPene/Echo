@@ -1,18 +1,29 @@
 import { z } from "zod";
 
-export const apiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    success: z.boolean(),
-    message: z.string(),
-    data: dataSchema.nullable(),
-  });
+/**
+ * Recreated schema from client/src/types/index.ts
+ */
 
-export type ApiResponse<T> = {
-  success: boolean;
-  message: string;
-  data: T | null;
-};
+export const apiResponseSchema = <
+  T extends z.ZodTypeAny,
+  E extends z.ZodTypeAny = z.ZodNull,
+>(
+  successDataSchema: T,
+  failureDataSchema: E = z.null() as unknown as E,
+) =>
+  z.discriminatedUnion("success", [
+    z.object({
+      success: z.literal(true),
+      message: z.string(),
+      data: successDataSchema,
+    }),
+    z.object({
+      success: z.literal(false),
+      message: z.string(),
+      data: failureDataSchema,
+    }),
+  ]);
 
-export type ServiceResult<T, E = undefined> =
+export type ApiResponse<T, E = undefined> =
   | { success: true; message: string; data: T }
   | { success: false; message: string; data: E };

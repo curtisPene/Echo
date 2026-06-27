@@ -6,7 +6,12 @@ const router = express.Router();
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   const { participants, name } = req.body;
 
-  const room = await createRoom({ participants, name });
+  const userId = req.user?.id;
+
+  const room = await createRoom({
+    participants: [...participants, { user: userId }],
+    name,
+  });
 
   res.status(201).json({
     success: true,

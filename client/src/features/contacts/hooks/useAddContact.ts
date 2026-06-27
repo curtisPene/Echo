@@ -3,13 +3,13 @@ import {
   addContactGateway,
   searchContactGateway,
 } from "../gateway/contactsGateway";
-import type { ContactsSearchResult } from "../types";
+import type { Contact } from "../types";
 import { addContactRepo } from "../repo/contactsRepo";
 
 export const useAddContact = () => {
   const [userResult, setUserResult] = useState<{
     success: boolean;
-    data: ContactsSearchResult | null;
+    data: Contact | null;
   } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -32,7 +32,7 @@ export const useAddContact = () => {
 
     if (!response.success) return;
 
-    addContactRepo({ user: response.data });
+    addContactRepo({ contact: response.data });
   };
 
   return {

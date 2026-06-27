@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import styles from "./ContactsList.module.css";
 import { useContacts } from "@/stores/useContacts";
-import { ContactsListItem } from "./ContactsListItem";
+import { ContactsListItem } from "../contactsListItem/ContactsListItem";
 
 export const ContactsList = () => {
   const { contacts } = useContacts();

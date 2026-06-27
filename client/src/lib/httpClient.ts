@@ -1,6 +1,8 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { ZodError } from "zod";
 import { useAuth } from "@/stores/useAuth";
 import { loginResponseSchema } from "@/features/auth/types";
+import { parseOrReportError } from "@/lib/parseOrReportError";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -70,7 +72,10 @@ httpClient.interceptors.response.use(
         {},
         { withCredentials: true },
       );
-      const verified = loginResponseSchema.parse(verifyResponse.data);
+      const verified = parseOrReportError(
+        loginResponseSchema,
+        verifyResponse.data,
+      );
 
       if (!verified.success || !verified.data) {
         return resolveOrThrow(error);
@@ -86,7 +91,13 @@ httpClient.interceptors.response.use(
       // Retry the original request, now with the new token attached.
       originalRequest.headers.Authorization = `Bearer ${verified.data.accessToken}`;
       return httpClient(originalRequest);
-    } catch {
+    } catch (refreshError) {
+      // A ZodError means the verify response had a shape we don't
+      // recognize at all - parseOrReportError already routed it to the
+      // global error store, so propagate it instead of treating it as a
+      // normal expired-refresh-token logout.
+      if (refreshError instanceof ZodError) throw refreshError;
+
       // Refresh failed too (refresh token expired) - log the user out.
       useAuth.getState().setAuth({ authStatus: "unauthenticated", user: null });
       return resolveOrThrow(error);

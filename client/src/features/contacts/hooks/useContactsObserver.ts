@@ -1,11 +1,14 @@
 import { db } from "@/lib/db";
 import { liveQuery } from "dexie";
-import { useAppStatus } from "@/stores/useAppStatus";
+import { type AppStatus } from "@/stores/useAppStatus";
 import { useEffect } from "react";
 import { useContacts } from "@/stores/useContacts";
 
-export const useContactsObserver = () => {
-  const { appStatus } = useAppStatus();
+export const useContactsObserver = ({
+  appStatus,
+}: {
+  appStatus: AppStatus;
+}) => {
   const { setContacts } = useContacts();
 
   useEffect(() => {

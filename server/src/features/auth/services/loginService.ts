@@ -1,5 +1,9 @@
-import { PublicUser, toPublicUser } from "../../users/models/userModel";
 import { ServiceResult } from "../../../types";
+import { User } from "../../users/models/userModel";
+import {
+  PublicUser,
+  toPublicUser,
+} from "../../users/presenters/usersPresenter";
 import { findUserByEmail } from "../../users/repo/mongooseUserRepo";
 import { signAccessToken, signRefreshToken } from "../adapters/jwtTokenAdapter";
 import { UserLoginDto } from "../types";
@@ -22,6 +26,7 @@ export async function loginService({
       message: "Invalid credentials",
       data: undefined,
     };
+  const publicUser = toPublicUser(user);
 
   if (user.password !== password)
     return {
@@ -41,6 +46,6 @@ export async function loginService({
   return {
     success: true,
     message: "User logged in successfully",
-    data: { user: toPublicUser(user), accessToken, refreshToken },
+    data: { user: publicUser, accessToken, refreshToken },
   };
 }

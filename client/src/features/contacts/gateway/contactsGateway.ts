@@ -1,4 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
+import { parseOrReportError } from "@/lib/parseOrReportError";
 import {
   contactsSearchResponseSchema,
   type ContactsSearchResponse,
@@ -8,7 +9,7 @@ export const searchContactGateway = async (
   email: string,
 ): Promise<ContactsSearchResponse> => {
   const response = await httpClient.post("/contacts/search", { email });
-  return contactsSearchResponseSchema.parse(response.data);
+  return parseOrReportError(contactsSearchResponseSchema, response.data);
 };
 
 export const addContactGateway = async ({

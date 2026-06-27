@@ -1,8 +1,8 @@
 import { ServiceResult } from "../../../types";
-import { PublicUser, toPublicUser } from "../models/userModel";
+import { User } from "../models/userModel";
 import { findUserByEmail } from "../repo/mongooseUserRepo";
 
-export type FindUserResult = ServiceResult<{ user: PublicUser }>;
+export type FindUserResult = ServiceResult<{ user: User }>;
 
 export async function findUserService({
   email,
@@ -21,6 +21,6 @@ export async function findUserService({
   return {
     success: true,
     message: "User found",
-    data: { user: toPublicUser(user) },
+    data: { user: user },
   };
 }
