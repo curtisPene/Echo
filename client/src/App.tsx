@@ -6,6 +6,7 @@ import { SplashScreen } from "./app/components/splashScreen/SplashScreen";
 import { useAppBootstrap } from "./app/hooks/useAppBootstrap";
 import { useContactsObserver } from "./features/contacts/hooks/useContactsObserver";
 import { useRoomsObserver } from "./features/rooms/hooks/useRoomsObserver";
+import { useMessagesObserver } from "./features/messaging/hooks/useMessagesObserver";
 
 function App() {
   const auth = useAuth((state) => state);
@@ -18,6 +19,7 @@ function App() {
   useAppBootstrap({ appStatus, auth, setAuth, setAppStatus });
   useContactsObserver({ appStatus });
   useRoomsObserver({ appStatus });
+  useMessagesObserver({ appStatus });
 
   if (authStatus === "unverified") return <SplashScreen />;
 

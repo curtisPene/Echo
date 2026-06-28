@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { findUserService } from "../../users/services/findUserService";
+import { toPublicUser } from "../../users/presenters/usersPresenter";
 import { searchContactsRequestSchema } from "../types";
 import { addContactService } from "../services/addContactService";
 
@@ -41,7 +42,7 @@ export const searchContactController = async (
   res.status(201).json({
     success: true,
     message: result.message,
-    data: result.data.user,
+    data: toPublicUser(result.data.user),
   });
 };
 

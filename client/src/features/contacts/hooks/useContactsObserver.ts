@@ -9,7 +9,7 @@ export const useContactsObserver = ({
 }: {
   appStatus: AppStatus;
 }) => {
-  const { setContacts } = useContacts();
+  const setContacts = useContacts((state) => state.setContacts);
 
   useEffect(() => {
     if (appStatus !== "synced") return;

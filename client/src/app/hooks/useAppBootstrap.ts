@@ -57,7 +57,7 @@ export const useAppBootstrap = ({
       if (!context) return;
 
       const syncResponse = await appSyncGateway({
-        since: undefined,
+        since: context.lastSync ?? undefined,
       });
 
       if (!syncResponse.success) return;

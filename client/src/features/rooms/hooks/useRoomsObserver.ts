@@ -5,7 +5,7 @@ import { liveQuery } from "dexie";
 import { useEffect } from "react";
 
 export const useRoomsObserver = ({ appStatus }: { appStatus: AppStatus }) => {
-  const { setRooms } = useRooms();
+  const setRooms = useRooms((state) => state.setRooms);
 
   useEffect(() => {
     if (appStatus !== "synced") return;

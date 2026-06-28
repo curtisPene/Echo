@@ -6,28 +6,37 @@ import {
 import type { Contact } from "../types";
 import { addContactRepo } from "../repo/contactsRepo";
 
+export type SearchResult =
+  | { status: "idle" }
+  | { status: "searching" }
+  | { status: "found"; contact: Contact }
+  | { status: "not_found" };
+
 export const useAddContact = () => {
-  const [userResult, setUserResult] = useState<{
-    success: boolean;
-    data: Contact | null;
-  } | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<SearchResult>({
+    status: "idle",
+  });
 
   const onSearch = useCallback(async (email: string) => {
-    setIsSearching(true);
+    setSearchResult({ status: "searching" });
     const response = await searchContactGateway(email);
-    setTimeout(() => {
-      setUserResult({ success: response.success, data: response.data });
-      setIsSearching(false);
-    }, 800);
+
+    setSearchResult(
+      response.success && response.data
+        ? { status: "found", contact: response.data }
+        : { status: "not_found" },
+    );
+  }, []);
+
+  const clearSearch = useCallback(() => {
+    setSearchResult({ status: "idle" });
   }, []);
 
   const addContact = async () => {
-    if (!userResult?.success || !userResult.data) return;
-    const { id } = userResult.data;
+    if (searchResult.status !== "found") return;
 
     const response = await addContactGateway({
-      contactId: id,
+      contactId: searchResult.contact.id,
     });
 
     if (!response.success) return;
@@ -36,9 +45,10 @@ export const useAddContact = () => {
   };
 
   return {
-    userResult,
+    setSearchResult,
+    clearSearch,
+    searchResult,
     onSearch,
     addContact,
-    isSearching,
   };
 };

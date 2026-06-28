@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import styles from "./MessageItem.module.css";
+import type { MessageRead } from "../../types";
 
 export const MessageItem = ({
   sender,
@@ -9,7 +10,7 @@ export const MessageItem = ({
 }: {
   sender: string;
   text: string;
-  readBy: string;
+  readBy: MessageRead[];
   timestamp: string;
   currentUserId: string;
 }) => {

@@ -1,12 +1,15 @@
 import { db } from "@/lib/db";
-import { useAppStatus } from "@/stores/useAppStatus";
+import { type AppStatus } from "@/stores/useAppStatus";
 import { useMessages } from "@/stores/useMessages";
 import { liveQuery } from "dexie";
 import { useEffect } from "react";
 
-export const useMessagesObserver = () => {
-  const { setMessages } = useMessages();
-  const { appStatus } = useAppStatus();
+export const useMessagesObserver = ({
+  appStatus,
+}: {
+  appStatus: AppStatus;
+}) => {
+  const setMessages = useMessages((state) => state.setMessages);
 
   useEffect(() => {
     if (appStatus !== "synced") return;

@@ -29,9 +29,5 @@
 .timestamp {
   opacity: 60%;
   font-size: var(--font-size-caption);
-  align-self: flex-start;
-}
-
-.timestamp.mine {
   align-self: flex-end;
 }

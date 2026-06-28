@@ -1,85 +1,11 @@
 import clsx from "clsx";
 import styles from "./DesktopShell.module.css";
 
-import {
-  CommandIcon,
-  MessageCircleIcon,
-  PanelLeftIcon,
-  SettingsIcon,
-  UsersRoundIcon,
-  type LucideIcon,
-} from "lucide-react";
-import {
-  useRef,
-  useState,
-  type Dispatch,
-  type JSX,
-  type RefObject,
-  type SetStateAction,
-} from "react";
-import { Avatar } from "@/components/avatar/Avatar";
-import { Button } from "@/components/button/Button";
-import { ConversationList } from "@/features/rooms/components/conversationList/ConversationList";
-import { ContactsList } from "@/features/contacts/components/contactsList/ContactsList";
-import { ConversationsHeader } from "@/features/rooms/components/conversationsHeader/ConversationsHeader";
-import { ContactsHeader } from "@/features/contacts/components/contactsHeader/ContactsHeader";
+import { PanelLeftIcon } from "lucide-react";
 import { Composer } from "@/features/messaging/components/composer/Composer";
-
-export const DesktopSidebar = ({
-  ref,
-  active,
-  setActive,
-}: {
-  ref: RefObject<HTMLDivElement | null>;
-  active: keyof typeof NAV_BAR_CONFIG;
-  setActive: Dispatch<SetStateAction<keyof typeof NAV_BAR_CONFIG>>;
-}) => {
-  const Header = NAV_BAR_CONFIG[active].renderHeader;
-  const Content = NAV_BAR_CONFIG[active].render;
-
-  return (
-    <div ref={ref} className={clsx(styles.sidebarWrapper, "sidebarWrapper")}>
-      <div className={clsx(styles.sidebarInner)}>
-        <div className={clsx(styles.iconBar, "iconBar")}>
-          <div className={clsx("iconBarHeader")}>
-            <Button variant="menuIcon">
-              <CommandIcon width={24} height={24} />
-            </Button>
-          </div>
-          <div className={clsx(styles.iconBarContent, "iconBarContent")}>
-            {Object.entries(NAV_BAR_CONFIG).map(([key, config]) => (
-              <Button
-                onClick={() => {
-                  setActive(key as keyof typeof NAV_BAR_CONFIG);
-                  ref.current?.style.setProperty("--sidebarOpen", "1");
-                }}
-                aria-pressed={key === active}
-                key={key}
-                variant="menuIcon"
-              >
-                <config.icon width={18} height={18} />
-              </Button>
-            ))}
-          </div>
-          <div className={clsx(styles.iconBarFooter, "iconBarFooter")}>
-            <Avatar firstName="curtis" lastName="pene" />
-            <Button variant="menuIcon">
-              <SettingsIcon width={18} height={18} />
-            </Button>
-          </div>
-        </div>
-        <div className={clsx(styles.detailsBar, "detailsBar")}>
-          <div className={clsx(styles.detailsBarHeader, "detailsBarHeader")}>
-            {Header && <Header />}
-          </div>
-          <div className={clsx(styles.detailsBarContent, "detailsBarContent")}>
-            <Content />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { useDesktopShell } from "@/app/hooks/useDesktopShell";
+import { DesktopSidebar } from "@/app/components/desktopSidebar/DesktopSidebar";
+import { Button } from "@/components/button/Button";
 
 export const DesktopInset = ({
   onToggleSidebar,
@@ -99,50 +25,26 @@ export const DesktopInset = ({
   );
 };
 
-const NAV_BAR_CONFIG: Record<
-  "conversations" | "contacts",
-  {
-    key: "conversations" | "contacts";
-    icon: LucideIcon;
-    label: string;
-    render: () => JSX.Element;
-    renderHeader: () => JSX.Element;
-  }
-> = {
-  conversations: {
-    key: "conversations",
-    icon: MessageCircleIcon,
-    label: "Conversations",
-    render: ConversationList,
-    renderHeader: ConversationsHeader,
-  },
-  contacts: {
-    key: "contacts",
-    icon: UsersRoundIcon,
-    label: "Contacts",
-    render: ContactsList,
-    renderHeader: ContactsHeader,
-  },
-};
-
 export const DesktopShell = () => {
-  const [active, setActive] =
-    useState<keyof typeof NAV_BAR_CONFIG>("conversations");
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-
-  const [activeRoom] = useState<string | null>(null);
-  console.log("activeRoom: ", activeRoom);
-
-  const onToggleSidebar = () => {
-    if (!wrapperRef.current) return;
-    const wrapper = wrapperRef.current as HTMLDivElement;
-    const current = wrapper.style.getPropertyValue("--sidebarOpen");
-    wrapper.style.setProperty("--sidebarOpen", current === "0" ? "1" : "0");
-  };
-
+  const {
+    active,
+    wrapperRef,
+    onToggleSidebar,
+    selectNavItem,
+    Header,
+    Content,
+    navItems,
+  } = useDesktopShell();
   return (
     <div className={clsx(styles.root, "desktopShell")}>
-      <DesktopSidebar active={active} ref={wrapperRef} setActive={setActive} />
+      <DesktopSidebar
+        active={active}
+        ref={wrapperRef}
+        selectNavItem={selectNavItem}
+        Header={Header}
+        Content={Content}
+        navItems={navItems}
+      />
       <DesktopInset onToggleSidebar={onToggleSidebar} />
     </div>
   );

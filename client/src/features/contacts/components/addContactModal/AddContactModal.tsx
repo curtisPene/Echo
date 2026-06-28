@@ -1,43 +1,32 @@
 import { Button } from "@/components/button/Button";
 import { UserPlusIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
 import styles from "./AddContactModal.module.css";
 import clsx from "clsx";
 import { Form, Input } from "@/components/form/Form";
-import { useAddContact } from "../../hooks/useAddContact";
+import { useAddContactModal } from "../../hooks/useAddContactModal";
 import { UserFound } from "../userFound/UserFound";
 
 export const AddContactModal = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const ref = useRef<HTMLDialogElement>(null);
-  const timeoutRef = useRef<number | null>(null);
-
-  const { onSearch, userResult, isSearching, addContact } = useAddContact();
-
-  const onSearchHandler = (email: string) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => onSearch(email), 500);
-  };
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    if (isOpen) ref.current.showModal();
-    else ref.current.close();
-  }, [isOpen]);
+  const {
+    dialogRef,
+    toggleOpen,
+    onDialogClick,
+    query,
+    onSearchInputChange,
+    searchResult,
+    addContact,
+  } = useAddContactModal();
 
   return (
     <>
-      <Button variant="icon" onClick={() => setIsOpen((isOpen) => !isOpen)}>
+      <Button variant="icon" onClick={toggleOpen}>
         <UserPlusIcon width={18} height={18} />
       </Button>
       <dialog
         className={clsx(styles.dialog)}
-        ref={ref}
-        onClick={(e) => {
-          if (e.target === ref.current) setIsOpen(false);
-        }}
+        ref={dialogRef}
+        onClick={(e) => onDialogClick(e.target)}
       >
         <div className={clsx(styles.inner)}>
           <div className={clsx(styles.dialogHeader)}>
@@ -47,15 +36,14 @@ export const AddContactModal = () => {
           <Form>
             <Input
               type="text"
-              onChange={(e) => onSearchHandler(e.target.value)}
+              value={query}
+              onChange={(e) => onSearchInputChange(e.target.value)}
             />
           </Form>
 
           <div className={clsx(styles.searchResult)}>
             <UserFound
-              email={userResult?.data?.email}
-              isSearching={isSearching}
-              isSuccess={userResult?.success}
+              searchResult={searchResult}
               onAddContact={addContact}
             />
           </div>
