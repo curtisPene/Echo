@@ -35,8 +35,8 @@ export const userLoginController = async (
   res
     .cookie("refreshToken", loginResult.data.refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     })
     .json({
       success: true,
