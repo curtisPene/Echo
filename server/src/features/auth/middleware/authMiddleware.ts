@@ -11,7 +11,8 @@ export const authMiddleware = (
   const isPublicRoute =
     path === "/auth/login" ||
     path === "/auth/register" ||
-    path === "/auth/verify";
+    path === "/auth/verify" ||
+    path === "/health";
 
   if (isPublicRoute) {
     return next();
