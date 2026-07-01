@@ -27,3 +27,15 @@ export const apiResponseSchema = <
 export type ApiResponse<T, E = undefined> =
   | { success: true; message: string; data: T }
   | { success: false; message: string; data: E };
+
+export type ServiceResult<T, E = null> =
+  | {
+      success: true;
+      message: string;
+      data: T;
+    }
+  | {
+      success: false;
+      message: string;
+      data: E;
+    };

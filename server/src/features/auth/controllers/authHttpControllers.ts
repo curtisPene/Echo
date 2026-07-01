@@ -107,7 +107,7 @@ export const verifyRefreshTokenController = async (
     refreshToken: cookies.refreshToken,
   });
 
-  if (!result.success) {
+  if (!result.success || !result.data) {
     return res.status(403).json({
       success: false,
       message: "Unauthorized - Invalid",

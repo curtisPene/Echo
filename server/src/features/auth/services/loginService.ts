@@ -24,7 +24,7 @@ export async function loginService({
     return {
       success: false,
       message: "Invalid credentials",
-      data: undefined,
+      data: null,
     };
   const publicUser = toPublicUser(user);
 
@@ -32,7 +32,7 @@ export async function loginService({
     return {
       success: false,
       message: "Invalid credentials",
-      data: undefined,
+      data: null,
     };
 
   const accessToken = signAccessToken({

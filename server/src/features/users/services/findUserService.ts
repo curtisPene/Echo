@@ -15,7 +15,7 @@ export async function findUserService({
     return {
       success: false,
       message: "User not found",
-      data: undefined,
+      data: null,
     };
 
   return {
