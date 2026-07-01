@@ -7,5 +7,7 @@ export const appSyncGateway = async ({ since }: { since?: string }) => {
     `/user/sync?${since ? `since=${since}` : ""}`,
   );
 
+  console.log(response);
+
   return parseOrReportError(appSyncResponseSchema, response.data);
 };

@@ -18,6 +18,7 @@ export const appSyncResponseSchema = apiResponseSchema(
     rooms: z.array(roomSchema),
     messages: z.array(messageSchema),
     contacts: z.array(contactSchema),
+    lastSync: z.string(),
   }),
 );
 

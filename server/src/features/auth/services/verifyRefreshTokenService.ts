@@ -1,4 +1,3 @@
-import { ServiceResult } from "../../../types";
 import {
   PublicUser,
   toPublicUser,
@@ -8,17 +7,13 @@ import {
   signAccessToken,
   verifyRefreshToken as verifyRefreshTokenAdapter,
 } from "../adapters/jwtTokenAdapter";
-
-export type VerifyRefreshTokenResult = ServiceResult<{
-  accessToken: string;
-  user: PublicUser;
-}>;
+import { apiResponseSchema } from "../../../types/index";
 
 export async function verifyRefreshTokenService({
   refreshToken,
 }: {
   refreshToken: string;
-}): Promise<VerifyRefreshTokenResult> {
+}) {
   const payload = verifyRefreshTokenAdapter(refreshToken);
 
   if (!payload)

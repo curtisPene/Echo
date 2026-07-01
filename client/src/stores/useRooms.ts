@@ -4,13 +4,14 @@ import { create } from "zustand";
 type RoomsStore = {
   rooms: Room[];
   setRooms: (rooms: Room[]) => void;
-  activeRoom: string | null;
-  setACtiveRoom: (roomId: string) => void;
+  activeRoom: { id: string; name: string } | null;
+  setACtiveRoom: (roomId: string, roomName: string) => void;
 };
 
 export const useRooms = create<RoomsStore>((set) => ({
   rooms: [],
   setRooms: (rooms) => set({ rooms }),
   activeRoom: null,
-  setACtiveRoom: (roomId) => set({ activeRoom: roomId }),
+  setACtiveRoom: (roomId, roomName) =>
+    set({ activeRoom: { id: roomId, name: roomName } }),
 }));

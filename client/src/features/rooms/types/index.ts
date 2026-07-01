@@ -17,7 +17,7 @@ export type RoomParticipant = z.infer<typeof roomParticipantSchema>;
 export const roomSchema = z.object({
   id: z.string(),
   participants: z.array(roomParticipantSchema),
-  name: z.string().nullable(),
+  name: z.string(),
   lastMessageAt: z.iso.datetime().nullable(),
   lastMessage: z.string().nullable(),
   unread: z.number(),

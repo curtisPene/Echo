@@ -10,7 +10,7 @@ export async function findContactsByUserId({
   since,
 }: {
   userId: string;
-  since?: string;
+  since?: Date;
 }): Promise<ContactsWithPopulatedUsers> {
   const contacts = await Contacts.findOne({
     user: userId,

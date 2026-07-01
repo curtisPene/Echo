@@ -55,7 +55,7 @@
 .detailsBar {
   border-right: 1px solid var(--border);
   height: 100%;
-  flex: 1;
+  width: 21rem;
 }
 
 .detailsBarHeader {

@@ -3,7 +3,7 @@ import { create } from "zustand";
 
 type MessageStore = {
   messages: Message[];
-  roomId: string;
+  roomId: string | null;
   setMessages: (messages: Message[]) => void;
   setRoomId: (roomId: string) => void;
 };

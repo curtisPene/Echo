@@ -1,18 +1,26 @@
 .root {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  height: 100%;
+}
+
+.listInfo {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-label);
+  opacity: 20%;
 }
 
 .chatList {
-  flex: 1;
+  height: 100%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: var(--space-2) 0;
 }
 
-.inputWrapper {
+.form {
   height: 4.5rem;
   display: flex;
   flex-direction: row;

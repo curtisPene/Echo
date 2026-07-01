@@ -1,7 +1,7 @@
 import { contactsPresenter } from "../../contacts/presenters/contactsPresenter";
 import { findContactsByUserId } from "../../contacts/repo/mongooseContactsRepo";
 import { messagePresenter } from "../../rooms/presenters/messagePresenter";
-import { roomsPresenter } from "../../rooms/presenters/roomsPresenter";
+import { roomPresenter } from "../../rooms/presenters/roomsPresenter";
 import { findRoomMessages } from "../../rooms/repo/mongooseMessageRepo";
 import { findRoomsWithUserId } from "../../rooms/repo/mongooseRoomRepo";
 
@@ -14,40 +14,44 @@ export async function syncUserDataService({
 }) {
   const sinceDate = since ? new Date(since) : undefined;
 
-  const roomsDocs = await findRoomsWithUserId({ userId, since: sinceDate });
-  const presentedRoomsAndMessages = await Promise.all(
-    roomsDocs.map(async (room) => {
-      const roomId = room._id.toString();
-      const lastReadAt = room.participants.find(
-        (p) => p.user._id.toString() === userId,
-      )?.lastReadAt;
+  /**
+   * We first need to find all the rooms the user is part of, we use the roomIds
+   * to search for all messages belonging to those rooms since the last sync
+   */
 
-      const { messages: messageDocs, unreadCount } = await findRoomMessages({
-        roomId,
+  const roomDocs = await findRoomsWithUserId({ userId });
+  const findMessagesRepoResult = await Promise.all(
+    roomDocs.map(async (room) => {
+      const messageDocs = await findRoomMessages({
+        roomId: room._id.toString(),
         since: sinceDate,
-        countUnreadSince: lastReadAt,
       });
 
-      const [_room] = roomsPresenter({
-        rooms: [room],
-        unread: unreadCount,
-        lastMessage: messageDocs[0],
-      });
+      const messageViews = messageDocs.messages.map((message) =>
+        messagePresenter({ message }),
+      );
 
       return {
-        room: _room,
-        messages: messagePresenter({ messages: messageDocs }),
+        room: roomPresenter({
+          room,
+          unread: messageDocs.unreadCount,
+          lastMessage: messageDocs.messages[0],
+        }),
+        messages: messageViews,
       };
     }),
   );
 
-  const contactsDoc = await findContactsByUserId({ userId: userId, since });
-  const contacts = contactsPresenter({ contacts: contactsDoc });
+  const contactDocs = await findContactsByUserId({ userId, since: sinceDate });
+  const contactsViews = contactsPresenter({ contacts: contactDocs });
 
-  const rooms = presentedRoomsAndMessages.map(({ room }) => room);
-  const messages = presentedRoomsAndMessages.flatMap(
-    ({ messages }) => messages,
-  );
+  const rooms = findMessagesRepoResult.map((room) => room.room);
+  const messages = findMessagesRepoResult.flatMap((room) => room.messages);
 
-  return { rooms, messages, contacts };
+  return {
+    rooms,
+    messages,
+    contacts: contactsViews,
+    lastSync: new Date().toISOString(),
+  };
 }

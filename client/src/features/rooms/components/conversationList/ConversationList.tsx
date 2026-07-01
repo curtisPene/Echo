@@ -12,7 +12,9 @@ export const ConversationList = () => {
         <ConversationListItem
           key={room.id}
           room={room}
-          onClick={() => setACtiveRoom(room.id)}
+          onClick={() => {
+            setACtiveRoom(room.id, room.name);
+          }}
         />
       ))}
     </div>

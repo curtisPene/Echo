@@ -1,15 +1,21 @@
 import { Socket } from "socket.io";
-import { client as redisClient } from "../../../redis";
+// import { client as redisClient } from "../../../redis";
+import { verifyAccessTokenService } from "../services/verifyAccessTokenService";
+import { addUserToRoomsService } from "../../users/services/addUserToRoomsService";
 
-export const onConnection = (socket: Socket) => {
+export const onConnectionController = (socket: Socket) => {
   const { id, accessToken } = socket.handshake.auth;
   const sid = socket.id;
-  redisClient.hSet(`user:${id}`, { socketId: sid, accessToken });
-};
+  // redisClient.hSet(`user:${id}`, { socketId: sid, accessToken });
+  const result = verifyAccessTokenService({ accessToken });
 
-export const onMessage = (socket: Socket) => {
-  socket.on("message:send", (message) => {
-    console.log("message", message);
-    socket.broadcast.emit("message:received", message);
-  });
+  if (!result.success || !result.data) {
+    socket.emit("auth:unauthorized");
+    socket.disconnect();
+    return;
+  }
+
+  socket.data.userId = result.data.id;
+
+  addUserToRoomsService({ socket, userId: id });
 };

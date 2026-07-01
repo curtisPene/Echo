@@ -1,27 +1,41 @@
 .root {
   display: none;
   flex-direction: row;
-  height: 100%;
-  width: 100%;
+  height: 100vh;
   --sidebarOpen: 1;
   transition: width 0.4s ease-in;
 }
 
 .inset {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .insetHeader {
   height: 3.5rem;
-  width: 100%;
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-direction: row;
   justify-content: start;
   align-items: center;
   padding: var(--space-2);
+}
+
+.insetContent {
+  flex: 1;
+  height: 90%;
+}
+
+.conversationTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-label);
+  opacity: 60%;
+  flex: 1;
 }
 
 @media (min-width: 768px) {

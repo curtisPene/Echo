@@ -3,28 +3,26 @@ import { MessageWithPopulatedSender } from "../repo/mongooseMessageRepo";
 import { RoomWithPopulatedParticipants } from "../repo/mongooseRoomRepo";
 import { messagePresenter } from "./messagePresenter";
 
-export const roomsPresenter = ({
-  rooms,
+export const roomPresenter = ({
+  room,
   unread,
   lastMessage,
 }: {
-  rooms: RoomWithPopulatedParticipants[];
+  room: RoomWithPopulatedParticipants;
   unread: number;
-  lastMessage: MessageWithPopulatedSender;
+  lastMessage: MessageWithPopulatedSender | null;
 }) => {
-  const _rooms = rooms.map((room) => {
-    return {
-      id: room._id.toString(),
-      participants: room.participants.map((participant) => ({
-        user: toPublicUser(participant.user),
-        lastReadAt: participant.lastReadAt?.toISOString() ?? null,
-      })),
-      name: room.name ?? null,
-      lastMessageAt: room.lastMessageAt?.toISOString() ?? null,
-      lastMessage: messagePresenter({ messages: [lastMessage] })[0].text,
-      unread,
-    };
-  });
-
-  return _rooms;
+  return {
+    id: room._id.toString(),
+    participants: room.participants.map((participant) => ({
+      user: toPublicUser(participant.user),
+      lastReadAt: participant.lastReadAt?.toISOString() ?? null,
+    })),
+    name: room.name,
+    lastMessageAt: room.lastMessageAt?.toISOString() ?? null,
+    lastMessage: lastMessage
+      ? messagePresenter({ message: lastMessage }).text
+      : null,
+    unread,
+  };
 };

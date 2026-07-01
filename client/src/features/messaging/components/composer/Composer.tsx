@@ -1,20 +1,33 @@
 import clsx from "clsx";
 import styles from "./Composer.module.css";
 import { SendIcon } from "lucide-react";
-import { useMessages } from "@/stores/useMessages";
 import { MessageItem } from "../messageItem/MessageItem";
-import { useAuth } from "@/stores/useAuth";
-
+import { useConversationView } from "../../hooks/useConversationView";
+import { useComposer } from "../../hooks/useComposer";
+import { useEffect, useRef } from "react";
 export const Composer = () => {
-  const { messages } = useMessages();
-  const { user } = useAuth();
+  const { roomMessages, user } = useConversationView();
+  const { inputValue, setInputValue, onSendMessage, activeRoom } =
+    useComposer();
 
-  if (!user) throw new Error("User not found");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [roomMessages]);
 
   return (
     <div className={clsx(styles.root)}>
       <div className={clsx(styles.chatList)}>
-        {messages.map((message) => (
+        {!activeRoom ? (
+          <span className={clsx(styles.listInfo)}>Select a conversation</span>
+        ) : null}
+        {roomMessages?.length === 0 ? (
+          <span className={clsx(styles.listInfo)}>
+            Looks like this room is empty. Say hi!
+          </span>
+        ) : null}
+        {roomMessages?.map((message) => (
           <MessageItem
             key={message.id}
             readBy={message.redacted ? [] : message.readBy}
@@ -24,13 +37,20 @@ export const Composer = () => {
             currentUserId={user.id}
           />
         ))}
+        <div ref={bottomRef} />
       </div>
-      <div className={clsx(styles.inputWrapper)}>
-        <input className={clsx(styles.input)} type="text" />
-        <button className={clsx(styles.sendButton)}>
+
+      <form className={clsx(styles.form)} action="" onSubmit={onSendMessage}>
+        <input
+          className={clsx(styles.input)}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+        />
+        <button className={clsx(styles.sendButton)} type="submit">
           <SendIcon width={18} height={18} />
         </button>
-      </div>
+      </form>
     </div>
   );
 };

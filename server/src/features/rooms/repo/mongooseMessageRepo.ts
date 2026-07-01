@@ -1,3 +1,4 @@
+import { string } from "zod";
 import { User } from "../../users/models/userModel";
 import { Message, MessageReaction, MessageRead } from "../models/messageModel";
 
@@ -40,4 +41,28 @@ export const findRoomMessages = async ({
   ]);
 
   return { messages, unreadCount };
+};
+
+export const createNewMessage = async ({
+  userId,
+  message,
+  roomId,
+}: {
+  userId: string;
+  message: string;
+  roomId: string;
+}) => {
+  const _message = await Message.create({
+    room: roomId,
+    sender: userId,
+    text: message,
+  });
+
+  const populatedMessage = await _message.populate<{
+    sender: User;
+    reactions: { user: User; emoji: string }[];
+    readBy: { user: User; readAt: Date }[];
+  }>(["sender", "reactions.user", "readBy.user"]);
+
+  return populatedMessage;
 };

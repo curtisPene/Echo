@@ -24,7 +24,10 @@ export async function registrationGateway(
     "/auth/register",
     registrationData,
   );
-  return parseOrReportError(registrationResponseSchema, registrationResponse.data);
+  return parseOrReportError(
+    registrationResponseSchema,
+    registrationResponse.data,
+  );
 }
 
 export async function verifyRefreshTokenGateway(): Promise<LoginResponse> {

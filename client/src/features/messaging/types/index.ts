@@ -1,4 +1,9 @@
+import { apiResponseSchema } from "@/types";
 import z from "zod";
+
+/**
+ * Database schema types for Message feature
+ */
 
 // Populated user info, for rendering a name/avatar (e.g. "who reacted", "who read this").
 export const messageUserSchema = z.object({
@@ -48,3 +53,11 @@ export const messageSchema = z.discriminatedUnion("redacted", [
 ]);
 
 export type Message = z.infer<typeof messageSchema>;
+
+export const onMessageRecieveSchema = apiResponseSchema(
+  z.object({
+    message: messageSchema,
+  }),
+);
+
+export type onMessageRecieveSchema = z.infer<typeof onMessageRecieveSchema>;

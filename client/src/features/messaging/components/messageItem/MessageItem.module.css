@@ -4,6 +4,7 @@
   align-items: flex-end;
   padding: var(--space-2);
   gap: var(--space-1);
+  font-size: var(--font-size-body);
 }
 
 .root.mine {

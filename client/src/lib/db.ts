@@ -5,7 +5,7 @@ import type { AppContext } from "@/app/types";
 import type { Room } from "@/features/rooms/types";
 import type { Contact } from "@/features/contacts/types";
 
-export const db = new Dexie("app-database") as Dexie & {
+export const db = new Dexie("echo") as Dexie & {
   rooms: EntityTable<Room, "id">;
   messages: EntityTable<Message, "id">;
   contacts: EntityTable<Contact, "id">;

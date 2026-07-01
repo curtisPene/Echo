@@ -6,3 +6,4 @@ const URL =
     : "http://localhost:3000";
 
 export const socket = io(URL, { autoConnect: false, withCredentials: true });
+export type Socket = typeof socket;

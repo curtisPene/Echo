@@ -7,16 +7,25 @@ import { useAppBootstrap } from "./app/hooks/useAppBootstrap";
 import { useContactsObserver } from "./features/contacts/hooks/useContactsObserver";
 import { useRoomsObserver } from "./features/rooms/hooks/useRoomsObserver";
 import { useMessagesObserver } from "./features/messaging/hooks/useMessagesObserver";
+import { useSocketState } from "./stores/useSocket";
 
 function App() {
   const auth = useAuth((state) => state);
   const { authStatus, setAuth } = auth;
   const { appStatus, setAppStatus } = useAppStatus((state) => state);
+  const { onlineStatus, setOnlineStatus } = useSocketState();
 
-  console.log("appStatus", appStatus);
-  console.log("authStatus", authStatus);
+  console.log("appStatus: ", appStatus);
+  console.log("authStatus: ", authStatus);
 
-  useAppBootstrap({ appStatus, auth, setAuth, setAppStatus });
+  useAppBootstrap({
+    appStatus,
+    auth,
+    setAuth,
+    setAppStatus,
+    onlineStatus,
+    setOnlineStatus,
+  });
   useContactsObserver({ appStatus });
   useRoomsObserver({ appStatus });
   useMessagesObserver({ appStatus });
