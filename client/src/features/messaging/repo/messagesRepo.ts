@@ -10,5 +10,5 @@ export const syncMessagesRepo = async ({
 };
 
 export const saveMessage = async ({ message }: { message: Message }) => {
-  await db.messages.add(message);
+  await db.messages.put(message);
 };
