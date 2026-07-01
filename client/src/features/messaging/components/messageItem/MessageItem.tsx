@@ -21,7 +21,7 @@ export const MessageItem = ({
       <div className={styles.contentWrapper}>
         <div className={clsx(styles.bubble, mine && styles.mine)}>{text}</div>
         <span className={clsx(styles.timestamp, mine && styles.mine)}>
-          {timestamp}
+          {new Date(timestamp).toLocaleString()}
         </span>
       </div>
     </div>

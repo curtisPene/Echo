@@ -1,14 +1,14 @@
 .root {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   padding: var(--space-2);
   gap: var(--space-1);
   font-size: var(--font-size-body);
 }
 
 .root.mine {
-  align-items: start;
+  align-items: end;
 }
 
 .contentWrapper {
@@ -18,9 +18,9 @@
 }
 
 .bubble {
-  border-radius: var(--space-1);
+  border-radius: var(--space-8);
   background-color: var(--primary);
-  padding: var(--space-2) var(--space-2);
+  padding: var(--space-2) var(--space-5);
 }
 
 .bubble.mine {
@@ -31,4 +31,6 @@
   opacity: 60%;
   font-size: var(--font-size-caption);
   align-self: flex-end;
+  padding-right: var(--space-2);
+  font-size: var(--font-size-caption);
 }

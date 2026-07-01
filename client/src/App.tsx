@@ -8,6 +8,7 @@ import { useContactsObserver } from "./features/contacts/hooks/useContactsObserv
 import { useRoomsObserver } from "./features/rooms/hooks/useRoomsObserver";
 import { useMessagesObserver } from "./features/messaging/hooks/useMessagesObserver";
 import { useSocketState } from "./stores/useSocket";
+import { SoundProvider } from "./app/hooks/SoundProvider";
 
 function App() {
   const auth = useAuth((state) => state);
@@ -32,7 +33,11 @@ function App() {
 
   if (authStatus === "unverified") return <SplashScreen />;
 
-  return <Router />;
+  return (
+    <SoundProvider>
+      <Router />
+    </SoundProvider>
+  );
 }
 
 export default App;
