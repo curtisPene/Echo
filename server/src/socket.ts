@@ -1,3 +1,4 @@
+import "dotenv/config";
 import type { Server as HttpServer } from "node:http";
 import { Server, Socket } from "socket.io";
 import { onConnectionController } from "./features/auth/controllers/authSocketControllers";
@@ -11,7 +12,7 @@ type AuthSocket = Socket & {
 
 export const attachSocket = (server: HttpServer) => {
   io = new Server(server, {
-    cors: { origin: "http://localhost:5173", credentials: true },
+    cors: { origin: process.env.CLIENT_URL, credentials: true },
   });
 
   io.on("connection", (socket: Socket) => {
