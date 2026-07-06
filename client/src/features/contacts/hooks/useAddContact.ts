@@ -1,8 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  addContactGateway,
-  searchContactGateway,
-} from "../gateway/contactsGateway";
+import { addContactAPI, searchContactAPI } from "../api/contactsAPI";
 import type { Contact } from "../types";
 import { addContactRepo } from "../repo/contactsRepo";
 
@@ -19,7 +16,7 @@ export const useAddContact = () => {
 
   const onSearch = useCallback(async (email: string) => {
     setSearchResult({ status: "searching" });
-    const response = await searchContactGateway(email);
+    const response = await searchContactAPI(email);
 
     setSearchResult(
       response.success && response.data
@@ -35,7 +32,7 @@ export const useAddContact = () => {
   const addContact = async () => {
     if (searchResult.status !== "found") return;
 
-    const response = await addContactGateway({
+    const response = await addContactAPI({
       contactId: searchResult.contact.id,
     });
 

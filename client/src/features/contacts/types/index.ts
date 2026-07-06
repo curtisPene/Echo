@@ -15,3 +15,7 @@ export const contactsSearchResponseSchema = apiResponseSchema(contactSchema);
 export type ContactsSearchResponse = z.infer<
   typeof contactsSearchResponseSchema
 >;
+
+export const addContactResponseSchema = apiResponseSchema(contactSchema);
+
+export type AddContactResponse = z.infer<typeof addContactResponseSchema>;

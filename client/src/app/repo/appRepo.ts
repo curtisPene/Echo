@@ -1,21 +1,19 @@
 import type { User } from "@/features/auth/types";
 import { db } from "@/lib/db";
 import type { Auth } from "@/stores/useAuth";
+import type { AppContext } from "../types";
 
-export async function getAppContext(
+export async function getAppContext() {
+  return await db.appcontext.get("current");
+}
+export async function createAppContext(
   auth: Extract<Auth, { authStatus: "authenticated" }>,
 ) {
-  const { user } = auth;
-  const context = await db.appcontext.get("current");
-  if (!context) {
-    db.appcontext.add({
-      id: "current",
-      lastSync: null,
-      user,
-    });
-  }
+  const user = auth.user;
+  const lastSync = null;
+  await db.appcontext.add({ id: "current", user, lastSync });
 
-  return await db.appcontext.get("current");
+  return { user, lastSync } as AppContext;
 }
 
 export async function updateAppContext({
@@ -29,4 +27,9 @@ export async function updateAppContext({
   if (context) {
     await db.appcontext.update("current", { user, lastSync });
   }
+}
+
+export async function dropDatabase() {
+  await db.delete();
+  await db.open();
 }

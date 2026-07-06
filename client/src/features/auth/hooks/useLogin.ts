@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { loginController } from "../controllers/authController";
+import { loginService } from "../services/loginService";
 import type { LoginDto } from "../types";
+import { useAuth } from "@/stores/useAuth";
+import { useAppStatus } from "@/stores/useAppStatus";
 
 export type AuthError = {
   error: boolean;
@@ -20,11 +22,18 @@ export const useLogin = (state: LoginDto) => {
 
   const onLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await loginController(state);
+    const result = await loginService(state);
 
     if (!result.success) {
-      setError({ error: true, message: result.message, info: state });
+      return setError({ error: true, message: result.message, info: state });
     }
+
+    useAuth.getState().setAuth({
+      authStatus: "authenticated",
+      user: result.data.user,
+      accessToken: result.data.accessToken,
+    });
+    useAppStatus.getState().setAppStatus("syncing");
   };
 
   return { error, onLogin };

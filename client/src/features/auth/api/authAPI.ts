@@ -10,14 +10,12 @@ import {
   type RegistrationResponse,
 } from "../types";
 
-export async function loginGateway(
-  loginData: LoginDto,
-): Promise<LoginResponse> {
+export async function loginAPI(loginData: LoginDto): Promise<LoginResponse> {
   const loginResponse = await httpClient.post("/auth/login", loginData);
   return parseOrReportError(loginResponseSchema, loginResponse.data);
 }
 
-export async function registrationGateway(
+export async function registrationAPI(
   registrationData: UserRegistrationDto,
 ): Promise<RegistrationResponse> {
   const registrationResponse = await httpClient.post(
@@ -30,7 +28,7 @@ export async function registrationGateway(
   );
 }
 
-export async function verifyRefreshTokenGateway(): Promise<LoginResponse> {
+export async function verifyRefreshTokenAPI(): Promise<LoginResponse> {
   try {
     const tokenVerificationResponse = await httpClient.post("/auth/verify");
     return parseOrReportError(

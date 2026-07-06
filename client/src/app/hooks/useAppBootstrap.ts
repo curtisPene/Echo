@@ -1,16 +1,12 @@
 import type { Auth } from "@/stores/useAuth";
 import type { AppStatus } from "@/stores/useAppStatus";
 import { useEffect } from "react";
-import { verifyRefreshTokenGateway } from "@/features/auth/gateway/authGateway";
-import { appSyncGateway } from "../gateway/appGateway";
-import { getAppContext, updateAppContext } from "../repo/appRepo";
-import { syncRoomsRepo } from "@/features/rooms/repo/roomsRepo";
-import { syncContactsRepo } from "@/features/contacts/repo/contactsRepo";
-import { syncMessagesRepo } from "@/features/messaging/repo/messagesRepo";
 import { socket } from "@/lib/socket";
 import type { OnlineStatus } from "@/stores/useSocket";
 import { onMessageRecieve } from "@/features/messaging/controllers/socketControllers";
 import { onMessageRecieveSchema } from "@/features/messaging/types";
+import { syncService } from "../services/syncService";
+import { verificaitonService } from "../services/verificationService";
 
 export const useAppBootstrap = ({
   appStatus,
@@ -29,59 +25,29 @@ export const useAppBootstrap = ({
 }) => {
   useEffect(() => {
     if (appStatus !== "idle" || auth.authStatus !== "unverified") return;
-    const controller = new AbortController();
 
-    const verificationController = async () => {
-      const response = await verifyRefreshTokenGateway();
-
-      if (controller.signal.aborted) return;
-      console.log(response);
-      if (!response.success || !response.data) {
-        setAuth({ authStatus: "unauthenticated", user: null });
-        return;
+    verificaitonService().then((result) => {
+      if (!result.success) {
+        return setAuth({ authStatus: "unauthenticated", user: null });
       }
-
       setAuth({
+        accessToken: result.data.accessToken,
+        user: result.data.user,
         authStatus: "authenticated",
-        user: response.data.user,
-        accessToken: response.data.accessToken,
       });
       setAppStatus("syncing");
-    };
-
-    verificationController();
-
-    return () => {
-      controller.abort();
-    };
+    });
   }, [appStatus, setAuth, setAppStatus, auth]);
 
   useEffect(() => {
     if (appStatus !== "syncing" || auth.authStatus !== "authenticated") return;
 
-    const syncController = async () => {
-      const context = await getAppContext(auth);
-
-      if (!context) return;
-
-      const syncResponse = await appSyncGateway({
-        since: context.lastSync ?? undefined,
-      });
-
-      console.log(syncResponse);
-
-      if (!syncResponse.success) return;
-
-      const lastSync = syncResponse.data.lastSync;
-      await updateAppContext({ user: auth.user, lastSync });
-      await syncRoomsRepo({ rooms: syncResponse.data.rooms });
-      await syncContactsRepo({ contacts: syncResponse.data.contacts });
-      await syncMessagesRepo({ messages: syncResponse.data.messages });
-
+    syncService({ auth }).then((result) => {
+      if (!result.success) {
+        setAppStatus("syncFail");
+      }
       setAppStatus("synced");
-    };
-
-    syncController();
+    });
   }, [appStatus, auth, setAppStatus]);
 
   useEffect(() => {

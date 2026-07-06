@@ -1,4 +1,4 @@
-import { registrationGateway } from "../gateway/authGateway";
+import { registrationAPI } from "../api/authAPI";
 import type { UserRegistrationDto } from "../types";
 
 const patterns = {
@@ -26,7 +26,7 @@ export async function registrationService(
 ) {
   validate(registrationData);
 
-  const authResult = await registrationGateway(registrationData);
+  const authResult = await registrationAPI(registrationData);
 
   return authResult;
 }

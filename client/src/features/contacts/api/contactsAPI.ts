@@ -1,25 +1,27 @@
 import { httpClient } from "@/lib/httpClient";
 import { parseOrReportError } from "@/lib/parseOrReportError";
 import {
+  addContactResponseSchema,
   contactsSearchResponseSchema,
+  type AddContactResponse,
   type ContactsSearchResponse,
 } from "../types";
 
-export const searchContactGateway = async (
+export const searchContactAPI = async (
   email: string,
 ): Promise<ContactsSearchResponse> => {
   const response = await httpClient.post("/contacts/search", { email });
   return parseOrReportError(contactsSearchResponseSchema, response.data);
 };
 
-export const addContactGateway = async ({
+export const addContactAPI = async ({
   contactId,
 }: {
   contactId: string;
-}) => {
+}): Promise<AddContactResponse> => {
   const response = await httpClient.post("/contacts/add", {
     contactId,
   });
 
-  return response.data;
+  return parseOrReportError(addContactResponseSchema, response.data);
 };
