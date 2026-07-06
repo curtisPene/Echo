@@ -5,10 +5,15 @@ import type { Contact } from "../../types";
 
 export const ContactsListItem = ({
   contact,
+  onClick,
 }: {
   contact: Contact & { online: boolean };
+  onClick: (contact: Contact) => void;
 }) => (
-  <div className={clsx(styles.root, "contactsListItem")}>
+  <div
+    className={clsx(styles.root, "contactsListItem")}
+    onClick={() => onClick(contact)}
+  >
     <div className={styles.avatarWrapper}>
       <Avatar firstName={contact.firstName} lastName={contact.lastName} />
       {contact.online && <span className={styles.onlineDot} />}

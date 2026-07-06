@@ -1,3 +1,4 @@
+import { apiResponseSchema } from "@/types";
 import z from "zod";
 
 export const roomParticipantUserSchema = z.object({
@@ -24,3 +25,9 @@ export const roomSchema = z.object({
 });
 
 export type Room = z.infer<typeof roomSchema>;
+
+export const createNewRoomAPIResponseSchema = apiResponseSchema(roomSchema);
+
+export type CreateNewRoomAPIResponse = z.infer<
+  typeof createNewRoomAPIResponseSchema
+>;

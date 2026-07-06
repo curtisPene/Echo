@@ -31,8 +31,9 @@ export async function createRoom({
 }: {
   participants: RoomParticipant[];
   name?: string;
-}): Promise<Room> {
+}): Promise<RoomWithPopulatedParticipants> {
   const room = await Room.create({ participants, name });
+  await room.populate("participants.user");
 
-  return room;
+  return room.toObject() as unknown as RoomWithPopulatedParticipants;
 }
