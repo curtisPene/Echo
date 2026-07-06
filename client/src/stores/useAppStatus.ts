@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AppStatus = "idle" | "syncing" | "synced";
+export type AppStatus = "idle" | "syncing" | "syncFail" | "synced";
 
 type AppStatusStore = {
   appStatus: AppStatus;

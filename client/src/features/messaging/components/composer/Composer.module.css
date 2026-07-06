@@ -46,7 +46,7 @@
 
 .sendButton {
   background-color: var(--primary);
-  color: var(--text);
+  color: var(--text-inverse);
   outline: none;
   border: none;
   padding-left: var(--space-4);
@@ -57,5 +57,5 @@
 }
 
 .sendButton:hover {
-  background-color: var(--blue-light);
+  background-color: var(--primary-hover);
 }

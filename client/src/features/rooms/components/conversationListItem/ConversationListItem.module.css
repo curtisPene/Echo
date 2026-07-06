@@ -7,10 +7,12 @@
   cursor: pointer;
   border-radius: var(--radius-md);
   height: 60px;
+  border: 1px solid transparent;
 }
 
 .root:hover {
-  background-color: var(--surface-raised);
+  background-color: var(--surface-hover);
+  border: 1px solid var(--border);
 }
 
 .content {

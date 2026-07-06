@@ -4,8 +4,9 @@ import { useRooms } from "@/stores/useRooms";
 import { saveMessage } from "../repo/messagesRepo";
 
 export const useComposer = () => {
-  const [inputValue, setInputValue] = useState<string>("");
   const activeRoom = useRooms((state) => state.activeRoom);
+  const [inputValue, setInputValue] = useState<string>("");
+
   const onSendMessage = useCallback(
     async (e: React.SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();

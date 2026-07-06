@@ -13,7 +13,5 @@ export const sendMessageGateway = async ({
     roomId,
   });
 
-  console.log(response);
-
   return parseOrReportError(onMessageRecieveSchema, response);
 };

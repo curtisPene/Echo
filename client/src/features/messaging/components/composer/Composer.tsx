@@ -4,7 +4,7 @@ import { SendIcon } from "lucide-react";
 import { MessageItem } from "../messageItem/MessageItem";
 import { useConversationView } from "../../hooks/useConversationView";
 import { useComposer } from "../../hooks/useComposer";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 export const Composer = () => {
   const { roomMessages, user } = useConversationView();
   const { inputValue, setInputValue, onSendMessage, activeRoom } =
@@ -12,13 +12,13 @@ export const Composer = () => {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  useLayoutEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
   }, [roomMessages]);
 
   return (
     <div className={clsx(styles.root)}>
-      <div className={clsx(styles.chatList)}>
+      <div className={clsx(styles.chatList, "chatList")}>
         {!activeRoom ? (
           <span className={clsx(styles.listInfo)}>Select a conversation</span>
         ) : null}
@@ -48,7 +48,7 @@ export const Composer = () => {
           onChange={(e) => setInputValue(e.target.value)}
         />
         <button className={clsx(styles.sendButton)} type="submit">
-          <SendIcon width={18} height={18} />
+          <SendIcon width={18} height={18} stroke={"var(--text-inverse)"} />
         </button>
       </form>
     </div>
