@@ -2,7 +2,7 @@ import { ServiceResult } from "../../../types";
 import { User } from "../../users/models/userModel";
 import {
   PublicUser,
-  toPublicUser,
+  userPresenter,
 } from "../../users/presenters/usersPresenter";
 import { findUserByEmail } from "../../users/repo/mongooseUserRepo";
 import { signAccessToken, signRefreshToken } from "../adapters/jwtTokenAdapter";
@@ -26,7 +26,7 @@ export async function loginService({
       message: "Invalid credentials",
       data: null,
     };
-  const publicUser = toPublicUser(user);
+  const publicUser = userPresenter(user);
 
   if (user.password !== password)
     return {

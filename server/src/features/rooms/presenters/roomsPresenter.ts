@@ -1,4 +1,4 @@
-import { toPublicUser } from "../../users/presenters/usersPresenter";
+import { userPresenter } from "../../users/presenters/usersPresenter";
 import { MessageWithPopulatedSender } from "../repo/mongooseMessageRepo";
 import { RoomWithPopulatedParticipants } from "../repo/mongooseRoomRepo";
 import { messagePresenter } from "./messagePresenter";
@@ -15,7 +15,7 @@ export const roomPresenter = ({
   return {
     id: room._id.toString(),
     participants: room.participants.map((participant) => ({
-      user: toPublicUser(participant.user),
+      user: userPresenter(participant.user),
       lastReadAt: participant.lastReadAt?.toISOString() ?? null,
     })),
     name: room.name,

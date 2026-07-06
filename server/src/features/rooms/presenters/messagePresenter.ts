@@ -1,4 +1,4 @@
-import { toPublicUser } from "../../users/presenters/usersPresenter";
+import { userPresenter } from "../../users/presenters/usersPresenter";
 import { MessageWithPopulatedSender } from "../repo/mongooseMessageRepo";
 
 export const messagePresenter = ({
@@ -14,11 +14,11 @@ export const messagePresenter = ({
     sender: message.sender._id.toString(),
     text: message.text,
     reactions: message.reactions.map((reaction) => ({
-      user: toPublicUser(reaction.user),
+      user: userPresenter(reaction.user),
       emoji: reaction.emoji,
     })),
     readBy: message.readBy.map((read) => ({
-      user: toPublicUser(read.user),
+      user: userPresenter(read.user),
       readAt: read.readAt.toISOString(),
     })),
   };

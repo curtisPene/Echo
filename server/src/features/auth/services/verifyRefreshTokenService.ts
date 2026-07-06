@@ -1,6 +1,6 @@
 import {
   PublicUser,
-  toPublicUser,
+  userPresenter,
 } from "../../users/presenters/usersPresenter";
 import { findUserById } from "../../users/repo/mongooseUserRepo";
 import {
@@ -27,7 +27,7 @@ export async function verifyRefreshTokenService({
     return { success: false, message: "Invalid token", data: undefined };
   const accessToken = signAccessToken(payload);
 
-  const publicUser = toPublicUser(user);
+  const publicUser = userPresenter(user);
 
   return {
     success: true,

@@ -1,4 +1,3 @@
-import { toPublicUser } from "../../users/presenters/usersPresenter";
 import { findUserById } from "../../users/repo/mongooseUserRepo";
 import { addContact } from "../repo/mongooseContactsRepo";
 
@@ -16,5 +15,5 @@ export async function addContactService({
 
   if (!contactsDoc) return;
 
-  return toPublicUser(addedUser);
+  return addedUser;
 }
