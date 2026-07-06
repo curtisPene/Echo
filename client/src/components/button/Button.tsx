@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import styles from "./Button.module.css";
 
-type ButtonVariant = "primary" | "menuIcon" | "icon";
+type ButtonVariant = "primary" | "menuIcon" | "icon" | "link";
 
 type ButtonProps = React.ComponentProps<"button"> & {
   variant?: ButtonVariant;
@@ -18,6 +18,7 @@ export const Button = ({
       variant === "menuIcon" && styles.menuIcon,
       variant === "primary" && styles.primary,
       variant === "icon" && styles.icon,
+      variant === "link" && styles.link,
       className,
     )}
     {...props}

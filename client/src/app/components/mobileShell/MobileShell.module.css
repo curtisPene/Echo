@@ -4,8 +4,20 @@
   height: 100%;
 }
 
+.insetHeader {
+  display: flex;
+  flex-direction: row;
+  padding: var(--space-2);
+  justify-content: flex-start;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  height: 3.5rem;
+}
+
 .inset {
   flex: 1;
+  min-height: 0;
+  padding: var(--space-2);
 }
 
 .navBar {
@@ -14,7 +26,7 @@
   background-color: var(--surface);
   display: flex;
   flex-direction: row;
-  gap: 2rem;
+  gap: 4rem;
   align-items: center;
   justify-content: center;
 }
@@ -33,6 +45,12 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
+}
+
+@media (min-width: 426px) {
+  .navBar {
+    gap: 6rem;
+  }
 }
 
 @media (min-width: 768px) {

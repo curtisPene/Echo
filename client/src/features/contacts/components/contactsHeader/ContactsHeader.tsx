@@ -5,7 +5,7 @@ import { AddContactModal } from "@/features/contacts/components/addContactModal/
 export const ContactsHeader = () => {
   return (
     <div className={clsx(styles.root, "contactsHeader")}>
-      <span>Contacts</span>
+      <span className={clsx(styles.title)}>Contacts</span>
       <AddContactModal />
     </div>
   );

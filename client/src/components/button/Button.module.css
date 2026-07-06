@@ -13,7 +13,6 @@
   padding: var(--space-sm) var(--space-sm);
   font-size: var(--font-size-label);
   font-weight: var(--weight-semibold);
-  color: var(--primary-fg);
   background-color: var(--primary);
   border-radius: var(--radius-md);
   width: 100%;
@@ -33,12 +32,11 @@
   background: none;
   padding: var(--space-2);
   color: inherit;
+  border: 1px solid transparent;
 }
 
 .icon:hover {
-  background-color: var(--);
   border: 1px solid var(--border);
-  background-color: var(--surface-inset);
   border-radius: var(--radius-md);
 }
 
@@ -51,11 +49,31 @@
 }
 
 .menuIcon:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--surface-hover);
   border-radius: var(--radius-md);
 }
 
 .menuIcon[aria-pressed="true"] {
   background-color: var(--primary);
   border-radius: var(--radius-md);
+}
+
+/* link */
+
+.link {
+  background: none;
+  color: var(--text);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+}
+
+.link:hover {
+  border-color: var(--border);
+  background-color: var(--surface-hover);
+  border: 1px solid var(--border-strong);
+}
+
+.link:active {
+  background-color: var(--surface-active);
 }
