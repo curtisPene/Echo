@@ -24,10 +24,10 @@ export const createMessageService = async ({
       },
     };
   } catch (error) {
-    if (error instanceof mongoose.Error.CastError) {
+    if (error instanceof mongoose.Error) {
       return {
         success: false,
-        message: "Invalid room id or sender id",
+        message: "Invalid request data",
         data: null,
       };
     }

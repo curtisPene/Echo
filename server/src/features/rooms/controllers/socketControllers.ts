@@ -22,7 +22,11 @@ export const onMessageSendController = async ({
     return;
   }
 
-  const serviceResult = await createMessageService({ userId, message, roomId });
+  const serviceResult = await createMessageService({
+    userId,
+    message,
+    roomId,
+  });
 
   if (!serviceResult.success) return;
 

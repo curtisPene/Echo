@@ -10,8 +10,11 @@ export const addUserToRoomsService = async ({
   userId: string;
 }): Promise<ServiceResult<null>> => {
   try {
-    const rooms = await findRoomsWithUserId({ userId });
-    const roomIds = rooms.map((r) => r._id.toString());
+    // Join every room the user is a participant in - pending/accepted status
+    // is a client-side rendering concern only, not a socket access boundary
+
+    const roomsDocs = await findRoomsWithUserId({ userId });
+    const roomIds = roomsDocs.map((r) => r._id.toString());
 
     roomIds.forEach((roomId) => socket.join(roomId));
 

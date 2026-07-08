@@ -31,6 +31,35 @@ export async function findRoomsWithUserId({
   return roomsDocs;
 }
 
+export async function updateParticipant({
+  roomId,
+  userId,
+  status,
+  lastReadAt,
+}: {
+  roomId: string;
+  userId: string;
+  status?: "pending" | "accepted";
+  lastReadAt?: Date | null;
+}): Promise<RoomWithPopulatedParticipants | null> {
+  const setFields: Record<string, unknown> = {};
+
+  if (status) setFields["participants.$.status"] = status;
+  if (lastReadAt) setFields["participants.$.lastReadAt"] = lastReadAt;
+
+  const updatedRoomDoc = await Room.findOneAndUpdate(
+    { _id: roomId, "participants.user": userId },
+    { $set: setFields },
+    { new: true },
+  ).populate<{
+    participants: (Omit<RoomParticipant, "user"> & { user: User })[];
+  }>("participants.user");
+
+  if (!updatedRoomDoc) return null;
+
+  return updatedRoomDoc.toObject() as unknown as RoomWithPopulatedParticipants;
+}
+
 export async function createRoom({
   participants,
   name,

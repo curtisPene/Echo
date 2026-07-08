@@ -16,6 +16,7 @@ export const roomPresenter = ({
     id: room._id.toString(),
     participants: room.participants.map((participant) => ({
       user: userPresenter(participant.user),
+      status: participant.status,
       lastReadAt: participant.lastReadAt?.toISOString() ?? null,
     })),
     name: room.name,

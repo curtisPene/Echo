@@ -45,15 +45,19 @@ async function seed() {
   const [ada, grace, alan, margaret] = users;
 
   const dm = await Room.create({
-    participants: [{ user: ada._id }, { user: grace._id }],
+    name: `${ada.firstName} & ${grace.firstName}`,
+    participants: [
+      { user: ada._id, status: "accepted" },
+      { user: grace._id, status: "pending" },
+    ],
   });
 
   const group = await Room.create({
     name: "NASA Alumni",
     participants: [
-      { user: ada._id },
-      { user: alan._id },
-      { user: margaret._id },
+      { user: ada._id, status: "accepted" },
+      { user: alan._id, status: "pending" },
+      { user: margaret._id, status: "pending" },
     ],
   });
 
