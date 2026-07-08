@@ -4,12 +4,13 @@ import { User } from "../../users/models/userModel";
 export interface RoomParticipant {
   user: User["_id"];
   lastReadAt?: Date;
+  status?: "pending" | "accepted";
 }
 
 export interface Room {
   _id: Types.ObjectId;
   participants: RoomParticipant[];
-  name?: string;
+  name: string;
   lastMessageAt?: Date;
 }
 
@@ -23,6 +24,11 @@ export const roomParticipantSchema = new Schema<RoomParticipant>(
     lastReadAt: {
       type: Schema.Types.Date,
     },
+    status: {
+      type: Schema.Types.String,
+      enum: ["pending", "accepted"],
+      default: "pending",
+    },
   },
   { _id: false },
 );
@@ -35,6 +41,7 @@ export const roomSchema = new Schema<Room>(
     },
     name: {
       type: Schema.Types.String,
+      required: true,
     },
     lastMessageAt: {
       type: Schema.Types.Date,

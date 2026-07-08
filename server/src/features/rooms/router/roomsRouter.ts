@@ -9,25 +9,20 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
   const userId = req.user?.id;
 
-  const roomDoc = await createRoom({
-    participants: [
-      ...participants.map((id: string) => ({ user: id })),
-      { user: userId },
-    ],
-    name,
-  });
+  console.log(participants, name, userId);
+  // const roomView = roomPresenter({
+  //   room: roomDoc,
+  //   unread: 0,
+  //   lastMessage: null,
+  // });
 
-  const roomView = roomPresenter({
-    room: roomDoc,
-    unread: 0,
-    lastMessage: null,
-  });
+  // res.status(201).json({
+  //   success: true,
+  //   message: "Room created successfully",
+  //   data: roomView,
+  // });
 
-  res.status(201).json({
-    success: true,
-    message: "Room created successfully",
-    data: roomView,
-  });
+  res.status(200).json({ message: "Room created successfully" });
 });
 
 export default router;

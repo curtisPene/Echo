@@ -3,3 +3,8 @@
   flex-direction: column;
   width: 100%;
 }
+
+.pendingHeader {
+  padding: var(--space-2);
+  height: 3.5rem;
+}

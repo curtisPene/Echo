@@ -8,6 +8,12 @@ export interface RoomWithPopulatedParticipants extends Omit<
   participants: (Omit<RoomParticipant, "user"> & { user: User })[];
 }
 
+// Input shape for creating a room - participant ids are plain strings here;
+// Mongoose casts them to ObjectId at write time.
+export type NewRoomParticipant = Omit<RoomParticipant, "user"> & {
+  user: string;
+};
+
 export async function findRoomsWithUserId({
   userId,
   since,
@@ -29,8 +35,8 @@ export async function createRoom({
   participants,
   name,
 }: {
-  participants: RoomParticipant[];
-  name?: string;
+  participants: NewRoomParticipant[];
+  name: string;
 }): Promise<RoomWithPopulatedParticipants> {
   const room = await Room.create({ participants, name });
   await room.populate("participants.user");

@@ -11,6 +11,7 @@ export const roomParticipantUserSchema = z.object({
 export const roomParticipantSchema = z.object({
   user: roomParticipantUserSchema,
   lastReadAt: z.iso.datetime().nullable(),
+  status: z.enum(["pending", "accepted"]),
 });
 
 export type RoomParticipant = z.infer<typeof roomParticipantSchema>;

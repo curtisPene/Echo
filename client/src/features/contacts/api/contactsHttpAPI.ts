@@ -11,6 +11,8 @@ export const searchContactAPI = async (
   email: string,
 ): Promise<ContactsSearchResponse> => {
   const response = await httpClient.post("/contacts/search", { email });
+
+  console.log(response);
   return parseOrReportError(contactsSearchResponseSchema, response.data);
 };
 

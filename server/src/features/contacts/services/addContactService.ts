@@ -1,6 +1,6 @@
 import { RepoError } from "../../../errors/RepoError";
 import { ServiceResult } from "../../../types";
-import { User } from "../../users/models/userModel";
+import { ContactView, contactPresenter } from "../presenters/contactsPresenter";
 import { addContact, findContactsByUserId } from "../repo/mongooseContactsRepo";
 
 export async function addContactService({
@@ -9,7 +9,7 @@ export async function addContactService({
 }: {
   userId: string;
   contactId: string;
-}): Promise<ServiceResult<{ addedUser: User }>> {
+}): Promise<ServiceResult<{ addedUser: ContactView }>> {
   try {
     const userContactsDoc = await findContactsByUserId({ userId });
 
@@ -18,9 +18,12 @@ export async function addContactService({
       return { success: false, message: "Contact already blocked", data: null };
 
     // If the user has already added this contact return success false
-    if (userContactsDoc.contacts.some((id) => id.toString() === contactId))
+    if (
+      userContactsDoc.contacts.some(
+        (user) => user._id.toString() === contactId,
+      )
+    )
       return { success: false, message: "Contact already added", data: null };
-
     // Throws if contactId doesn't correspond to a real user (every user gets a Contacts doc at registration)
     const addedUserContactsDoc = await findContactsByUserId({
       userId: contactId,
@@ -48,7 +51,7 @@ export async function addContactService({
       success: true,
       message: "Contact added successfully",
       data: {
-        addedUser,
+        addedUser: contactPresenter(addedUser),
       },
     };
   } catch (error) {

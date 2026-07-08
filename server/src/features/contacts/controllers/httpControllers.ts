@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { findUserService } from "../../users/services/findUserService";
-import { userPresenter } from "../../users/presenters/usersPresenter";
 import { searchContactsRequestSchema } from "../types";
 import { addContactService } from "../services/addContactService";
-import { contactPresenter } from "../presenters/contactsPresenter";
 
 export const searchContactController = async (
   req: Request,
@@ -12,7 +10,7 @@ export const searchContactController = async (
 ) => {
   const { email } = req.body;
 
-  if (!email) {
+  if (!email || !req.user) {
     return res.status(400).json({
       success: false,
       message: "Invalid input",
@@ -26,11 +24,14 @@ export const searchContactController = async (
     return res.status(400).json({
       success: false,
       message: "Invalid input",
-      data: { errors: parsed.error.issues },
+      data: null,
     });
   }
 
-  const result = await findUserService(parsed.data);
+  const result = await findUserService({
+    ...parsed.data,
+    viewerId: req.user.id,
+  });
 
   if (!result.success) {
     return res.status(404).json({
@@ -40,12 +41,10 @@ export const searchContactController = async (
     });
   }
 
-  const user = userPresenter(result.data.user);
-
   res.status(201).json({
     success: true,
     message: result.message,
-    data: user,
+    data: result.data.user,
   });
 };
 
@@ -77,11 +76,9 @@ export const addContactController = async (
     });
   }
 
-  const addedContactView = contactPresenter(serviceResult.data.addedUser);
-
   res.status(201).json({
     success: true,
     message: "Contact added successfully",
-    data: addedContactView,
+    data: serviceResult.data.addedUser,
   });
 };

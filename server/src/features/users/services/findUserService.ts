@@ -1,14 +1,15 @@
 import { ServiceResult } from "../../../types";
-import { User } from "../models/userModel";
+import { findContactsByUserId } from "../../contacts/repo/mongooseContactsRepo";
+import { PublicUser, userPresenter } from "../presenters/usersPresenter";
 import { findUserByEmail } from "../repo/mongooseUserRepo";
-
-export type FindUserResult = ServiceResult<{ user: User }>;
 
 export async function findUserService({
   email,
+  viewerId,
 }: {
   email: string;
-}): Promise<FindUserResult> {
+  viewerId: string;
+}): Promise<ServiceResult<{ user: PublicUser }>> {
   try {
     const user = await findUserByEmail({ email });
 
@@ -19,10 +20,20 @@ export async function findUserService({
         data: null,
       };
 
+    const userContacts = await findContactsByUserId({
+      userId: user._id.toString(),
+    });
+
+    // If the found user has blocked the viewer return success false
+    if (
+      userContacts.blocked.some((blockedId) => blockedId.toString() === viewerId)
+    )
+      return { success: false, message: "User blocked", data: null };
+
     return {
       success: true,
       message: "User found",
-      data: { user: user },
+      data: { user: userPresenter(user) },
     };
   } catch (error) {
     console.log(error);

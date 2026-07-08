@@ -9,11 +9,11 @@ export const useRoomsObserver = ({ appStatus }: { appStatus: AppStatus }) => {
 
   useEffect(() => {
     if (appStatus !== "synced") return;
-    const subscription = liveQuery(() => {
-      return db.rooms.toArray();
-    }).subscribe((rooms) => {
-      setRooms(rooms);
-    });
+    const subscription = liveQuery(() => db.rooms.toArray()).subscribe(
+      (rooms) => {
+        setRooms(rooms);
+      },
+    );
 
     return () => {
       subscription.unsubscribe();

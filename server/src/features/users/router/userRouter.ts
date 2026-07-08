@@ -23,11 +23,11 @@ router.get("/sync", async (req, res) => {
     since: parsedSince.data,
   });
 
-  return res.status(201).json({
-    success: true,
-    message: "Sync data returned",
-    data: result,
-  });
+  if (!result.success) {
+    return res.status(500).json(result);
+  }
+
+  return res.status(200).json(result);
 
   // since absent -> full/cold bootstrap sync, since present -> delta sync
 });
