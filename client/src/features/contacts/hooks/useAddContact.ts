@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { addContactAPI, searchContactAPI } from "../api/contactsAPI";
+import { addContactAPI, searchContactAPI } from "../api/contactsHttpAPI";
 import type { Contact } from "../types";
 import { addContactRepo } from "../repo/contactsRepo";
 

@@ -54,10 +54,19 @@ export const messageSchema = z.discriminatedUnion("redacted", [
 
 export type Message = z.infer<typeof messageSchema>;
 
-export const onMessageRecieveSchema = apiResponseSchema(
+export const onMessageReceivePayloadSchema = apiResponseSchema(
   z.object({
     message: messageSchema,
   }),
 );
 
-export type onMessageRecieveSchema = z.infer<typeof onMessageRecieveSchema>;
+export type MessageReceivePayload = z.infer<
+  typeof onMessageReceivePayloadSchema
+>;
+
+export const messageSendPayloadSchema = z.object({
+  message: z.string(),
+  roomId: z.string(),
+});
+
+export type MessageSendPayload = z.infer<typeof messageSendPayloadSchema>;

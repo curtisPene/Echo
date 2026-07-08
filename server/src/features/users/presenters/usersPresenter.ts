@@ -7,9 +7,11 @@ export type PublicUser = {
   email: string;
 };
 
-export const userPresenter = (user: User): PublicUser => ({
-  id: user._id.toString(),
-  firstName: user.firstName,
-  lastName: user.lastName,
-  email: user.email,
-});
+export const userPresenter = (user: User): PublicUser => {
+  return {
+    id: user._id.toString(),
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+  };
+};

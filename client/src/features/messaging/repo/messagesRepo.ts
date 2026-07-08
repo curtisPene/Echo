@@ -9,6 +9,6 @@ export const syncMessagesRepo = async ({
   await db.messages.bulkPut(messages);
 };
 
-export const saveMessage = async ({ message }: { message: Message }) => {
+export const saveMessageDB = async ({ message }: { message: Message }) => {
   await db.messages.put(message);
 };

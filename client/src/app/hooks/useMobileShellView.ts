@@ -8,7 +8,7 @@ export const useMobileShellView = () => {
   const activeRoom = useRooms((state) => state.activeRoom);
   const roomRef = useRef<string>(null);
   useEffect(() => {
-    if (!activeRoom || roomRef.current === activeRoom?.id) return;
+    if (!activeRoom) return;
     navigate("/chats/" + activeRoom.id);
     roomRef.current = activeRoom.id;
   }, [activeRoom, navigate]);

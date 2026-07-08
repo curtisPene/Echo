@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
-import { sendMessageGateway } from "../gateway/messagingSocketGateway";
 import { useRooms } from "@/stores/useRooms";
-import { saveMessage } from "../repo/messagesRepo";
+import { sendMessageService } from "../services/sendMessageService";
 
 export const useComposer = () => {
   const activeRoom = useRooms((state) => state.activeRoom);
@@ -11,11 +10,13 @@ export const useComposer = () => {
     async (e: React.SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!activeRoom) return;
-      const response = await sendMessageGateway({
-        payload: { message: inputValue, roomId: activeRoom.id },
+      const serviceResult = await sendMessageService({
+        message: inputValue,
+        roomId: activeRoom.id,
       });
-      if (!response.success) return;
-      saveMessage({ message: response.data.message });
+
+      if (!serviceResult.success) return;
+
       setInputValue("");
     },
     [inputValue, activeRoom],

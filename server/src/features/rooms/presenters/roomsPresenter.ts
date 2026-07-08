@@ -26,3 +26,5 @@ export const roomPresenter = ({
     unread,
   };
 };
+
+export type RoomView = ReturnType<typeof roomPresenter>;

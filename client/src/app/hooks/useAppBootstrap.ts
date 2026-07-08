@@ -3,10 +3,9 @@ import type { AppStatus } from "@/stores/useAppStatus";
 import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import type { OnlineStatus } from "@/stores/useSocket";
-import { onMessageRecieve } from "@/features/messaging/controllers/socketControllers";
-import { onMessageRecieveSchema } from "@/features/messaging/types";
 import { syncService } from "../services/syncService";
 import { verificaitonService } from "../services/verificationService";
+import { registerMessagingSocketHandlers } from "@/features/messaging/controllers/registerMessagingSocketHandlers";
 
 export const useAppBootstrap = ({
   appStatus,
@@ -60,18 +59,19 @@ export const useAppBootstrap = ({
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
-    socket.on("message:receive", (payload) => {
-      const parsedPayload = onMessageRecieveSchema.parse(payload);
-      if (!parsedPayload.success) return;
-      onMessageRecieve({ message: parsedPayload.data.message });
+
+    const messagingSocketCleanup = registerMessagingSocketHandlers(socket);
+
+    socket.on("auth:unauthorized", () => {
+      // Todo: handle unauthorized
     });
 
     if (!socket.connected) socket.connect();
 
     return () => {
       socket.off("connect", handleConnect);
+      messagingSocketCleanup();
       socket.off("disconnect", handleDisconnect);
-      socket.off("message:receive");
     };
     // auth.user/accessToken are only read once authStatus === "authenticated",
     // which the guard above already checks - depending on the whole `auth`

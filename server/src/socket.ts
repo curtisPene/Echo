@@ -1,29 +1,48 @@
 import "dotenv/config";
 import type { Server as HttpServer } from "node:http";
-import { Server, Socket } from "socket.io";
+import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { onConnectionController } from "./features/auth/controllers/authSocketControllers";
 import { onMessageSendController } from "./features/rooms/controllers/socketControllers";
 
-export let io: Server;
+export let io: Server<
+  DefaultEventsMap,
+  DefaultEventsMap,
+  DefaultEventsMap,
+  SocketData
+>;
 
-type AuthSocket = Socket & {
+interface SocketData {
   userId: string;
-};
+}
 
+export type AuthSocket = Socket<
+  DefaultEventsMap,
+  DefaultEventsMap,
+  DefaultEventsMap,
+  SocketData
+>;
 export const attachSocket = (server: HttpServer) => {
-  io = new Server(server, {
+  io = new Server<
+    DefaultEventsMap,
+    DefaultEventsMap,
+    DefaultEventsMap,
+    SocketData
+  >(server, {
     cors: { origin: process.env.CLIENT_URL, credentials: true },
   });
 
-  io.on("connection", (socket: Socket) => {
+  io.on("connection", (socket) => {
     onConnectionController(socket);
 
     socket.on("message:send", (payload, ack) => {
       if (!socket.data.userId) {
-        console.log("Unauthorized user attempted to send message: ", socket.id);
-        return;
+        return ack({ success: false, message: "Unauthorized", data: null });
       }
       onMessageSendController({ socket, payload, ack });
+    });
+
+    socket.on("contact:request", (payload) => {
+      console.log(payload);
     });
   });
 

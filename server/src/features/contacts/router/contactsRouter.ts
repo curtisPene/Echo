@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import {
   addContactController,
   searchContactController,
-} from "../controllers/contactsController";
+} from "../controllers/httpControllers";
 
 const router = express.Router();
 

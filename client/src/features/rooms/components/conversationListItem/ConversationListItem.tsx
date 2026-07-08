@@ -13,10 +13,7 @@ export const ConversationListItem = ({
   const isGroup = room.participants.length > 1;
 
   return (
-    <div
-      onClick={onClick}
-      className={clsx(styles.root, "conversationListItem")}
-    >
+    <div onClick={onClick} className={clsx(styles.root)}>
       {isGroup ? (
         <AvatarGroup participants={room.participants.length} />
       ) : (

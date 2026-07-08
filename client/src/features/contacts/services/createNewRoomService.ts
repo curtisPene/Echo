@@ -1,6 +1,6 @@
 import { createNewRoomDB, getRooms } from "@/features/rooms/repo/roomsRepo";
 import type { Contact } from "../types";
-import { createNewRoomAPI } from "@/features/rooms/gateway/roomsGateway";
+import { createNewRoomAPI } from "@/features/rooms/api/roomsAPI";
 import type { User } from "@/features/auth/types";
 
 export const createNewRoomService = async ({
@@ -13,7 +13,6 @@ export const createNewRoomService = async ({
   const rooms = await getRooms();
 
   const isInExistingOneOnOneRoom = rooms.filter((room) => {
-    console.log("foo");
     const isOneOnOne = room.participants.length === 2;
     const hasContact = room.participants.some((p) => p.user.id === contact.id);
 
