@@ -1,9 +1,17 @@
-import { contactsPresenter } from "../../contacts/presenters/contactsPresenter";
+import {
+  contactsPresenter,
+  ContactView,
+} from "../../contacts/presenters/contactsPresenter";
 import { findContactsByUserId } from "../../contacts/repo/mongooseContactsRepo";
-import { messagePresenter } from "../../rooms/presenters/messagePresenter";
-import { roomPresenter } from "../../rooms/presenters/roomsPresenter";
+import {
+  messagePresenter,
+  MessageView,
+} from "../../rooms/presenters/messagePresenter";
+import { roomPresenter, RoomView } from "../../rooms/presenters/roomsPresenter";
 import { findRoomMessages } from "../../rooms/repo/mongooseMessageRepo";
 import { findRoomsWithUserId } from "../../rooms/repo/mongooseRoomRepo";
+import { RepoError } from "../../../errors/RepoError";
+import { ServiceResult } from "../../../types";
 
 export async function syncUserDataService({
   userId,
@@ -11,47 +19,70 @@ export async function syncUserDataService({
 }: {
   userId: string;
   since?: string;
-}) {
-  const sinceDate = since ? new Date(since) : undefined;
+}): Promise<
+  ServiceResult<{
+    rooms: RoomView[];
+    messages: MessageView[];
+    contacts: ContactView[];
+    lastSync: string;
+  }>
+> {
+  try {
+    const sinceDate = since ? new Date(since) : undefined;
 
-  /**
-   * We first need to find all the rooms the user is part of, we use the roomIds
-   * to search for all messages belonging to those rooms since the last sync
-   */
+    /**
+     * We first need to find all the rooms the user is part of, we use the roomIds
+     * to search for all messages belonging to those rooms since the last sync
+     */
 
-  const roomDocs = await findRoomsWithUserId({ userId });
-  const findMessagesRepoResult = await Promise.all(
-    roomDocs.map(async (room) => {
-      const messageDocs = await findRoomMessages({
-        roomId: room._id.toString(),
-        since: sinceDate,
-      });
+    const roomDocs = await findRoomsWithUserId({ userId });
+    const findMessagesRepoResult = await Promise.all(
+      roomDocs.map(async (room) => {
+        const messageDocs = await findRoomMessages({
+          roomId: room._id.toString(),
+          since: sinceDate,
+        });
 
-      const messageViews = messageDocs.messages.map((message) =>
-        messagePresenter({ message }),
-      );
+        const messageViews = messageDocs.messages.map((message) =>
+          messagePresenter({ message }),
+        );
 
-      return {
-        room: roomPresenter({
-          room,
-          unread: messageDocs.unreadCount,
-          lastMessage: messageDocs.messages[0],
-        }),
-        messages: messageViews,
-      };
-    }),
-  );
+        return {
+          room: roomPresenter({
+            room,
+            unread: messageDocs.unreadCount,
+            lastMessage: messageDocs.messages[0],
+          }),
+          messages: messageViews,
+        };
+      }),
+    );
 
-  const contactDocs = await findContactsByUserId({ userId, since: sinceDate });
-  const contactsViews = contactsPresenter({ contacts: contactDocs });
+    const contactDocs = await findContactsByUserId({
+      userId,
+      since: sinceDate,
+    });
+    const contactsViews = contactsPresenter({ contacts: contactDocs });
 
-  const rooms = findMessagesRepoResult.map((room) => room.room);
-  const messages = findMessagesRepoResult.flatMap((room) => room.messages);
+    const rooms = findMessagesRepoResult.map((room) => room.room);
+    const messages = findMessagesRepoResult.flatMap((room) => room.messages);
 
-  return {
-    rooms,
-    messages,
-    contacts: contactsViews,
-    lastSync: new Date().toISOString(),
-  };
+    return {
+      success: true,
+      message: "Sync data fetched successfully",
+      data: {
+        rooms,
+        messages,
+        contacts: contactsViews,
+        lastSync: new Date().toISOString(),
+      },
+    };
+  } catch (error) {
+    if (error instanceof RepoError) {
+      console.error("[Repo]", error.message);
+    } else {
+      console.error(error);
+    }
+    return { success: false, message: "Internal server error", data: null };
+  }
 }

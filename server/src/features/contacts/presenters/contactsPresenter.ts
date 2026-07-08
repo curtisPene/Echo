@@ -1,19 +1,21 @@
-import { Contacts } from "../models/contactsModel";
+import { User } from "../../users/models/userModel";
 import { ContactsWithPopulatedUsers } from "../repo/mongooseContactsRepo";
+
+export const contactPresenter = (contact: User) => {
+  return {
+    id: contact._id.toString(),
+    firstName: contact.firstName,
+    lastName: contact.lastName,
+    email: contact.email,
+  };
+};
+
+export type ContactView = ReturnType<typeof contactPresenter>;
 
 export const contactsPresenter = ({
   contacts,
 }: {
   contacts: ContactsWithPopulatedUsers;
 }) => {
-  const userList = contacts.contacts.map((user) => {
-    return {
-      id: user._id.toString(),
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-    };
-  });
-
-  return userList;
+  return contacts.contacts.map(contactPresenter);
 };

@@ -1,5 +1,7 @@
-import { findUserById } from "../../users/repo/mongooseUserRepo";
-import { addContact } from "../repo/mongooseContactsRepo";
+import { RepoError } from "../../../errors/RepoError";
+import { ServiceResult } from "../../../types";
+import { User } from "../../users/models/userModel";
+import { addContact, findContactsByUserId } from "../repo/mongooseContactsRepo";
 
 export async function addContactService({
   userId,
@@ -7,13 +9,54 @@ export async function addContactService({
 }: {
   userId: string;
   contactId: string;
-}) {
-  const addedUser = await findUserById({ id: contactId });
-  if (!addedUser) return;
+}): Promise<ServiceResult<{ addedUser: User }>> {
+  try {
+    const userContactsDoc = await findContactsByUserId({ userId });
 
-  const contactsDoc = await addContact({ userId, contactId });
+    // If the user has already blocked this contact return success false
+    if (userContactsDoc.blocked.some((id) => id.toString() === contactId))
+      return { success: false, message: "Contact already blocked", data: null };
 
-  if (!contactsDoc) return;
+    // If the user has already added this contact return success false
+    if (userContactsDoc.contacts.some((id) => id.toString() === contactId))
+      return { success: false, message: "Contact already added", data: null };
 
-  return addedUser;
+    // Throws if contactId doesn't correspond to a real user (every user gets a Contacts doc at registration)
+    const addedUserContactsDoc = await findContactsByUserId({
+      userId: contactId,
+    });
+
+    // If the contact has blocked the user return success false
+    if (addedUserContactsDoc.blocked.some((id) => id.toString() === userId))
+      return {
+        success: false,
+        message: "Contact blocked the client",
+        data: null,
+      };
+
+    // Add the contact to the users contacts document
+    const contactsDoc = await addContact({ userId, contactId });
+
+    const addedUser = contactsDoc.contacts.find(
+      (user) => user._id.toString() === contactId,
+    );
+    if (!addedUser)
+      return { success: false, message: "Internal server error", data: null };
+
+    // Return the added user
+    return {
+      success: true,
+      message: "Contact added successfully",
+      data: {
+        addedUser,
+      },
+    };
+  } catch (error) {
+    if (error instanceof RepoError) {
+      console.error("[Repo]", error.message);
+    } else {
+      console.error(error);
+    }
+    return { success: false, message: "Internal server error", data: null };
+  }
 }

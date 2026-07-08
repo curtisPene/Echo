@@ -6,7 +6,6 @@ export interface Contacts {
   user: User["_id"];
   contacts: User["_id"][];
   blocked: User["_id"][];
-  blockedBy: User["_id"][];
 }
 
 export const contactsSchema = new Schema<Contacts>(
@@ -21,9 +20,6 @@ export const contactsSchema = new Schema<Contacts>(
       type: [{ type: Schema.Types.ObjectId, ref: "User" }],
     },
     blocked: {
-      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    },
-    blockedBy: {
       type: [{ type: Schema.Types.ObjectId, ref: "User" }],
     },
   },

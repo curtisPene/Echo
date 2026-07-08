@@ -38,7 +38,6 @@ async function seed() {
         .filter((u) => !u._id.equals(user._id))
         .map((u) => u._id),
       blocked: [],
-      blockedBy: [],
     })),
   );
 

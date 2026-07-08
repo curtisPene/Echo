@@ -1,3 +1,4 @@
+import { RepoError } from "../../../errors/RepoError";
 import { User } from "../../users/models/userModel";
 import { Contacts } from "../models/contactsModel";
 
@@ -17,7 +18,7 @@ export async function findContactsByUserId({
     // ...(since ? { updatedAt: { $gt: since } } : {}),
   }).populate<{ contacts: User[] }>("contacts");
 
-  if (!contacts) throw new Error("Contacts list for user not found");
+  if (!contacts) throw new RepoError("Contacts list for user not found");
 
   return contacts.toJSON();
 }
@@ -33,14 +34,14 @@ export async function addContact({
 }: {
   userId: string;
   contactId: string;
-}) {
+}): Promise<ContactsWithPopulatedUsers> {
   const contacts = await Contacts.findOneAndUpdate(
     { user: userId },
     { $addToSet: { contacts: contactId } },
     { new: true },
-  ).populate("contacts");
+  ).populate<{ contacts: User[] }>("contacts");
 
-  if (!contacts) throw new Error("User created without a contacts object");
+  if (!contacts) throw new RepoError("User created without a contacts object");
 
   return contacts.toJSON();
 }
