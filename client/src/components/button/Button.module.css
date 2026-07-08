@@ -5,6 +5,7 @@
   align-items: center;
   justify-content: center;
   width: fit-content;
+  color: var(--text);
 }
 
 /* primary */
