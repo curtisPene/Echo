@@ -20,6 +20,7 @@ Thumbs.db
 
 # IDE
 .vscode/
+.VSCodeCounter/
 
 # Claude Code
 CLAUDE.md
