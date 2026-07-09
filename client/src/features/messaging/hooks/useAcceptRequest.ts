@@ -1,17 +1,13 @@
-import { updateRoomDB } from "@/features/rooms/repo/roomsRepo";
-import { updateRoomParticipant } from "../api/messagingHttpAPI";
+import { useCallback } from "react";
+import { acceptRequestService } from "../services/acceptRequestService";
+import { useRooms } from "@/stores/useRooms";
 
-export const useAcceptRequest = async ({ roomId }: { roomId: string }) => {
-  const response = await updateRoomParticipant({ roomId, status: "accepted" });
+export const useAcceptRequest = () => {
+  const room = useRooms((state) => state.activeRoom);
+  const onAcceptRequest = useCallback(async () => {
+    if (!room) return;
+    acceptRequestService({ roomId: room.id });
+  }, [room]);
 
-  if (!response.success) {
-    console.log(response.message);
-    return {
-      success: false,
-      message: response.message,
-      data: null,
-    };
-  }
-
-  await updateRoomDB(response.data);
+  return { onAcceptRequest };
 };

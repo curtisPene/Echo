@@ -5,10 +5,12 @@ import { MessageItem } from "../messageItem/MessageItem";
 import { useConversationView } from "../../hooks/useConversationView";
 import { useComposer } from "../../hooks/useComposer";
 import { useLayoutEffect, useRef } from "react";
+import { useAcceptRequest } from "../../hooks/useAcceptRequest";
 export const Composer = () => {
   const { roomMessages, user, isRoomAccepted } = useConversationView();
   const { inputValue, setInputValue, onSendMessage, activeRoom } =
     useComposer();
+  const { onAcceptRequest } = useAcceptRequest();
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +42,9 @@ export const Composer = () => {
         {!isRoomAccepted && (
           <p className={clsx(styles.requestInfo)}>
             You'll be able to send messages once you{" "}
-            <span className={clsx(styles.acceptText)}>accept this request</span>
+            <span onClick={onAcceptRequest} className={clsx(styles.acceptText)}>
+              accept this request
+            </span>
           </p>
         )}
         <div ref={bottomRef} />

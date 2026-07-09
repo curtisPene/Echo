@@ -1,6 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
-import { roomPresenter } from "../presenters/roomsPresenter";
-import { createNewRoomService } from "../services/createNewRoomService";
+import express from "express";
 import {
   createNewRoomController,
   updateParticipantController,
