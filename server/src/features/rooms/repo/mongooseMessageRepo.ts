@@ -32,14 +32,14 @@ export const findRoomMessages = async ({
 
 export const countUnreadMessages = async ({
   roomId,
-  since,
+  userId,
 }: {
   roomId: string;
-  since?: Date;
+  userId: string;
 }): Promise<number> => {
   return Message.countDocuments({
     room: roomId,
-    ...(since ? { createdAt: { $gt: since } } : {}),
+    "readBy.user": { $ne: userId },
   });
 };
 

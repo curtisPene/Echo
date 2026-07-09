@@ -39,7 +39,7 @@ export const Composer = () => {
             currentUserId={user.id}
           />
         ))}
-        {!isRoomAccepted && (
+        {!isRoomAccepted && activeRoom && (
           <p className={clsx(styles.requestInfo)}>
             You'll be able to send messages once you{" "}
             <span onClick={onAcceptRequest} className={clsx(styles.acceptText)}>

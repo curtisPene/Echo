@@ -52,7 +52,7 @@ export async function syncUserDataService({
 
         const unread = await countUnreadMessages({
           roomId: room._id.toString(),
-          since: sinceDate,
+          userId,
         });
 
         return {
