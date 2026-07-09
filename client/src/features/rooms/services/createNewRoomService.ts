@@ -1,5 +1,5 @@
 import { createNewRoomDB, getRooms } from "@/features/rooms/repo/roomsRepo";
-import type { Contact } from "../types";
+import type { Contact } from "../../contacts/types";
 import { createNewRoomAPI } from "@/features/rooms/api/roomsAPI";
 import type { User } from "@/features/auth/types";
 
@@ -27,14 +27,14 @@ export const createNewRoomService = async ({
   }
 
   const result = await createNewRoomAPI({
-    participants: [contact.id],
+    participants: [{ user: contact.id }],
     name: `${user.firstName} & ${contact.firstName}`,
   });
 
   if (!result.success || !result.data) return;
 
   await createNewRoomDB({
-    id: result.data.id,
+    roomId: result.data.id,
     participants: result.data.participants,
     name: result.data.name,
   });

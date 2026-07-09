@@ -22,6 +22,23 @@
   padding: var(--space-2) 0;
 }
 
+.requestInfo {
+  text-align: center;
+  font-size: var(--font-size-label);
+  opacity: 0.4;
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.acceptText {
+  text-decoration: underline;
+}
+
+.acceptText:hover {
+  cursor: pointer;
+}
+
 .form {
   height: 4.5rem;
   display: flex;

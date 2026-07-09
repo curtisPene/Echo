@@ -6,6 +6,7 @@ import { SplashScreen } from "./app/components/splashScreen/SplashScreen";
 import { useAppBootstrap } from "./app/hooks/useAppBootstrap";
 import { useContactsObserver } from "./features/contacts/hooks/useContactsObserver";
 import { useRoomsObserver } from "./features/rooms/hooks/useRoomsObserver";
+import { useRoomUnreadCountsObserver } from "./features/rooms/hooks/useRoomUnreadCountsObserver";
 import { useMessagesObserver } from "./features/messaging/hooks/useMessagesObserver";
 import { useSocketState } from "./stores/useSocket";
 import { SoundProvider } from "./app/hooks/SoundProvider";
@@ -29,6 +30,7 @@ function App() {
   });
   useContactsObserver({ appStatus });
   useRoomsObserver({ appStatus });
+  useRoomUnreadCountsObserver({ appStatus });
   useMessagesObserver({ appStatus });
 
   if (authStatus === "unverified") return <SplashScreen />;

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import type { Contact } from "../types";
 import { useAuth } from "@/stores/useAuth";
 import { useRooms } from "@/stores/useRooms";
-import { createNewRoomService } from "../services/createNewRoomService";
+import { createNewRoomService } from "../../rooms/services/createNewRoomService";
 
 export const useContactsList = () => {
   const user = useAuth((state) => state.user);

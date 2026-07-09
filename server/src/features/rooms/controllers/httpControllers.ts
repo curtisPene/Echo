@@ -34,8 +34,6 @@ export const createNewRoomController = async (
   }
   const roomView = roomPresenter({
     room: serviceResult.data,
-    unread: 0,
-    lastMessage: null,
   });
 
   res.status(201).json({
@@ -84,9 +82,13 @@ export const updateParticipantController = async (
     });
   }
 
+  const roomView = roomPresenter({
+    room: serviceResult.data,
+  });
+
   res.status(201).json({
     success: true,
     message: "Contact updated successfully",
-    data: serviceResult.data,
+    data: roomView,
   });
 };

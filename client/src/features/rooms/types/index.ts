@@ -20,9 +20,6 @@ export const roomSchema = z.object({
   id: z.string(),
   participants: z.array(roomParticipantSchema),
   name: z.string(),
-  lastMessageAt: z.iso.datetime().nullable(),
-  lastMessage: z.string().nullable(),
-  unread: z.number(),
 });
 
 export type Room = z.infer<typeof roomSchema>;
@@ -32,3 +29,10 @@ export const createNewRoomAPIResponseSchema = apiResponseSchema(roomSchema);
 export type CreateNewRoomAPIResponse = z.infer<
   typeof createNewRoomAPIResponseSchema
 >;
+
+export const roomUnreadCountSchema = z.object({
+  roomId: z.string(),
+  unread: z.number(),
+});
+
+export type RoomUnreadCount = z.infer<typeof roomUnreadCountSchema>;

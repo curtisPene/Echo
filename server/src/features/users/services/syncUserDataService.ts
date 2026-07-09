@@ -8,7 +8,10 @@ import {
   MessageView,
 } from "../../rooms/presenters/messagePresenter";
 import { roomPresenter, RoomView } from "../../rooms/presenters/roomsPresenter";
-import { findRoomMessages } from "../../rooms/repo/mongooseMessageRepo";
+import {
+  countUnreadMessages,
+  findRoomMessages,
+} from "../../rooms/repo/mongooseMessageRepo";
 import { findRoomsWithUserId } from "../../rooms/repo/mongooseRoomRepo";
 import { RepoError } from "../../../errors/RepoError";
 import { ServiceResult } from "../../../types";
@@ -21,7 +24,7 @@ export async function syncUserDataService({
   since?: string;
 }): Promise<
   ServiceResult<{
-    rooms: RoomView[];
+    rooms: { room: RoomView; unread: number }[];
     messages: MessageView[];
     contacts: ContactView[];
     lastSync: string;
@@ -43,17 +46,21 @@ export async function syncUserDataService({
           since: sinceDate,
         });
 
-        const messageViews = messageDocs.messages.map((message) =>
+        const messageViews = messageDocs.map((message) =>
           messagePresenter({ message }),
         );
+
+        const unread = await countUnreadMessages({
+          roomId: room._id.toString(),
+          since: sinceDate,
+        });
 
         return {
           room: roomPresenter({
             room,
-            unread: messageDocs.unreadCount,
-            lastMessage: messageDocs.messages[0],
           }),
           messages: messageViews,
+          unread,
         };
       }),
     );
@@ -64,7 +71,12 @@ export async function syncUserDataService({
     });
     const contactsViews = contactsPresenter({ contacts: contactDocs });
 
-    const rooms = findMessagesRepoResult.map((room) => room.room);
+    const rooms = findMessagesRepoResult.map((room) => {
+      return {
+        room: room.room,
+        unread: room.unread,
+      };
+    });
     const messages = findMessagesRepoResult.flatMap((room) => room.messages);
 
     return {

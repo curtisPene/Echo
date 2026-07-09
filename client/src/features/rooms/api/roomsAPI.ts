@@ -6,7 +6,7 @@ export const createNewRoomAPI = async ({
   participants,
   name,
 }: {
-  participants: string[];
+  participants: { user: string }[];
   name: string;
 }) => {
   const response = await httpClient.post("/rooms/", {

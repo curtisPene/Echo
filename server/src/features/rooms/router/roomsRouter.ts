@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/", createNewRoomController);
 
-router.post("/updateStatus", updateParticipantController);
+router.post("/update-participant", updateParticipantController);
 
 export default router;

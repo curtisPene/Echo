@@ -3,11 +3,17 @@ import { Avatar, AvatarGroup } from "@/components/avatar/Avatar";
 import styles from "./ConversationListItem.module.css";
 import type { Room } from "../../types";
 
+type ConversationListItemRoom = Room & {
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unread: number;
+};
+
 export const ConversationListItem = ({
   room,
   onClick,
 }: {
-  room: Room;
+  room: ConversationListItemRoom;
   onClick: () => void;
 }) => {
   const isGroup = room.participants.length > 1;
@@ -15,7 +21,7 @@ export const ConversationListItem = ({
   return (
     <div onClick={onClick} className={clsx(styles.root)}>
       {isGroup ? (
-        <AvatarGroup participants={room.participants.length} />
+        <AvatarGroup participants={room.participants} />
       ) : (
         <Avatar
           firstName={room.participants[0].user.firstName}

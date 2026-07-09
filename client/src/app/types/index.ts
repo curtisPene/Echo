@@ -15,7 +15,12 @@ export type AppContext = z.infer<typeof appContextSchema>;
 
 export const appSyncResponseSchema = apiResponseSchema(
   z.object({
-    rooms: z.array(roomSchema),
+    rooms: z.array(
+      z.object({
+        room: roomSchema,
+        unread: z.number(),
+      }),
+    ),
     messages: z.array(messageSchema),
     contacts: z.array(contactSchema),
     lastSync: z.string(),

@@ -6,7 +6,7 @@ import { useConversationView } from "../../hooks/useConversationView";
 import { useComposer } from "../../hooks/useComposer";
 import { useLayoutEffect, useRef } from "react";
 export const Composer = () => {
-  const { roomMessages, user } = useConversationView();
+  const { roomMessages, user, isRoomAccepted } = useConversationView();
   const { inputValue, setInputValue, onSendMessage, activeRoom } =
     useComposer();
 
@@ -37,6 +37,12 @@ export const Composer = () => {
             currentUserId={user.id}
           />
         ))}
+        {!isRoomAccepted && (
+          <p className={clsx(styles.requestInfo)}>
+            You'll be able to send messages once you{" "}
+            <span className={clsx(styles.acceptText)}>accept this request</span>
+          </p>
+        )}
         <div ref={bottomRef} />
       </div>
 

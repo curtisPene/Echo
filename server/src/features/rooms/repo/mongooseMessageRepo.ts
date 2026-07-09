@@ -14,33 +14,33 @@ export type MessageWithPopulatedSender = Omit<
 export const findRoomMessages = async ({
   roomId,
   since,
-  countUnreadSince,
 }: {
   roomId: string;
   since?: Date;
-  countUnreadSince?: Date;
-}): Promise<{
-  messages: MessageWithPopulatedSender[];
-  unreadCount: number;
-}> => {
-  const [messages, unreadCount] = await Promise.all([
-    Message.find({
-      room: roomId,
-      ...(since ? { createdAt: { $gt: since } } : {}),
-    })
-      .populate<{
-        sender: User;
-        reactions: { user: User; emoji: string }[];
-        readBy: { user: User; readAt: Date }[];
-      }>(["sender", "reactions.user", "readBy.user"])
-      .sort({ createdAt: -1 }),
-    Message.countDocuments({
-      room: roomId,
-      ...(countUnreadSince ? { createdAt: { $gt: countUnreadSince } } : {}),
-    }),
-  ]);
+}): Promise<MessageWithPopulatedSender[]> => {
+  return Message.find({
+    room: roomId,
+    ...(since ? { createdAt: { $gt: since } } : {}),
+  })
+    .populate<{
+      sender: User;
+      reactions: { user: User; emoji: string }[];
+      readBy: { user: User; readAt: Date }[];
+    }>(["sender", "reactions.user", "readBy.user"])
+    .sort({ createdAt: -1 });
+};
 
-  return { messages, unreadCount };
+export const countUnreadMessages = async ({
+  roomId,
+  since,
+}: {
+  roomId: string;
+  since?: Date;
+}): Promise<number> => {
+  return Message.countDocuments({
+    room: roomId,
+    ...(since ? { createdAt: { $gt: since } } : {}),
+  });
 };
 
 export const createNewMessage = async ({
