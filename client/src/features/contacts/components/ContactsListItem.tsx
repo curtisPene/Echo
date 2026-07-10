@@ -1,5 +1,4 @@
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { Contact } from "@/features/contacts/types";
 
 const formatLastSeen = (isoDate: string) => {
@@ -21,17 +20,24 @@ export const ContactsListItem = ({
   onClick,
   lastSeenAt,
   online,
+  isActive,
 }: {
   contact: Contact;
   lastSeenAt: string;
   online: boolean;
+  isActive?: boolean;
   onClick: (contact: Contact) => void;
 }) => {
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton size="lg" onClick={() => onClick(contact)}>
+    <li>
+      <button
+        type="button"
+        data-active={isActive}
+        onClick={() => onClick(contact)}
+        className="hover:bg-brand/10 data-[active=true]:bg-brand/10 flex w-full items-center gap-2 rounded-lg p-2 text-left"
+      >
         <div className="avatarGroup relative size-9 shrink-0">
-          <Avatar className="size-9 rounded-full">
+          <Avatar className="ring-brand size-9 rounded-full ring-2">
             <AvatarFallback className="rounded-full text-xs">
               {contact.firstName.charAt(0)}
               {contact.lastName.charAt(0)}
@@ -43,7 +49,7 @@ export const ContactsListItem = ({
         </div>
         <div className="content w-full leading-tight">
           <div className="topRow flex flex-row justify-between">
-            <span className="text-foreground font-semibold">{`${contact.firstName} ${contact.lastName}`}</span>
+            <span className="text-foreground">{`${contact.firstName} ${contact.lastName}`}</span>
           </div>
           <div className="bottomRow">
             <span className="lastSeen text-xs text-muted-foreground">
@@ -51,7 +57,7 @@ export const ContactsListItem = ({
             </span>
           </div>
         </div>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+      </button>
+    </li>
   );
 };

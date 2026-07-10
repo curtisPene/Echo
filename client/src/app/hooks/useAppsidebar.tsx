@@ -1,11 +1,7 @@
-import { useSidebar } from "@/components/ui/sidebar";
 import { ContactsList } from "@/features/contacts/components/ContactsList";
-import {
-  Message01Icon,
-  UserGroupIcon,
-  AddSquareIcon,
-  Settings02Icon,
-} from "@hugeicons/core-free-icons";
+import { ConversationsList } from "@/features/rooms/components/ConversationList";
+import { useRooms } from "@/stores/useRooms";
+import { MessageSquareIcon, SettingsIcon, UsersRoundIcon } from "lucide-react";
 import { useState } from "react";
 
 const data = {
@@ -18,35 +14,31 @@ const data = {
     {
       title: "Chats",
       url: "/chats",
-      icon: Message01Icon,
+      icon: MessageSquareIcon,
+      content: ConversationsList,
     },
     {
       title: "Contacts",
       url: "/contacts",
-      icon: UserGroupIcon,
+      icon: UsersRoundIcon,
       content: ContactsList,
-    },
-    {
-      title: "New Conversation",
-      url: "/chats/new",
-      icon: AddSquareIcon,
     },
     {
       title: "Settings",
       url: "/settings",
-      icon: Settings02Icon,
+      icon: SettingsIcon,
     },
   ],
 };
 
 export const useAppSidebar = () => {
   const [activeItem, setActiveItem] = useState(data.navMain[0]);
-  const { setOpen } = useSidebar();
+  const { activeRoom } = useRooms();
 
   return {
     data,
     activeItem,
     setActiveItem,
-    setOpen,
+    activeRoom,
   };
 };
