@@ -1,11 +1,9 @@
 import { LoginPage } from "@/features/auth/components/LoginPage";
 import { createBrowserRouter } from "react-router";
 import { RootLayout } from "../../app/components/RootLayout";
-import { RegistrationPage } from "@/features/auth/components/RegistrationPage";
 import { PublicOnlyPath } from "@/features/routing/components/PublicOnlyPath";
 import { ProtectedPath } from "@/features/routing/components/ProtectedPath";
-import { ConversationList } from "../rooms/components/conversationList/ConversationList";
-import { ContactsList } from "../contacts/components/contactsList/ContactsList";
+import { RegistrationPage } from "../auth/components/RegistrationPage";
 
 export const router = createBrowserRouter([
   {
@@ -34,21 +32,21 @@ export const router = createBrowserRouter([
       </ProtectedPath>
     ),
     hydrateFallbackElement: <div>Loading...</div>,
-    children: [
-      {
-        path: "/chats",
-        element: <ConversationList />,
-        children: [
-          {
-            path: "/chats/:roomId",
-            element: <ConversationList />,
-          },
-        ],
-      },
-      {
-        path: "/contacts",
-        element: <ContactsList />,
-      },
-    ],
+    // children: [
+    //   {
+    //     path: "/chats",
+    //     element: <ConversationList />,
+    //     children: [
+    //       {
+    //         path: "/chats/:roomId",
+    //         element: <ConversationList />,
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     path: "/contacts",
+    //     element: <ContactsList />,
+    //   },
+    // ],
   },
 ]);

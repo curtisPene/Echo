@@ -1,54 +1,72 @@
-import clsx from "clsx";
-import styles from "./LoginPage.module.css";
-import { useLogin } from "../hooks/useLogin";
 import { useState } from "react";
+import { Link } from "react-router";
+import { Button } from "@/components/ui/button";
 import {
-  Button,
-  Form,
-  FormControl,
-  Input,
-  Label,
-} from "@/components/form/Form";
-import { Card } from "@/components/card/Card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useLogin } from "@/features/auth/hooks/useLogin";
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { error, onLogin } = useLogin({ email, password });
 
   return (
-    <div className={clsx(styles.root)}>
-      <div className={clsx(styles.formWrapper)}>
-        <div>
-          <h1 className={clsx(styles.heading)}>Welcome back</h1>
-          <p className={clsx(styles.subheading)}>Sign in to your account</p>
-        </div>
-        {error && <p>{error.message}</p>}
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
         <Card>
-          <Form onSubmit={onLogin}>
-            <FormControl>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="john.doe@gmail.com"
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-              />
-            </FormControl>
-            <FormControl>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                onChange={(e) => setPassword(e.target.value)}
-                value={password}
-              />
-            </FormControl>
-            <Button type="submit">Sign in</Button>
-          </Form>
+          <CardHeader>
+            <CardTitle>Login to your account</CardTitle>
+            <CardDescription>
+              Enter your email below to login to your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onLogin}>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </Field>
+                <Field>
+                  {error.error && <FieldError>{error.message}</FieldError>}
+                  <Button type="submit">Login</Button>
+                  <FieldDescription className="text-center">
+                    Don&apos;t have an account? <Link to="/register">Sign up</Link>
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
+            </form>
+          </CardContent>
         </Card>
       </div>
     </div>
