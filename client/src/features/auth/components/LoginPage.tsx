@@ -24,7 +24,7 @@ export const LoginPage = () => {
   const { error, onLogin } = useLogin({ email, password });
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="from-brand/15 via-background to-background flex min-h-svh w-full items-center justify-center bg-linear-to-br p-6 md:p-10">
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
@@ -59,9 +59,17 @@ export const LoginPage = () => {
                 </Field>
                 <Field>
                   {error.error && <FieldError>{error.message}</FieldError>}
-                  <Button type="submit">Login</Button>
+                  <Button
+                    type="submit"
+                    className="bg-brand text-brand-foreground hover:bg-brand/90"
+                  >
+                    Login
+                  </Button>
                   <FieldDescription className="text-center">
-                    Don&apos;t have an account? <Link to="/register">Sign up</Link>
+                    Don&apos;t have an account?{" "}
+                    <Link to="/register" className="text-brand hover:underline">
+                      Sign up
+                    </Link>
                   </FieldDescription>
                 </Field>
               </FieldGroup>
