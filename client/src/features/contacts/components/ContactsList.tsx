@@ -12,7 +12,7 @@ export const ContactsList = () => {
       <div
         className={clsx(
           "contactsListHeader",
-          "border-border block border-b px-1 pb-3 sm:hidden",
+          "border-border mb-3 block border-b px-1 pb-3 sm:hidden",
         )}
       >
         <h1 className="text-foreground text-xl font-semibold">Contacts</h1>

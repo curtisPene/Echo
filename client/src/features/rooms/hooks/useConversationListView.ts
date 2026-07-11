@@ -8,11 +8,22 @@ export const useConversationListView = () => {
   const rooms = useRooms((state) => state.rooms);
   const messages = useMessages((state) => state.messages);
   const unreadCounts = useRoomUnreadCounts((state) => state.unreadCounts);
-  const userId = useAuth((state) => state.user?.id);
+  const user = useAuth((state) => state.user);
 
   const myStatus = (room: Room) =>
-    room.participants.find((participant) => participant.user.id === userId)
+    room.participants.find((participant) => participant.user.id === user?.id)
       ?.status;
+
+  const roomInitials = (room: Room) => {
+    const participants = room.participants.filter(
+      (participant) => participant.user.id !== user?.id,
+    );
+
+    const initials1 = `${user?.firstName[0]}${user?.lastName[0]}`;
+    const initials2 = `${participants[0].user.firstName[0]}${participants[0].user.lastName[0]}`;
+
+    return [initials1, initials2];
+  };
 
   const withView = (room: Room) => {
     const roomMessages = messages
@@ -26,10 +37,13 @@ export const useConversationListView = () => {
     const unread =
       unreadCounts.find((entry) => entry.roomId === room.id)?.unread ?? 0;
 
+    const avatarInitials = roomInitials(room);
+
     return {
       ...room,
       lastMessage: latest && !latest.redacted ? latest.text : null,
       lastMessageAt: latest?.createdAt ?? null,
+      roomAvatarInitials: avatarInitials,
       unread,
     };
   };

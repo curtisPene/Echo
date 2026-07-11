@@ -25,6 +25,7 @@ export const RequestsList = () => {
               room={room}
               lastMessage={room.lastMessage}
               lastMessageAt={room.lastMessageAt}
+              roomAvatarInitials={room.roomAvatarInitials}
               isActive={false}
               onClick={() => {
                 setACtiveRoom(room.id, room.name);

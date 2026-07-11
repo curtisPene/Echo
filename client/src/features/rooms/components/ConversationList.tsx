@@ -12,7 +12,7 @@ export const ConversationsList = () => {
       <div
         className={clsx(
           "conversationListHeader",
-          "border-border block border-b px-1 pb-3 sm:hidden",
+          "border-border mb-3 block border-b px-1 pb-3 sm:hidden",
         )}
       >
         <h1 className="text-foreground text-xl font-semibold">Chats</h1>
@@ -25,6 +25,7 @@ export const ConversationsList = () => {
               room={room}
               lastMessageAt={room.lastMessageAt}
               lastMessage={room.lastMessage}
+              roomAvatarInitials={room.roomAvatarInitials}
               onClick={() => {
                 setACtiveRoom(room.id, room.name);
               }}

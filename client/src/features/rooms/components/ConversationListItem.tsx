@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Room } from "../types";
 
-const formatTimestamp = (isoDate: string) => {
+const formatTimestamp = (isoDate: string | null) => {
+  if (!isoDate) return "";
   const diffMs = Date.now() - new Date(isoDate).getTime();
   const diffMinutes = Math.round(diffMs / 60_000);
 
@@ -19,12 +20,14 @@ export const ConversationListItem = ({
   room,
   lastMessage,
   lastMessageAt,
+  roomAvatarInitials,
   isActive,
   onClick,
 }: {
   room: Room;
   lastMessage: string | null;
-  lastMessageAt: string;
+  lastMessageAt: string | null;
+  roomAvatarInitials: string[];
   isActive?: boolean;
   onClick: (room: Room) => void;
 }) => {
@@ -38,17 +41,21 @@ export const ConversationListItem = ({
       >
         <div className="avatarGroup relative size-9 shrink-0">
           <Avatar className="ring-brand absolute top-0 left-0 size-7 rounded-full ring-2">
-            <AvatarFallback className="rounded-full text-xs" />
+            <AvatarFallback className="rounded-full text-xs">
+              {roomAvatarInitials[0]}
+            </AvatarFallback>
           </Avatar>
           <Avatar className="ring-brand absolute right-0 bottom-0 size-6 rounded-full ring-2">
-            <AvatarFallback className="rounded-full text-xs" />
+            <AvatarFallback className="rounded-full text-xs">
+              {roomAvatarInitials[1]}
+            </AvatarFallback>
           </Avatar>
         </div>
         <div className="content w-full">
           <div className="topRow flex w-full flex-row justify-between">
             <span className="text-foreground truncate">{room.name}</span>
             <span className="text-muted-foreground text-xs">
-              {formatTimestamp(lastMessageAt || "")}
+              {formatTimestamp(lastMessageAt)}
             </span>
           </div>
           <div className="bottomRow flex w-full flex-row items-center justify-between">
