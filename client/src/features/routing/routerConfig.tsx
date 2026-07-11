@@ -32,21 +32,5 @@ export const router = createBrowserRouter([
       </ProtectedPath>
     ),
     hydrateFallbackElement: <div>Loading...</div>,
-    // children: [
-    //   {
-    //     path: "/chats",
-    //     element: <ConversationList />,
-    //     children: [
-    //       {
-    //         path: "/chats/:roomId",
-    //         element: <ConversationList />,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     path: "/contacts",
-    //     element: <ContactsList />,
-    //   },
-    // ],
   },
 ]);

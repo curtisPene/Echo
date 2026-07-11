@@ -6,6 +6,7 @@ type RoomsStore = {
   setRooms: (rooms: Room[]) => void;
   activeRoom: { id: string; name: string } | null;
   setACtiveRoom: (roomId: string, roomName: string) => void;
+  clearActiveRoom: () => void;
 };
 
 export const useRooms = create<RoomsStore>((set) => ({
@@ -14,4 +15,5 @@ export const useRooms = create<RoomsStore>((set) => ({
   activeRoom: null,
   setACtiveRoom: (roomId, roomName) =>
     set({ activeRoom: { id: roomId, name: roomName } }),
+  clearActiveRoom: () => set({ activeRoom: null }),
 }));

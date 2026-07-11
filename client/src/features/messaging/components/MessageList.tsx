@@ -18,7 +18,7 @@ export const MessageList = () => {
 
   return (
     <div className="messageList flex h-full flex-col p-2">
-      <div className="messageListHeader border-border mb-2 shrink-0 border-b-2 px-4 py-2 text-center">
+      <div className="messageListHeader border-border mb-2 hidden shrink-0 border-b-2 px-4 py-2 text-center sm:block">
         <h2 className="text-foreground font-semibold">{activeRoom?.name}</h2>
       </div>
       <MessageScrollerProvider autoScroll>
@@ -40,7 +40,7 @@ export const MessageList = () => {
                   </MessageScrollerItem>
                 );
               })}
-              {!isRoomAccepted && (
+              {!isRoomAccepted && activeRoom && (
                 <span
                   className={clsx(
                     "requestMessage",

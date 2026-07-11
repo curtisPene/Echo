@@ -15,7 +15,7 @@ export const DesktopShell = () => {
   const { data, activeItem, setActiveItem, activeRoom } = useAppSidebar();
   const { user } = useAuth();
   return (
-    <div className="desktopShell tablet:flex from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4">
+    <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
       <div
         className={clsx(
           "iconBar",
@@ -75,7 +75,12 @@ export const DesktopShell = () => {
           </button>
         </div>
       </div>
-      <div className="listPanel bg-card flex w-80 shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md">
+      <div
+        className={clsx(
+          "listPanel",
+          "listPanel bg-card flex shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md sm:w-55 md:w-80",
+        )}
+      >
         <div className="listPanelHeader flex flex-col gap-3 pb-3">
           <h1 className="text-foreground flex flex-row items-center justify-between px-1 text-xl font-semibold">
             {activeItem.title}{" "}
