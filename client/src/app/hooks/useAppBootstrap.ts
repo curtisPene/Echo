@@ -26,7 +26,7 @@ export const useAppBootstrap = ({
     if (appStatus !== "idle" || auth.authStatus !== "unverified") return;
 
     verificaitonService().then((result) => {
-      if (!result.success) {
+      if (!result.success || !result.data) {
         return setAuth({ authStatus: "unauthenticated", user: null });
       }
       setAuth({

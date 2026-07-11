@@ -4,19 +4,19 @@ import { parseOrReportError } from "@/lib/parseOrReportError";
 import {
   loginResponseSchema,
   registrationResponseSchema,
-  type LoginDto,
   type LoginResponse,
-  type UserRegistrationDto,
   type RegistrationResponse,
 } from "../types";
+import type { LoginArgs } from "../services/loginService";
+import type { RegistrationServiceArgs } from "../services/registrationService";
 
-export async function loginAPI(loginData: LoginDto): Promise<LoginResponse> {
+export async function loginAPI(loginData: LoginArgs): Promise<LoginResponse> {
   const loginResponse = await httpClient.post("/auth/login", loginData);
   return parseOrReportError(loginResponseSchema, loginResponse.data);
 }
 
 export async function registrationAPI(
-  registrationData: UserRegistrationDto,
+  registrationData: RegistrationServiceArgs,
 ): Promise<RegistrationResponse> {
   const registrationResponse = await httpClient.post(
     "/auth/register",
