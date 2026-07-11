@@ -7,6 +7,7 @@ import { SearchIcon } from "lucide-react";
 import { useAuth } from "@/stores/useAuth";
 import { Composer } from "@/features/messaging/components/Composer";
 import { MessageList } from "@/features/messaging/components/MessageList";
+import { AddContactDialog } from "@/features/contacts/components/addContactDialog";
 
 export const DesktopShell = () => {
   const { data, activeItem, setActiveItem, activeRoom } = useAppSidebar();
@@ -74,8 +75,8 @@ export const DesktopShell = () => {
       </div>
       <div className="listPanel bg-card flex w-80 shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md">
         <div className="listPanelHeader flex flex-col gap-3 pb-3">
-          <h1 className="text-foreground px-1 text-xl font-semibold">
-            {activeItem.title}
+          <h1 className="text-foreground flex flex-row items-center justify-between px-1 text-xl font-semibold">
+            {activeItem.title} <AddContactDialog />
           </h1>
           <div className="relative">
             <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />

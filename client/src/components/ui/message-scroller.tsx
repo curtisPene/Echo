@@ -8,8 +8,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowDown02Icon } from "@hugeicons/core-free-icons"
+import { ChevronDown } from "lucide-react"
 
 function MessageScrollerProvider(
   props: React.ComponentProps<typeof MessageScrollerPrimitive.Provider>
@@ -71,10 +70,8 @@ function MessageScrollerItem({
     <MessageScrollerPrimitive.Item
       data-slot="message-scroller-item"
       scrollAnchor={scrollAnchor}
-      className={cn(
-        "min-w-0 shrink-0 [contain-intrinsic-size:auto_10rem] [content-visibility:auto]",
-        className
-      )}
+      // content-visibility:auto was clipping BubbleReactions, which overhangs the bubble edge
+      className={cn("min-w-0 shrink-0", className)}
       {...props}
     />
   )
@@ -106,7 +103,7 @@ function MessageScrollerButton({
     >
       {children ?? (
         <>
-          <HugeiconsIcon icon={ArrowDown02Icon} strokeWidth={2} />
+          <ChevronDown strokeWidth={2} />
           <span className="sr-only">
             {direction === "end" ? "Scroll to end" : "Scroll to start"}
           </span>

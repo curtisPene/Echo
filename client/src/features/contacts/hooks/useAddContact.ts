@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
-import { addContactAPI, searchContactAPI } from "../api/contactsHttpAPI";
+import { searchContactAPI } from "../api/contactsHttpAPI";
 import type { Contact } from "../types";
-import { addContactRepo } from "../repo/contactsRepo";
+import { addContactService } from "../services/addContactService";
 
 export type SearchResult =
   | { status: "idle" }
@@ -9,7 +9,7 @@ export type SearchResult =
   | { status: "found"; contact: Contact }
   | { status: "not_found" };
 
-export const useAddContact = () => {
+export const useAddContact = (onContactAdded: () => void) => {
   const [searchResult, setSearchResult] = useState<SearchResult>({
     status: "idle",
   });
@@ -17,7 +17,6 @@ export const useAddContact = () => {
   const onSearch = useCallback(async (email: string) => {
     setSearchResult({ status: "searching" });
     const response = await searchContactAPI(email);
-
     setSearchResult(
       response.success && response.data
         ? { status: "found", contact: response.data }
@@ -32,13 +31,13 @@ export const useAddContact = () => {
   const addContact = async () => {
     if (searchResult.status !== "found") return;
 
-    const response = await addContactAPI({
+    const serviceResult = await addContactService({
       contactId: searchResult.contact.id,
     });
 
-    if (!response.success) return;
+    if (!serviceResult.success) return;
 
-    addContactRepo({ contact: response.data });
+    onContactAdded();
   };
 
   return {
