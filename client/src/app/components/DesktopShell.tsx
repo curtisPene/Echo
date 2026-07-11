@@ -8,6 +8,8 @@ import { useAuth } from "@/stores/useAuth";
 import { Composer } from "@/features/messaging/components/Composer";
 import { MessageList } from "@/features/messaging/components/MessageList";
 import { AddContactDialog } from "@/features/contacts/components/addContactDialog";
+import { NavIcon } from "./NavIcon";
+import { EchoLogo } from "./EchoLogo";
 
 export const DesktopShell = () => {
   const { data, activeItem, setActiveItem, activeRoom } = useAppSidebar();
@@ -24,10 +26,10 @@ export const DesktopShell = () => {
           <button
             className={clsx(
               "iconBarItem",
-              "bg-brand text-brand-foreground flex size-11 cursor-pointer items-center justify-center rounded-full text-lg font-semibold shadow-md",
+              "bg-brand text-brand-foreground flex size-11 cursor-pointer items-center justify-center rounded-full shadow-md",
             )}
           >
-            E
+            <EchoLogo size={32} />
           </button>
         </div>
         <div
@@ -48,7 +50,7 @@ export const DesktopShell = () => {
                   "text-muted-foreground hover:bg-brand/10 hover:text-brand data-[active=true]:bg-brand/15 data-[active=true]:text-brand flex size-11 cursor-pointer items-center justify-center rounded-full transition-colors",
                 )}
               >
-                <item.icon size={18} strokeWidth={2} />
+                <NavIcon item={item} />
               </button>
             ) : null;
           })}
@@ -76,7 +78,8 @@ export const DesktopShell = () => {
       <div className="listPanel bg-card flex w-80 shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md">
         <div className="listPanelHeader flex flex-col gap-3 pb-3">
           <h1 className="text-foreground flex flex-row items-center justify-between px-1 text-xl font-semibold">
-            {activeItem.title} <AddContactDialog />
+            {activeItem.title}{" "}
+            {activeItem.title === "Contacts" ? <AddContactDialog /> : null}
           </h1>
           <div className="relative">
             <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />

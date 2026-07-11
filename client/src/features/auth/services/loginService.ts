@@ -1,11 +1,17 @@
 import { loginAPI } from "../api/authAPI";
-import type { LoginDto, User } from "../types";
+import type { User } from "../types";
 import type { ServiceResult } from "@/types";
 
-export async function loginService(
-  credentials: LoginDto,
-): Promise<ServiceResult<{ accessToken: string; user: User }>> {
-  const result = await loginAPI(credentials);
+export type LoginArgs = {
+  email: string;
+  password: string;
+};
+
+export async function loginService({
+  email,
+  password,
+}: LoginArgs): Promise<ServiceResult<{ accessToken: string; user: User }>> {
+  const result = await loginAPI({ email, password });
 
   if (!result.success || !result.data) {
     return {

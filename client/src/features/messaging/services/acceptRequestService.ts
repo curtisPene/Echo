@@ -14,7 +14,6 @@ export const acceptRequestService = async ({
   });
 
   if (!response.success) {
-    console.log(response.message);
     return {
       success: false,
       message: response.message,

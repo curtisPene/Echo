@@ -8,9 +8,13 @@ import {
 } from "@/components/ui/message-scroller";
 import { MessageListItem } from "./MessageListItem";
 import { useConversationView } from "../hooks/useConversationView";
+import clsx from "clsx";
+import { useAcceptRequest } from "../hooks/useAcceptRequest";
 
 export const MessageList = () => {
-  const { roomMessages, user, activeRoom } = useConversationView();
+  const { roomMessages, user, activeRoom, isRoomAccepted } =
+    useConversationView();
+  const { onAcceptRequest } = useAcceptRequest();
 
   return (
     <div className="messageList flex h-full flex-col p-2">
@@ -36,6 +40,22 @@ export const MessageList = () => {
                   </MessageScrollerItem>
                 );
               })}
+              {!isRoomAccepted && (
+                <span
+                  className={clsx(
+                    "requestMessage",
+                    "text-muted-foreground text-caption border-border border-t-2 pt-4 text-center",
+                  )}
+                >
+                  You'll be able to send messages once you{" "}
+                  <span
+                    className="text-muted-foreground underline hover:cursor-pointer"
+                    onClick={onAcceptRequest}
+                  >
+                    accept the request
+                  </span>{" "}
+                </span>
+              )}
             </MessageScrollerContent>
           </MessageScrollerViewport>
           <MessageScrollerButton />

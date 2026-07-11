@@ -1,32 +1,58 @@
+import type { ServiceResult } from "@/types";
 import { registrationAPI } from "../api/authAPI";
-import type { UserRegistrationDto } from "../types";
+
+export type RegistrationServiceArgs = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+};
 
 const patterns = {
   firstName: /^[a-zA-Z]{1,32}$/,
   lastName: /^[a-zA-Z]{1,32}$/,
-  userName: /^[a-zA-Z0-9_]{3,20}$/,
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,64}$/,
 };
 
-function validate(fields: UserRegistrationDto) {
+function validate(
+  fields: RegistrationServiceArgs,
+): { valid: true } | { valid: false; message: string } {
   if (!patterns.firstName.test(fields.firstName))
-    throw new Error("Invalid first name");
+    return { valid: false, message: "Invalid first name" };
   if (!patterns.lastName.test(fields.lastName))
-    throw new Error("Invalid last name");
-  if (!patterns.userName.test(fields.userName))
-    throw new Error("Invalid username");
-  if (!patterns.email.test(fields.email)) throw new Error("Invalid email");
+    return { valid: false, message: "Invalid last name" };
+  if (!patterns.email.test(fields.email))
+    return { valid: false, message: "Invalid email" };
   if (!patterns.password.test(fields.password))
-    throw new Error("Invalid password");
+    return { valid: false, message: "Invalid password" };
+  return { valid: true };
 }
 
-export async function registrationService(
-  registrationData: UserRegistrationDto,
-) {
-  validate(registrationData);
+export async function registrationService({
+  firstName,
+  lastName,
+  email,
+  password,
+}: RegistrationServiceArgs): Promise<
+  ServiceResult<null, { reason: "unknown" | "duplicate_email" | "validation" }>
+> {
+  const validation = validate({ firstName, lastName, email, password });
 
-  const authResult = await registrationAPI(registrationData);
+  if (!validation.valid) {
+    return {
+      success: false,
+      message: validation.message,
+      data: { reason: "validation" },
+    };
+  }
 
-  return authResult;
+  const response = await registrationAPI({
+    firstName,
+    lastName,
+    email,
+    password,
+  });
+
+  return response;
 }

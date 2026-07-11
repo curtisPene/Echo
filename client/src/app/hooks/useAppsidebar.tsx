@@ -1,7 +1,13 @@
 import { ContactsList } from "@/features/contacts/components/ContactsList";
 import { ConversationsList } from "@/features/rooms/components/ConversationList";
+import { RequestsList } from "@/features/rooms/components/RequstsList";
 import { useRooms } from "@/stores/useRooms";
-import { MessageSquareIcon, SettingsIcon, UsersRoundIcon } from "lucide-react";
+import {
+  BellIcon,
+  MessageSquareIcon,
+  SettingsIcon,
+  UsersRoundIcon,
+} from "lucide-react";
 import { useState } from "react";
 
 const data = {
@@ -27,6 +33,12 @@ const data = {
       title: "Settings",
       url: "/settings",
       icon: SettingsIcon,
+    },
+    {
+      title: "Requests",
+      url: "/requests",
+      icon: BellIcon,
+      content: RequestsList,
     },
   ],
 };

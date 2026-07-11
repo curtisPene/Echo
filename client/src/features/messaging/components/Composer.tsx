@@ -1,11 +1,28 @@
+import { useState } from "react";
 import { SendIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useComposer } from "../hooks/useComposer";
 
 export const Composer = () => {
+  const [inputValue, setInputValue] = useState<string>("");
+  const { onSendMessage } = useComposer();
   return (
     <div className="composer bg-card rounded-2xl p-3 shadow-md">
-      <form className="composerForm flex items-center gap-2">
-        <Input type="text" placeholder="Type a message" />
+      <form
+        className="composerForm flex items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSendMessage(inputValue, () => setInputValue(""));
+        }}
+      >
+        <Input
+          type="text"
+          placeholder="Type a message"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+          }}
+        />
         <button
           type="submit"
           className="bg-brand text-brand-foreground flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors hover:opacity-90"

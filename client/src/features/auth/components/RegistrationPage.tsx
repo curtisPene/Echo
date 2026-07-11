@@ -27,7 +27,6 @@ export const RegistrationPage = () => {
   const { error, onRegister } = useRegister({
     firstName,
     lastName,
-    userName,
     email,
     password,
   });

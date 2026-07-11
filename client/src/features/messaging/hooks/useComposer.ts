@@ -1,26 +1,24 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useRooms } from "@/stores/useRooms";
 import { sendMessageService } from "../services/sendMessageService";
 
 export const useComposer = () => {
   const activeRoom = useRooms((state) => state.activeRoom);
-  const [inputValue, setInputValue] = useState<string>("");
 
   const onSendMessage = useCallback(
-    async (e: React.SubmitEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    async (message: string, onComplete: () => void) => {
       if (!activeRoom) return;
       const serviceResult = await sendMessageService({
-        message: inputValue,
+        message,
         roomId: activeRoom.id,
       });
 
       if (!serviceResult.success) return;
 
-      setInputValue("");
+      onComplete();
     },
-    [inputValue, activeRoom],
+    [activeRoom],
   );
 
-  return { inputValue, setInputValue, onSendMessage, activeRoom };
+  return { onSendMessage, activeRoom };
 };

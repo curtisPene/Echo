@@ -1,8 +1,10 @@
 import { useContacts } from "@/stores/useContacts";
 import { ContactsListItem } from "./ContactsListItem";
+import { useContactsList } from "../hooks/useContactsList";
 
 export const ContactsList = () => {
   const { contacts } = useContacts();
+  const { handler } = useContactsList();
 
   return (
     <ul>
@@ -12,7 +14,9 @@ export const ContactsList = () => {
           <ContactsListItem
             key={contact.id}
             contact={contact}
-            onClick={() => {}}
+            onClick={() => {
+              handler(contact);
+            }}
             lastSeenAt={lastSeenAt}
             online={true}
           />

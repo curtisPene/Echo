@@ -16,7 +16,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useLogin } from "@/features/auth/hooks/useLogin";
+import { useLogin } from "../hooks/useLogin";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");

@@ -1,26 +1,20 @@
 import { useState, type FormEvent } from "react";
 import { registrationService } from "../services/registrationService";
+import type { RegistrationServiceArgs } from "../services/registrationService";
 import { useNavigate } from "react-router";
-import type { UserRegistrationDto } from "../types";
 
 export type RegistrationError = {
   error: boolean;
   message: string;
-  info: {
-    firstName: string;
-    lastName: string;
-    userName: string;
-    email: string;
-  };
 };
 
-export const useRegister = (state: UserRegistrationDto) => {
-  const [error] = useState<RegistrationError>({
+export const useRegister = (state: RegistrationServiceArgs) => {
+  const [error, setError] = useState<RegistrationError>({
     error: false,
     message: "",
-    info: { userName: "", firstName: "", lastName: "", email: "" },
   });
   const navigate = useNavigate();
+
   const onRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = await registrationService(state);
@@ -28,8 +22,9 @@ export const useRegister = (state: UserRegistrationDto) => {
     if (result.success) {
       navigate("/login");
     } else {
-      console.log(result);
+      setError({ error: true, message: result.message });
     }
   };
+
   return { error, onRegister };
 };

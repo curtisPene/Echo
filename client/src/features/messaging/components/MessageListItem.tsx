@@ -1,4 +1,4 @@
-import { Bubble, BubbleContent, BubbleReactions } from "@/components/ui/bubble";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import type { Message } from "../types";
 import clsx from "clsx";
 
@@ -17,7 +17,6 @@ export const MessageListItem = ({
   isOwnMessage: boolean;
 }) => {
   const align = isOwnMessage ? "end" : "start";
-  const alignReaction = isOwnMessage ? "start" : "end";
 
   return (
     <div className={clsx("messageListItem", "flex w-full flex-col gap-1")}>
@@ -33,15 +32,6 @@ export const MessageListItem = ({
         <BubbleContent>
           {message.redacted ? "This message was deleted" : message.text}
         </BubbleContent>
-        <BubbleReactions
-          align={alignReaction}
-          side="bottom"
-          role="img"
-          aria-label="Reactions: thumbs up, surprised"
-        >
-          <span>👍</span>
-          <span>😮</span>
-        </BubbleReactions>
       </Bubble>
       <span
         className={clsx(

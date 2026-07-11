@@ -31,16 +31,3 @@ export const registrationResponseSchema = apiResponseSchema(
 );
 
 export type RegistrationResponse = z.infer<typeof registrationResponseSchema>;
-
-export type LoginDto = {
-  email: string;
-  password: string;
-};
-
-export type UserRegistrationDto = {
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  password: string;
-};
