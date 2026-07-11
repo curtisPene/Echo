@@ -18,6 +18,9 @@ export const addUserToRoomsService = async ({
 
     roomIds.forEach((roomId) => socket.join(roomId));
 
+    // create the users personal room for receiving notifications across all devices
+    socket.join(`user:${userId}`);
+
     return { success: true, message: "Rooms joined successfully", data: null };
   } catch (error) {
     console.log(error);

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { updateParticipantService } from "../services/updateParticipantService";
 import { createNewRoomService } from "../services/createNewRoomService";
 import { roomPresenter } from "../presenters/roomsPresenter";
+import { io } from "../../../socket";
 
 export const createNewRoomController = async (
   req: Request,
@@ -84,6 +85,17 @@ export const updateParticipantController = async (
 
   const roomView = roomPresenter({
     room: serviceResult.data,
+  });
+
+  const otherParticipants = roomView.participants.filter(
+    (participant) => participant.user.id !== user.id,
+  );
+
+  // Notify other participants of the update
+  otherParticipants.forEach((participant) => {
+    io.to(`user:${participant.user.id}`).emit("room:updated", {
+      room: roomView,
+    });
   });
 
   res.status(201).json({

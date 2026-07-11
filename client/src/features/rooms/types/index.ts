@@ -36,3 +36,9 @@ export const roomUnreadCountSchema = z.object({
 });
 
 export type RoomUnreadCount = z.infer<typeof roomUnreadCountSchema>;
+
+export const onRoomUpdatedPayloadSchema = z.object({
+  room: roomSchema,
+});
+
+export type RoomUpdatedPayload = z.infer<typeof onRoomUpdatedPayloadSchema>;
