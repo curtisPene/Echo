@@ -9,14 +9,6 @@ export const RequestsList = () => {
 
   return (
     <div className={clsx("root")}>
-      <div
-        className={clsx(
-          "requestsListHeader",
-          "border-border block border-b px-1 pb-3 sm:hidden",
-        )}
-      >
-        <h1 className="text-foreground text-xl font-semibold">Requests</h1>
-      </div>
       <ul>
         {pendingRooms.map((room) => {
           return (

@@ -1,14 +1,17 @@
 import { BellDotIcon } from "lucide-react";
 import { useHasPendingRequests } from "@/features/rooms/hooks/useHasPendingRequests";
+import type { Title } from "@/app/hooks/useNavRouter";
 
 export const NavIcon = ({
+  navKey,
   item,
 }: {
-  item: { title: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }> };
+  navKey: Title;
+  item: { icon: React.ComponentType<{ size?: number; strokeWidth?: number }> };
 }) => {
   const hasPendingRequests = useHasPendingRequests();
   const Icon =
-    item.title === "Requests" && hasPendingRequests ? BellDotIcon : item.icon;
+    navKey === "requests" && hasPendingRequests ? BellDotIcon : item.icon;
 
   return <Icon size={18} strokeWidth={2} />;
 };

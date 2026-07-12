@@ -4,6 +4,10 @@ import { RootLayout } from "../../app/components/RootLayout";
 import { PublicOnlyPath } from "@/features/routing/components/PublicOnlyPath";
 import { ProtectedPath } from "@/features/routing/components/ProtectedPath";
 import { RegistrationPage } from "../auth/components/RegistrationPage";
+import { ConversationsList } from "../rooms/components/ConversationList";
+import { MobileChatScreen } from "../messaging/components/MobileChatScreen";
+import { ContactsList } from "../contacts/components/ContactsList";
+import { RequestsList } from "../rooms/components/RequstsList";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +35,28 @@ export const router = createBrowserRouter([
         <RootLayout />
       </ProtectedPath>
     ),
+    children: [
+      {
+        path: "/chats",
+        element: <ConversationsList />,
+      },
+      {
+        path: "/chats/:roomId",
+        element: <MobileChatScreen />,
+      },
+      {
+        path: "/contacts",
+        element: <ContactsList />,
+      },
+      {
+        path: "/requests",
+        element: <RequestsList />,
+      },
+      {
+        path: "/settings",
+        element: <div>Settings</div>,
+      },
+    ],
     hydrateFallbackElement: <div>Loading...</div>,
   },
 ]);

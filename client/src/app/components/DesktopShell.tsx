@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useAppSidebar } from "../hooks/useAppsidebar";
+import { navLabels, useNavRouter } from "../hooks/useNavRouter";
 import { MessageCircleIcon, SettingsIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,13 @@ import { MessageList } from "@/features/messaging/components/MessageList";
 import { AddContactDialog } from "@/features/contacts/components/addContactDialog";
 import { NavIcon } from "./NavIcon";
 import { EchoLogo } from "./EchoLogo";
+import { Outlet } from "react-router";
 
 export const DesktopShell = () => {
-  const { data, activeItem, setActiveItem, activeRoom } = useAppSidebar();
+  const { desktopNavKeys, data, onNavigate, activeRoom, pathname, activeNavKey } =
+    useNavRouter();
   const { user } = useAuth();
+
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
       <div
@@ -38,21 +41,23 @@ export const DesktopShell = () => {
             "flex flex-1 flex-col items-center gap-3",
           )}
         >
-          {data.navMain.map((item) => {
-            return item.title !== "Settings" ? (
+          {desktopNavKeys.map((key) => {
+            const item = data[key];
+            return (
               <button
-                data-active={item.title === activeItem.title}
+                key={key}
+                data-active={item.url === pathname}
                 onClick={() => {
-                  setActiveItem(item);
+                  onNavigate(key);
                 }}
                 className={clsx(
                   "iconBarItem",
                   "text-muted-foreground hover:bg-brand/10 hover:text-brand data-[active=true]:bg-brand/15 data-[active=true]:text-brand flex size-11 cursor-pointer items-center justify-center rounded-full transition-colors",
                 )}
               >
-                <NavIcon item={item} />
+                <NavIcon navKey={key} item={item} />
               </button>
-            ) : null;
+            );
           })}
         </div>
         <div
@@ -83,15 +88,15 @@ export const DesktopShell = () => {
       >
         <div className="listPanelHeader flex flex-col gap-3 pb-3">
           <h1 className="text-foreground flex flex-row items-center justify-between px-1 text-xl font-semibold">
-            {activeItem.title}{" "}
-            {activeItem.title === "Contacts" ? <AddContactDialog /> : null}
+            {navLabels[activeNavKey]}
+            {activeNavKey === "contacts" ? <AddContactDialog /> : null}
           </h1>
           <div className="relative">
             <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input placeholder="Search" className="pl-9" />
           </div>
         </div>
-        {activeItem.content ? <activeItem.content /> : null}
+        <Outlet />
       </div>
       {activeRoom ? (
         <div className="conversationPanel flex flex-1 flex-col gap-5">
