@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 610" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow-l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b8f98"/>
+    </marker>
+  </defs>
+
+  <style>
+    .bg { fill: #ffffff; }
+    .feature-box { fill: #ffffff; stroke: #d0d7de; stroke-width: 1; }
+    .feature-label { fill: #24292f; font-size: 13px; font-weight: 600; }
+    .feature-sub { fill: #57606a; font-size: 11px; }
+    .db-box { fill: #eef2ff; stroke: #6366f1; stroke-width: 1.25; }
+    .db-label { fill: #3730a3; font-size: 13px; font-weight: 700; }
+    .db-sub { fill: #4338ca; font-size: 11px; }
+    .panel { fill: #f6f8fa; stroke: #d0d7de; stroke-width: 1; }
+    .panel-title { fill: #24292f; font-size: 13px; font-weight: 700; }
+    .check-box { fill: #f6f8fa; stroke: #8b8f98; stroke-width: 1; stroke-dasharray: 3 3; }
+    .check-label { fill: #57606a; font-size: 12px; font-weight: 600; }
+    .check-code { fill: #57606a; font-size: 11px; font-family: 'SF Mono', Consolas, monospace; }
+    .flow-line { stroke: #8b8f98; stroke-width: 1.5; fill: none; marker-end: url(#arrow-l); }
+    .flow-line-light { stroke: #c9ccd1; stroke-width: 1.25; fill: none; marker-end: url(#arrow-l); }
+    .annotation { fill: #57606a; font-size: 11.5px; font-style: italic; }
+    .headline { fill: #24292f; font-size: 15px; font-weight: 700; }
+    .subhead { fill: #57606a; font-size: 12.5px; }
+    .divider-label { fill: #8b8f98; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="920" height="610"/>
+
+  <text class="headline" x="30" y="34">Every access decision is made once — when a socket joins a room</text>
+  <text class="subhead" x="30" y="54">Group chat, blocking, and contact requests are solved by controlling room membership, not by adding checks to the message path.</text>
+
+  <text class="divider-label" x="30" y="88">FEATURE LOGIC — DECIDES WHO BELONGS IN WHICH ROOM</text>
+
+  <rect class="feature-box" x="30" y="100" width="190" height="64" rx="6"/>
+  <text class="feature-label" x="48" y="126">Group participation</text>
+  <text class="feature-sub" x="48" y="144">add / remove members</text>
+
+  <rect class="feature-box" x="245" y="100" width="190" height="64" rx="6"/>
+  <text class="feature-label" x="263" y="126">Blocking</text>
+  <text class="feature-sub" x="263" y="144">delete 1:1 room, or remove</text>
+  <text class="feature-sub" x="263" y="158">blocker from a group room</text>
+
+  <rect class="feature-box" x="460" y="100" width="190" height="64" rx="6"/>
+  <text class="feature-label" x="478" y="126">Contact requests</text>
+  <text class="feature-sub" x="478" y="144">room created pending,</text>
+  <text class="feature-sub" x="478" y="158">before acceptance</text>
+
+  <rect class="feature-box" x="675" y="100" width="215" height="64" rx="6" stroke-dasharray="3 3"/>
+  <text class="feature-label" x="693" y="126">+ next feature</text>
+  <text class="feature-sub" x="693" y="144">no new access logic —</text>
+  <text class="feature-sub" x="693" y="158">just another room mutation</text>
+
+  <path class="flow-line-light" d="M125,164 L125,200 Q125,210 135,210 L470,210 Q480,210 480,220" />
+  <path class="flow-line-light" d="M340,164 L340,200 Q340,210 350,210 L470,210" />
+  <path class="flow-line-light" d="M555,164 L555,200 Q555,210 545,210 L490,210" />
+  <path class="flow-line-light" d="M782,164 L782,200 Q782,210 772,210 L500,210" />
+
+  <rect class="db-box" x="330" y="222" width="300" height="70" rx="6"/>
+  <text class="db-label" x="480" y="250" text-anchor="middle">RoomParticipant rows</text>
+  <text class="db-sub" x="480" y="268" text-anchor="middle">the durable record of who is actually in which room</text>
+  <text class="db-sub" x="480" y="282" text-anchor="middle">(every feature above only ever edits this)</text>
+
+  <path class="flow-line" d="M480,292 L480,320" />
+
+  <text class="divider-label" x="30" y="336">CONNECT — READ ONCE PER SESSION</text>
+
+  <rect class="panel" x="30" y="348" width="860" height="80" rx="8"/>
+  <text class="panel-title" x="50" y="374">On socket connect</text>
+  <text class="feature-sub" x="50" y="396" font-size="12.5">Every room this user currently participates in (per the DB, right now) is joined — addUserToRoomsService</text>
+  <text class="feature-sub" x="50" y="414" font-size="12.5">Removed from a room since last connect (blocked, left)? It's simply not in that read, so it's never joined.</text>
+
+  <path class="flow-line" d="M460,428 L460,455" />
+
+  <text class="divider-label" x="30" y="476">SEND — EVERY MESSAGE, NO DB READ</text>
+
+  <rect class="check-box" x="30" y="488" width="860" height="56" rx="5"/>
+  <text class="check-label" x="50" y="512">A socket may only send into rooms it already joined above</text>
+  <text class="check-code" x="50" y="530">socket.rooms.has(roomId)</text>
+  <text class="annotation" x="600" y="521" text-anchor="middle">— nothing left to verify, membership already answered it</text>
+
+  <text class="subhead" x="30" y="576">The send path stays this small permanently. Every new feature that changes who can talk to whom is built by changing</text>
+  <text class="subhead" x="30" y="594">what gets joined at connect — never by adding a new branch to the code every message passes through.</text>
+</svg>
