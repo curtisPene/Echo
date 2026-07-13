@@ -9,7 +9,7 @@ export const RequestsList = () => {
 
   return (
     <div className={clsx("root")}>
-      <ul>
+      <ul className={clsx("requestsList", "flex w-full flex-col gap-2")}>
         {pendingRooms.map((room) => {
           return (
             <ConversationListItem

@@ -1,5 +1,6 @@
 import { Room, RoomParticipant } from "../models/roomModel";
 import { User } from "../../users/models/userModel";
+import { RepoError } from "../../../errors/RepoError";
 
 export interface RoomWithPopulatedParticipants extends Omit<
   Room,
@@ -28,7 +29,9 @@ export async function findRoomsWithUserId({
     participants: (Omit<RoomParticipant, "user"> & { user: User })[];
   }>("participants.user");
 
-  return roomsDocs;
+  return roomsDocs.map(
+    (room) => room.toJSON() as unknown as RoomWithPopulatedParticipants,
+  );
 }
 
 export async function updateParticipant({
@@ -71,4 +74,54 @@ export async function createRoom({
   await room.populate("participants.user");
 
   return room.toObject() as unknown as RoomWithPopulatedParticipants;
+}
+
+export async function updateRoomById({
+  roomId,
+  fields,
+}: {
+  roomId: string;
+  fields: Partial<Omit<Room, "_id" | "participants">>;
+}): Promise<RoomWithPopulatedParticipants | null> {
+  const updatedRoomDoc = await Room.findOneAndUpdate(
+    { _id: roomId },
+    { $set: fields },
+    { new: true },
+  ).populate<{
+    participants: (Omit<RoomParticipant, "user"> & { user: User })[];
+  }>("participants.user");
+
+  if (!updatedRoomDoc) return null;
+
+  return updatedRoomDoc.toObject() as unknown as RoomWithPopulatedParticipants;
+}
+
+export async function deleteRoomById({
+  roomId,
+}: {
+  roomId: string;
+}): Promise<boolean> {
+  const result = await Room.deleteOne({ _id: roomId });
+
+  return result.deletedCount > 0;
+}
+
+export async function removeContactFromRoomById({
+  roomId,
+  userId,
+}: {
+  roomId: string;
+  userId: string;
+}) {
+  const updatedRoomDoc = await Room.findOneAndUpdate(
+    { _id: roomId, "participants.user": userId },
+    { $pull: { participants: { user: userId } } },
+    { new: true },
+  ).populate<{
+    participants: (Omit<RoomParticipant, "user"> & { user: User })[];
+  }>("participants.user");
+
+  if (!updatedRoomDoc) throw new RepoError("Room not found for this user");
+
+  return updatedRoomDoc.toObject() as unknown as RoomWithPopulatedParticipants;
 }

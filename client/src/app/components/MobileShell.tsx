@@ -1,8 +1,14 @@
 import clsx from "clsx";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, MoreVerticalIcon } from "lucide-react";
 import { navLabels, useNavRouter } from "../hooks/useNavRouter";
 import { NavIcon } from "./NavIcon";
 import { Link, Outlet } from "react-router";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 export const MobileShell = () => {
   const {
@@ -40,9 +46,22 @@ export const MobileShell = () => {
             <ChevronLeftIcon size={20} strokeWidth={2} />
           </Link>
         ) : null}
-        <h1 className="text-foreground truncate text-2xl font-semibold tracking-tight">
+        <h1 className="text-foreground min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">
           {inActiveChat ? activeRoom?.name : navLabels[activeNavKey]}
         </h1>
+        {inActiveChat ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="text-muted-foreground hover:bg-brand/10 hover:text-brand flex size-9 shrink-0 items-center justify-center rounded-full transition-colors"
+              aria-label="Conversation options"
+            >
+              <MoreVerticalIcon size={20} strokeWidth={2} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem variant="destructive">Block</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
       </div>
       <div
         className={clsx(

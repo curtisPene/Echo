@@ -1,5 +1,5 @@
 import { LoginPage } from "@/features/auth/components/LoginPage";
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { RootLayout } from "../../app/components/RootLayout";
 import { PublicOnlyPath } from "@/features/routing/components/PublicOnlyPath";
 import { ProtectedPath } from "@/features/routing/components/ProtectedPath";
@@ -36,6 +36,10 @@ export const router = createBrowserRouter([
       </ProtectedPath>
     ),
     children: [
+      {
+        index: true,
+        element: <Navigate to="/chats" replace />,
+      },
       {
         path: "/chats",
         element: <ConversationsList />,

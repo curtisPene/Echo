@@ -43,6 +43,16 @@ export const countUnreadMessages = async ({
   });
 };
 
+export const deleteRoomMessages = async ({
+  roomId,
+}: {
+  roomId: string;
+}): Promise<number> => {
+  const result = await Message.deleteMany({ room: roomId });
+
+  return result.deletedCount;
+};
+
 export const createNewMessage = async ({
   userId,
   message,
@@ -65,4 +75,22 @@ export const createNewMessage = async ({
   }>(["sender", "reactions.user", "readBy.user"]);
 
   return populatedMessage;
+};
+
+export const redactRoomMessagesByUserId = async ({
+  userId,
+  roomId,
+}: {
+  userId: string;
+  roomId: string;
+}) => {
+  const updateResult = await Message.updateMany(
+    {
+      room: roomId,
+      sender: userId,
+    },
+    { redacted: true },
+  );
+
+  return updateResult.matchedCount;
 };

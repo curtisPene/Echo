@@ -21,6 +21,7 @@ export interface Message {
   readBy: MessageRead[];
   createdAt: Date;
   updatedAt: Date;
+  redacted: boolean;
 }
 
 const messageReactionSchema = new Schema<MessageReaction>(

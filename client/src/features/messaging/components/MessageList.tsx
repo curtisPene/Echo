@@ -6,6 +6,13 @@ import {
   MessageScrollerViewport,
   MessageScrollerButton,
 } from "@/components/ui/message-scroller";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { MoreVerticalIcon } from "lucide-react";
 import { MessageListItem } from "./MessageListItem";
 import { useConversationView } from "../hooks/useConversationView";
 import clsx from "clsx";
@@ -18,8 +25,20 @@ export const MessageList = () => {
 
   return (
     <div className="messageList flex h-full flex-col p-2">
-      <div className="messageListHeader border-border mb-2 hidden shrink-0 border-b-2 px-4 py-2 text-center sm:block">
+      <div className="messageListHeader border-border mb-2 hidden shrink-0 flex-row items-center justify-between border-b-2 px-4 py-2 sm:flex">
+        <span className="size-8" aria-hidden />
         <h2 className="text-foreground font-semibold">{activeRoom?.name}</h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className="text-muted-foreground hover:bg-brand/10 hover:text-brand flex size-8 items-center justify-center rounded-full transition-colors"
+            aria-label="Conversation options"
+          >
+            <MoreVerticalIcon size={18} strokeWidth={2} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem variant="destructive">Block</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <MessageScrollerProvider autoScroll>
         <MessageScroller className="min-h-0 flex-1">
