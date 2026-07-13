@@ -21,7 +21,6 @@ import { useRegister } from "@/features/auth/hooks/useRegister";
 export const RegistrationPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { error, onRegister } = useRegister({
@@ -67,17 +66,6 @@ export const RegistrationPage = () => {
                       required
                     />
                   </Field>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="userName">Username</FieldLabel>
-                  <Input
-                    id="userName"
-                    type="text"
-                    placeholder="janedoe"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    required
-                  />
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
