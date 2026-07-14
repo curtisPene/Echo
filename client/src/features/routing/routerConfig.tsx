@@ -6,7 +6,6 @@ import { ProtectedPath } from "@/features/routing/components/ProtectedPath";
 import { RegistrationPage } from "../auth/components/RegistrationPage";
 import { ConversationsList } from "../rooms/components/ConversationList";
 import { MobileChatScreen } from "../messaging/components/MobileChatScreen";
-import { ContactsList } from "../contacts/components/ContactsList";
 import { RequestsList } from "../rooms/components/RequstsList";
 
 export const router = createBrowserRouter([
@@ -47,10 +46,6 @@ export const router = createBrowserRouter([
       {
         path: "/chats/:roomId",
         element: <MobileChatScreen />,
-      },
-      {
-        path: "/contacts",
-        element: <ContactsList />,
       },
       {
         path: "/requests",

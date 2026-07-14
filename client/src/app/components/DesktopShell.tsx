@@ -1,22 +1,19 @@
 import clsx from "clsx";
-import { navLabels, useNavRouter } from "../hooks/useNavRouter";
-import { MessageCircleIcon, SettingsIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { SearchIcon } from "lucide-react";
-import { useAuth } from "@/stores/useAuth";
+import { MessageCircleIcon, SearchIcon } from "lucide-react";
 import { Composer } from "@/features/messaging/components/Composer";
 import { MessageList } from "@/features/messaging/components/MessageList";
-import { AddContactDialog } from "@/features/contacts/components/addContactDialog";
-import { NavIcon } from "./NavIcon";
 import { EchoLogo } from "./EchoLogo";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useLayoutController } from "../hooks/useLayoutController";
+import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
+import { useDesktopShellView } from "../hooks/useDesktopShellView";
+import { ConversationDetailsContent } from "@/features/rooms/components/ConversationDetailsContent";
 
 export const DesktopShell = () => {
-  const { desktopNavKeys, data, onNavigate, activeRoom, pathname, activeNavKey } =
-    useNavRouter();
-  const { user } = useAuth();
-
+  const { desktopNavItems } = useLayoutController();
+  const { listHeader, activeRoom } = useDesktopShellView();
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
       <div
@@ -41,55 +38,27 @@ export const DesktopShell = () => {
             "flex flex-1 flex-col items-center gap-3",
           )}
         >
-          {desktopNavKeys.map((key) => {
-            const item = data[key];
-            return (
-              <button
-                key={key}
-                data-active={item.url === pathname}
-                onClick={() => {
-                  onNavigate(key);
-                }}
-                className={clsx(
-                  "iconBarItem",
-                  "text-muted-foreground hover:bg-brand/10 hover:text-brand data-[active=true]:bg-brand/15 data-[active=true]:text-brand flex size-11 cursor-pointer items-center justify-center rounded-full transition-colors",
-                )}
-              >
-                <NavIcon navKey={key} item={item} />
-              </button>
-            );
+          {desktopNavItems.map((item) => {
+            return <NavItem icon={item.icon} to={item.path} />;
           })}
         </div>
         <div
           className={clsx("iconBarFooter", "flex flex-col items-center gap-3")}
         >
-          <button
-            className={clsx(
-              "text-muted-foreground hover:bg-brand/10 hover:text-brand flex size-11 cursor-pointer items-center justify-center rounded-full transition-colors",
-            )}
-          >
-            <SettingsIcon size={18} strokeWidth={2} />
-          </button>
           <button className="cursor-pointer">
-            <Avatar className="ring-brand rounded-full ring-2">
-              <AvatarFallback>
-                {user?.firstName.charAt(0)}
-                {user?.lastName.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar />
           </button>
         </div>
       </div>
       <div
         className={clsx(
           "listPanel",
-          "listPanel bg-card flex shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md sm:w-55 md:w-80",
+          "listPanel bg-card flex w-55 shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md sm:hidden md:flex xl:w-80",
         )}
       >
         <div className="listPanelHeader flex flex-col gap-3 pb-3">
           <h1 className="text-foreground flex flex-row items-center justify-between px-1 text-xl font-semibold">
-            {navLabels[activeNavKey]}
-            {activeNavKey === "contacts" ? <AddContactDialog /> : null}
+            {listHeader}
           </h1>
           <div className="relative">
             <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -118,6 +87,14 @@ export const DesktopShell = () => {
           </p>
         </div>
       )}
+      <div
+        className={clsx(
+          "conversationDetailsPanel",
+          "bg-card hidden w-65 shrink-0 flex-col overflow-y-auto rounded-2xl p-4 shadow-md lg:flex xl:w-80",
+        )}
+      >
+        <ConversationDetailsContent />
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { BellDotIcon } from "lucide-react";
 import { useHasPendingRequests } from "@/features/rooms/hooks/useHasPendingRequests";
-import type { Title } from "@/app/hooks/useNavRouter";
+import type { Title } from "@/app/hooks/useLayoutController";
 
 export const NavIcon = ({
   navKey,

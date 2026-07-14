@@ -8,7 +8,7 @@ export const ContactsList = () => {
   const { handler } = useContactsList();
 
   return (
-    <div className={clsx("root")}>
+    <div className={clsx("root", "flex w-full flex-col")}>
       <ul>
         {contacts.map((contact) => {
           const lastSeenAt = new Date().toISOString();
