@@ -4,6 +4,7 @@ import { User } from "./src/features/users/models/userModel";
 import { Contacts } from "./src/features/contacts/models/contactsModel";
 import { Room } from "./src/features/rooms/models/roomModel";
 import { Message } from "./src/features/rooms/models/messageModel";
+import { hashPassword } from "./src/features/auth/adapters/bcryptAdapter";
 
 const SEED_PASSWORD = "password123";
 
@@ -26,8 +27,9 @@ async function seed() {
   ]);
 
   console.log("Creating users...");
+  const hashedPassword = await hashPassword(SEED_PASSWORD);
   const users = await User.create(
-    SEED_USERS.map((user) => ({ ...user, password: SEED_PASSWORD })),
+    SEED_USERS.map((user) => ({ ...user, password: hashedPassword })),
   );
 
   console.log("Creating contacts...");
