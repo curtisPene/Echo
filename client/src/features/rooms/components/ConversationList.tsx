@@ -1,11 +1,9 @@
 import { ConversationListItem } from "./ConversationListItem";
 import { useConversationListView } from "../hooks/useConversationListView";
 import clsx from "clsx";
-import { useNavRouter } from "@/app/hooks/useNavRouter";
 
 export const ConversationsList = () => {
   const { rooms } = useConversationListView();
-  const { onNavigate } = useNavRouter();
 
   return (
     <div className={clsx("root")}>
@@ -18,9 +16,7 @@ export const ConversationsList = () => {
               lastMessageAt={room.lastMessageAt}
               lastMessage={room.lastMessage}
               roomAvatarInitials={room.roomAvatarInitials}
-              onClick={() => {
-                onNavigate("room", room);
-              }}
+              onClick={() => {}}
             />
           );
         })}
