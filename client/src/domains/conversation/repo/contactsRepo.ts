@@ -1,10 +1,16 @@
-import type { Contact } from "@/domains/contacts/types";
+import type { Contact } from "@/domains/conversation/types";
 import { db } from "@/infrastructure/sync/db";
 
-export async function addContactRepo({ contact }: { contact: Contact }) {
-  await db.contacts.add(contact);
-}
+export const contactsRepo = {
+  async addContact(contact: Contact) {
+    await db.contacts.add(contact);
+  },
 
-export async function syncContactsRepo({ contacts }: { contacts: Contact[] }) {
-  await db.contacts.bulkPut(contacts);
-}
+  async sync(contacts: Contact[]) {
+    await db.contacts.bulkPut(contacts);
+  },
+
+  async getContacts() {
+    return await db.contacts.toArray();
+  },
+};

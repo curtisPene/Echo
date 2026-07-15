@@ -1,4 +1,7 @@
-import { createNewRoomDB, getRooms } from "@/domains/presence/repo/roomsRepo";
+import {
+  createNewRoomDB,
+  getRooms,
+} from "@/domains/conversation/repo/repo/roomsRepo";
 import type { Contact } from "../../contacts/types";
 import { createNewRoomAPI } from "@/domains/presence/api/roomsAPI";
 import type { User } from "@/domains/auth & access/types";

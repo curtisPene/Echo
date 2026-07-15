@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useContacts } from "@/stores/useContacts";
 import { ContactsListItem } from "./ContactsListItem";
-import { useContactsList } from "../hooks/useContactsList";
+import { useContactsList } from "../../auth & access/hooks/useContactsList";
 
 export const ContactsList = () => {
   const { contacts } = useContacts();

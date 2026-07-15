@@ -1,4 +1,4 @@
-import { syncRoomsRepo } from "@/domains/presence/repo/roomsRepo";
+import { roomsRepo } from "@/domains/conversation/repo/roomsRepo";
 import { appSyncGateway } from "./appGateway";
 import {
   createAppContext,
@@ -6,7 +6,7 @@ import {
   getAppContext,
   updateAppContext,
 } from "./appRepo";
-import { syncContactsRepo } from "@/domains/contacts/repo/contactsRepo";
+import { contactsRepo } from "@/domains/conversation/repo/contactsRepo";
 import { syncMessagesRepo } from "@/domains/messaging/repo/messagesRepo";
 import type { Auth } from "@/stores/useAuth";
 import type { ServiceResult } from "@/types";
@@ -42,8 +42,8 @@ export const syncService = async ({
 
   const lastSync = syncResponse.data.lastSync;
   await updateAppContext({ user: auth.user, lastSync });
-  await syncRoomsRepo({ rooms: syncResponse.data.rooms });
-  await syncContactsRepo({ contacts: syncResponse.data.contacts });
+  await roomsRepo.sync({ rooms: syncResponse.data.rooms });
+  await contactsRepo.sync(syncResponse.data.contacts);
   await syncMessagesRepo({ messages: syncResponse.data.messages });
 
   return {

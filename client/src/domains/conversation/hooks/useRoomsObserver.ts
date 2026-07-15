@@ -1,4 +1,4 @@
-import { db } from "@/infrastructure/sync/db";
+import { getRoomsService } from "@/domains/conversation/services/getRoomsService";
 import { type AppStatus } from "@/stores/useAppStatus";
 import { useRooms } from "@/stores/useRooms";
 import { liveQuery } from "dexie";
@@ -9,7 +9,7 @@ export const useRoomsObserver = ({ appStatus }: { appStatus: AppStatus }) => {
 
   useEffect(() => {
     if (appStatus !== "synced") return;
-    const subscription = liveQuery(() => db.rooms.toArray()).subscribe(
+    const subscription = liveQuery(() => getRoomsService()).subscribe(
       (rooms) => {
         setRooms(rooms);
       },

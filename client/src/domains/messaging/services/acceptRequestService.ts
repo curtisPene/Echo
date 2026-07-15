@@ -1,4 +1,4 @@
-import { updateRoomDB } from "@/domains/presence/repo/roomsRepo";
+import { updateRoomDB } from "@/domains/conversation/repo/repo/roomsRepo";
 import { updateRoomParticipant } from "../api/messagingHttpAPI";
 import type { Room } from "@/domains/presence/types";
 import type { ServiceResult } from "@/types";

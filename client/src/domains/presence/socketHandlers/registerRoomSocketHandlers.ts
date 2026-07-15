@@ -1,6 +1,6 @@
 import { parseOrReportError } from "@/lib/parseOrReportError";
 import { onRoomUpdatedPayloadSchema } from "../types";
-import { updateRoomDB } from "../repo/roomsRepo";
+import { updateRoomDB } from "../../conversation/repo/repo/roomsRepo";
 import type { Socket } from "@/lib/socket";
 
 const roomUpdatedController = (payload: unknown) => {

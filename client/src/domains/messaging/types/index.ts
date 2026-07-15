@@ -1,5 +1,4 @@
 import { apiResponseSchema } from "@/types";
-import { roomSchema } from "@/domains/presence/types";
 import z from "zod";
 
 /**
@@ -71,10 +70,3 @@ export const messageSendPayloadSchema = z.object({
 });
 
 export type MessageSendPayload = z.infer<typeof messageSendPayloadSchema>;
-
-export const updateRoomParticipantResponseSchema =
-  apiResponseSchema(roomSchema);
-
-export type UpdateRoomParticipantResponse = z.infer<
-  typeof updateRoomParticipantResponseSchema
->;

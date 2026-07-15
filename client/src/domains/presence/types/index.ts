@@ -42,3 +42,10 @@ export const onRoomUpdatedPayloadSchema = z.object({
 });
 
 export type RoomUpdatedPayload = z.infer<typeof onRoomUpdatedPayloadSchema>;
+
+export const updateRoomParticipantResponseSchema =
+  apiResponseSchema(roomSchema);
+
+export type UpdateRoomParticipantResponse = z.infer<
+  typeof updateRoomParticipantResponseSchema
+>;

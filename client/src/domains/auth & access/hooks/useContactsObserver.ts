@@ -1,4 +1,4 @@
-import { db } from "@/infrastructure/sync/db";
+import { getContactsService } from "../services/getContactsService";
 import { liveQuery } from "dexie";
 import { type AppStatus } from "@/stores/useAppStatus";
 import { useEffect } from "react";
@@ -14,7 +14,7 @@ export const useContactsObserver = ({
   useEffect(() => {
     if (appStatus !== "synced") return;
     const subscription = liveQuery(() => {
-      return db.contacts.toArray();
+      return getContactsService();
     }).subscribe((contacts) => {
       setContacts(contacts);
     });
