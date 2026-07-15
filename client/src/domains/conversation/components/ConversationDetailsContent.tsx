@@ -17,14 +17,23 @@ import {
   ChevronDownIcon,
   MoreVerticalIcon,
 } from "lucide-react";
-import { useConversationDetailsView } from "../hooks/useConversationDetailsView";
+import { useConversationDetailsViewModel } from "../viewModels/useConversationDetailsViewModel";
+import { getOtherParticipants } from "../presentation/roomPresentation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getInitials } from "@/lib/utils";
 import clsx from "clsx";
 
 export const ConversationDetailsContent = () => {
-  const { room, initials, isOneOnOne, isRoomPending } =
-    useConversationDetailsView();
+  const { room } = useConversationDetailsViewModel();
+  const currentUser = useCurrentUser();
 
   if (!room) return null;
+
+  const headerParticipant = getOtherParticipants(
+    room.participants,
+    currentUser?.id ?? "",
+  )[0];
+  const isRoomPending = room.myStatus === "pending";
 
   return (
     <div className={clsx("root", "flex flex-col gap-4 p-4")}>
@@ -39,7 +48,12 @@ export const ConversationDetailsContent = () => {
           className={clsx("ring-brand", "size-16 rounded-full ring-2")}
         >
           <AvatarFallback className={clsx("text-lg")}>
-            {initials}
+            {headerParticipant
+              ? getInitials(
+                  headerParticipant.firstName,
+                  headerParticipant.lastName,
+                )
+              : ""}
           </AvatarFallback>
         </Avatar>
         <div>
@@ -61,7 +75,7 @@ export const ConversationDetailsContent = () => {
         <Button variant="outline" size="icon" aria-label="Leave group">
           <LogOutIcon size={16} strokeWidth={2} />
         </Button>
-        {isOneOnOne && (
+        {room.isOneOnOne && (
           <Button variant="destructive" size="icon" aria-label="Block">
             <BanIcon size={16} strokeWidth={2} />
           </Button>
@@ -103,13 +117,13 @@ export const ConversationDetailsContent = () => {
                       )}
                     >
                       <AvatarFallback className={clsx("text-xs")}>
-                        {participant.user.firstName[0]}
-                        {participant.user.lastName[0]}
+                        {getInitials(
+                          participant.user.firstName,
+                          participant.user.lastName,
+                        )}
                       </AvatarFallback>
                     </Avatar>
-                    <span
-                      className={clsx("text-foreground", "flex-1 text-sm")}
-                    >
+                    <span className={clsx("text-foreground", "flex-1 text-sm")}>
                       {participant.user.firstName} {participant.user.lastName}
                     </span>
                     <Popover>
@@ -124,7 +138,10 @@ export const ConversationDetailsContent = () => {
                       >
                         <MoreVerticalIcon size={16} strokeWidth={2} />
                       </PopoverTrigger>
-                      <PopoverContent align="end" className={clsx("w-auto p-1")}>
+                      <PopoverContent
+                        align="end"
+                        className={clsx("w-auto p-1")}
+                      >
                         <Button
                           variant="destructive"
                           className={clsx(

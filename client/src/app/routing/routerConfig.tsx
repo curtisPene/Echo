@@ -4,9 +4,9 @@ import { RootLayout } from "../../app/components/RootLayout";
 import { PublicOnlyPath } from "./components/PublicOnlyPath";
 import { RegistrationPage } from "@/domains/auth & access/components/RegistrationPage";
 import { ProtectedPath } from "./components/ProtectedPath";
-import { ConversationsList } from "@/domains/presence/components/ConversationList";
+import { ConversationsList } from "@/domains/conversation/components/ConversationList";
 import { MobileChatScreen } from "@/domains/messaging/components/MobileChatScreen";
-import { RequestsList } from "@/domains/presence/components/RequstsList";
+import { RequestsList } from "@/domains/conversation/components/RequstsList";
 
 export const router = createBrowserRouter([
   {

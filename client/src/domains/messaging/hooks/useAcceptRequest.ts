@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { acceptRequestService } from "../services/acceptRequestService";
+import { acceptRequestService } from "../../conversation/services/acceptRequestService";
 import { useRooms } from "@/stores/useRooms";
 
 export const useAcceptRequest = () => {

@@ -1,11 +1,9 @@
 import clsx from "clsx";
-import { useRooms } from "@/stores/useRooms";
-import { useConversationListView } from "../hooks/useConversationListView";
+import { useConversationListViewModel } from "../viewModels/useConversationListViewModel";
 import { ConversationListItem } from "./ConversationListItem";
 
 export const RequestsList = () => {
-  const { pendingRooms } = useConversationListView();
-  const { setACtiveRoom } = useRooms();
+  const { pendingRooms, selectRoom } = useConversationListViewModel();
 
   return (
     <div className={clsx("root")}>
@@ -15,12 +13,9 @@ export const RequestsList = () => {
             <ConversationListItem
               key={room.id}
               room={room}
-              lastMessage={room.lastMessage}
-              lastMessageAt={room.lastMessageAt}
-              roomAvatarInitials={room.roomAvatarInitials}
               isActive={false}
               onClick={() => {
-                setACtiveRoom(room.id, room.name);
+                selectRoom(room.id, room.name);
               }}
             />
           );

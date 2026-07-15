@@ -10,10 +10,17 @@ export const useConversationListViewModel = () => {
   const unreadCounts = useRoomUnreadCounts((state) => state.unreadCounts);
   const currentUserId = useAuth((state) => state.user?.id);
 
-  return getConversationListService({
-    rooms,
-    messages,
-    unreadCounts,
-    currentUserId: currentUserId ?? "",
-  });
+  const selectRoom = (room: { id: string; name: string }) => {
+    useRooms.getState().setACtiveRoom(room);
+  };
+
+  return {
+    ...getConversationListService({
+      rooms,
+      messages,
+      unreadCounts,
+      currentUserId: currentUserId ?? "",
+    }),
+    selectRoom,
+  };
 };

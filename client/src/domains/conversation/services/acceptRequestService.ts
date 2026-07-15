@@ -1,14 +1,14 @@
-import { updateRoomDB } from "@/domains/conversation/repo/repo/roomsRepo";
-import { updateRoomParticipant } from "../api/messagingHttpAPI";
 import type { Room } from "@/domains/presence/types";
 import type { ServiceResult } from "@/types";
+import { roomsRepo } from "../repo/roomsRepo";
+import { roomsAPI } from "../api/roomsAPI";
 
 export const acceptRequestService = async ({
   roomId,
 }: {
   roomId: string;
 }): Promise<ServiceResult<Room>> => {
-  const response = await updateRoomParticipant({
+  const response = await roomsAPI.updateParticipant({
     roomId,
     status: "accepted",
   });
@@ -21,7 +21,7 @@ export const acceptRequestService = async ({
     };
   }
 
-  await updateRoomDB(response.data);
+  await roomsRepo.updateRoom(response.data);
 
   return {
     success: true,

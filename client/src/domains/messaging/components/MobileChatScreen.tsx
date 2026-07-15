@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useRooms } from "@/stores/useRooms";
-import { ConversationsList } from "@/domains/presence/components/ConversationList";
+import { ConversationsList } from "@/domains/conversation/components/ConversationList";
 import { MessageList } from "./MessageList";
 import { Composer } from "./Composer";
 

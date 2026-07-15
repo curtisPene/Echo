@@ -13,7 +13,7 @@ import { useLayoutController } from "../hooks/useLayoutController";
 import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
 import { useDesktopShellView } from "../hooks/useDesktopShellView";
-import { ConversationDetailsContent } from "@/domains/presence/components/ConversationDetailsContent";
+import { ConversationDetailsContent } from "@/domains/conversation/components/ConversationDetailsContent";
 
 export const DesktopShell = () => {
   const { desktopNavItems } = useLayoutController();

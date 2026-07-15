@@ -1,9 +1,9 @@
+import { useConversationListViewModel } from "../viewModels/useConversationListViewModel";
 import { ConversationListItem } from "./ConversationListItem";
-import { useConversationListView } from "../hooks/useConversationListView";
 import clsx from "clsx";
 
 export const ConversationsList = () => {
-  const { rooms } = useConversationListView();
+  const { rooms, selectRoom } = useConversationListViewModel();
 
   return (
     <div className={clsx("root")}>
@@ -13,10 +13,9 @@ export const ConversationsList = () => {
             <ConversationListItem
               key={room.id}
               room={room}
-              lastMessageAt={room.lastMessageAt}
-              lastMessage={room.lastMessage}
-              roomAvatarInitials={room.roomAvatarInitials}
-              onClick={() => {}}
+              onClick={() => {
+                selectRoom(room);
+              }}
             />
           );
         })}
