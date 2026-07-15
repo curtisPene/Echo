@@ -1,24 +1,21 @@
 import "./App.css";
-import { Router } from "./features/routing/Router";
 import { useAuth } from "./stores/useAuth";
 import { useAppStatus } from "./stores/useAppStatus";
 import { SplashScreen } from "./app/components/splashScreen/SplashScreen";
 import { useAppBootstrap } from "./app/hooks/useAppBootstrap";
-import { useContactsObserver } from "./features/contacts/hooks/useContactsObserver";
-import { useRoomsObserver } from "./features/rooms/hooks/useRoomsObserver";
-import { useRoomUnreadCountsObserver } from "./features/rooms/hooks/useRoomUnreadCountsObserver";
-import { useMessagesObserver } from "./features/messaging/hooks/useMessagesObserver";
+import { useContactsObserver } from "./domains/conversation/hooks/useContactsObserver";
+import { useRoomsObserver } from "./domains/presence/hooks/useRoomsObserver";
+import { useRoomUnreadCountsObserver } from "./domains/presence/hooks/useRoomUnreadCountsObserver";
+import { useMessagesObserver } from "./domains/messaging/hooks/useMessagesObserver";
 import { useSocketState } from "./stores/useSocket";
-import { SoundProvider } from "./app/hooks/SoundProvider";
+import { SoundProvider } from "./infrastructure/sound/SoundProvider";
+import { Router } from "./app/routing/Router";
 
 function App() {
   const auth = useAuth((state) => state);
   const { authStatus, setAuth } = auth;
   const { appStatus, setAppStatus } = useAppStatus((state) => state);
   const { onlineStatus, setOnlineStatus } = useSocketState();
-
-  console.log("appStatus: ", appStatus);
-  console.log("authStatus: ", authStatus);
 
   useAppBootstrap({
     appStatus,

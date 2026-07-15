@@ -1,7 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { ZodError } from "zod";
 import { useAuth } from "@/stores/useAuth";
-import { loginResponseSchema } from "@/features/auth/types";
+import { loginResponseSchema } from "@/domains/auth & access/types";
 import { parseOrReportError } from "@/lib/parseOrReportError";
 
 const baseURL = import.meta.env.VITE_API_URL;

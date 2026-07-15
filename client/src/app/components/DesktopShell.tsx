@@ -1,24 +1,24 @@
 import clsx from "clsx";
 import { Input } from "@/components/ui/input";
-import { EllipsisVerticalIcon, MessageCircleIcon, SearchIcon } from "lucide-react";
-import { Composer } from "@/features/messaging/components/Composer";
-import { MessageList } from "@/features/messaging/components/MessageList";
+import {
+  EllipsisVerticalIcon,
+  MessageCircleIcon,
+  SearchIcon,
+} from "lucide-react";
+import { Composer } from "@/domains/messaging/components/Composer";
+import { MessageList } from "@/domains/messaging/components/MessageList";
 import { EchoLogo } from "./EchoLogo";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useLayoutController } from "../hooks/useLayoutController";
 import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
 import { useDesktopShellView } from "../hooks/useDesktopShellView";
-import { ConversationDetailsContent } from "@/features/rooms/components/ConversationDetailsContent";
+import { ConversationDetailsContent } from "@/domains/presence/components/ConversationDetailsContent";
 
 export const DesktopShell = () => {
   const { desktopNavItems } = useLayoutController();
-  const {
-    listHeader,
-    activeRoom,
-    isDetailsVisible,
-    setIsDetailsVisible,
-  } = useDesktopShellView();
+  const { listHeader, activeRoom, isDetailsVisible, setIsDetailsVisible } =
+    useDesktopShellView();
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
       <div
@@ -83,10 +83,7 @@ export const DesktopShell = () => {
             >
               <span className={clsx("size-8")} aria-hidden />
               <h2
-                className={clsx(
-                  "text-foreground",
-                  "text-center font-semibold",
-                )}
+                className={clsx("text-foreground", "text-center font-semibold")}
               >
                 {activeRoom.name}
               </h2>

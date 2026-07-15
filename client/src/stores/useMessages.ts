@@ -1,4 +1,4 @@
-import type { Message } from "@/features/messaging/types";
+import type { Message } from "@/domains/messaging/types";
 import { create } from "zustand";
 
 type MessageStore = {

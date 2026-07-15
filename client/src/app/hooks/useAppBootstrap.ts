@@ -3,10 +3,10 @@ import type { AppStatus } from "@/stores/useAppStatus";
 import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import type { OnlineStatus } from "@/stores/useSocket";
-import { syncService } from "../services/syncService";
-import { verificaitonService } from "../services/verificationService";
-import { registerMessagingSocketHandlers } from "@/features/messaging/socketHandlers/registerMessagingSocketHandlers";
-import { registerRoomSocketHandlers } from "@/features/rooms/socketHandlers/registerRoomSocketHandlers";
+import { syncService } from "@/infrastructure/sync/syncService";
+import { verificaitonService } from "../../domains/auth & access/services/verificationService";
+import { registerMessagingSocketHandlers } from "@/domains/messaging/socketHandlers/registerMessagingSocketHandlers";
+import { registerRoomSocketHandlers } from "@/domains/presence/socketHandlers/registerRoomSocketHandlers";
 
 export const useAppBootstrap = ({
   appStatus,
@@ -67,7 +67,6 @@ export const useAppBootstrap = ({
     socket.on("auth:unauthorized", () => {
       // Todo: handle unauthorized
     });
-
     if (!socket.connected) socket.connect();
 
     return () => {

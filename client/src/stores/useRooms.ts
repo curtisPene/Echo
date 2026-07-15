@@ -1,4 +1,4 @@
-import type { Room } from "@/features/rooms/types";
+import type { Room } from "@/domains/presence/types";
 import { create } from "zustand";
 
 type RoomsStore = {

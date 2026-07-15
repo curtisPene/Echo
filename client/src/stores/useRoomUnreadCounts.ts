@@ -1,4 +1,4 @@
-import type { RoomUnreadCount } from "@/features/rooms/types";
+import type { RoomUnreadCount } from "@/domains/presence/types";
 import { create } from "zustand";
 
 type RoomUnreadCountsStore = {
