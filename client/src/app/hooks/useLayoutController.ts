@@ -1,4 +1,9 @@
-import { BellDotIcon, BellIcon, MessageCircleIcon } from "lucide-react";
+import {
+  BellDotIcon,
+  BellIcon,
+  MessageCircleIcon,
+  UserIcon,
+} from "lucide-react";
 import { useConversationListViewModel } from "@/domains/conversation/viewModels/useConversationListViewModel";
 
 export const useLayoutController = () => {
@@ -11,7 +16,7 @@ export const useLayoutController = () => {
       path: "/requests",
       icon: hasPendingRequests ? BellDotIcon : BellIcon,
     },
-    { path: "/profile", icon: BellIcon },
+    { path: "/profile", icon: UserIcon },
   ];
   const desktopNavItems = navItems.filter((item) => item.path !== "/profile");
   const mobileNavItems = navItems;
