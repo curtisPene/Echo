@@ -1,4 +1,4 @@
-import { db } from "@/infrastructure/sync/db";
+import { getMessagesService } from "../services/getMessagesService";
 import { type AppStatus } from "@/stores/useAppStatus";
 import { useMessages } from "@/stores/useMessages";
 import { liveQuery } from "dexie";
@@ -14,7 +14,7 @@ export const useMessagesObserver = ({
   useEffect(() => {
     if (appStatus !== "synced") return;
     const subscription = liveQuery(() => {
-      return db.messages.toArray();
+      return getMessagesService();
     }).subscribe((messages) => {
       setMessages(messages);
     });

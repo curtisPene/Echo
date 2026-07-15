@@ -3,7 +3,7 @@ import Dexie from "dexie";
 import type { Message } from "@/domains/messaging/types";
 import type { AppContext } from "./types";
 import type { Room, RoomUnreadCount } from "@/domains/presence/types";
-import type { Contact } from "@/domains/contacts/types";
+import type { Contact } from "@/domains/conversation/types";
 
 export const db = new Dexie("echo") as Dexie & {
   rooms: EntityTable<Room, "id">;

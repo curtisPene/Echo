@@ -7,6 +7,7 @@ import { ProtectedPath } from "./components/ProtectedPath";
 import { ConversationsList } from "@/domains/conversation/components/ConversationList";
 import { MobileChatScreen } from "@/domains/messaging/components/MobileChatScreen";
 import { RequestsList } from "@/domains/conversation/components/RequstsList";
+import { ProfilePage } from "@/domains/auth & access/components/ProfilePage";
 
 export const router = createBrowserRouter([
   {
@@ -52,8 +53,8 @@ export const router = createBrowserRouter([
         element: <RequestsList />,
       },
       {
-        path: "/settings",
-        element: <div>Settings</div>,
+        path: "/profile",
+        element: <ProfilePage />,
       },
     ],
     hydrateFallbackElement: <div>Loading...</div>,

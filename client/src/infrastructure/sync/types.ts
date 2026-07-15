@@ -3,7 +3,7 @@ import { userSchema } from "@/domains/auth & access/types";
 import { apiResponseSchema } from "@/types";
 import { roomSchema } from "@/domains/presence/types";
 import { messageSchema } from "@/domains/messaging/types";
-import { contactSchema } from "@/domains/contacts/types";
+import { contactSchema } from "@/domains/conversation/types";
 
 export const appContextSchema = z.object({
   id: z.literal("current"),

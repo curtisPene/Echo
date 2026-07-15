@@ -1,22 +1,15 @@
-import { useAuth } from "@/stores/useAuth";
-import { useRooms } from "@/stores/useRooms";
 import { BellDotIcon, BellIcon, MessageCircleIcon } from "lucide-react";
+import { useConversationListViewModel } from "@/domains/conversation/viewModels/useConversationListViewModel";
 
 export const useLayoutController = () => {
-  const rooms = useRooms((state) => state.rooms);
-  const user = useAuth((state) => state.user);
-  const pendingRooms = rooms.filter((room) => {
-    return room.participants.some(
-      (participant) =>
-        participant.status === "pending" && participant.user.id === user?.id,
-    );
-  });
+  const { pendingRooms } = useConversationListViewModel();
+  const hasPendingRequests = pendingRooms.length > 0;
 
   const navItems = [
     { path: "/chats", icon: MessageCircleIcon },
     {
       path: "/requests",
-      icon: pendingRooms.length === 0 ? BellIcon : BellDotIcon,
+      icon: hasPendingRequests ? BellDotIcon : BellIcon,
     },
     { path: "/profile", icon: BellIcon },
   ];

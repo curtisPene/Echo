@@ -1,27 +1,18 @@
-import { useState } from "react";
 import { SendIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useComposer } from "../hooks/useComposer";
+import { useComposerViewModel } from "../viewModels/useComposerViewModel";
 
 export const Composer = () => {
-  const [inputValue, setInputValue] = useState<string>("");
-  const { onSendMessage } = useComposer();
+  const { message, setMessage, onSubmit } = useComposerViewModel();
+
   return (
     <div className="composer bg-card rounded-2xl p-3 shadow-md">
-      <form
-        className="composerForm flex items-center gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSendMessage(inputValue, () => setInputValue(""));
-        }}
-      >
+      <form className="composerForm flex items-center gap-2" onSubmit={onSubmit}>
         <Input
           type="text"
           placeholder="Type a message"
-          value={inputValue}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-          }}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
         />
         <button
           type="submit"

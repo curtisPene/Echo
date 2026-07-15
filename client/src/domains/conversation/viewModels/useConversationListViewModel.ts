@@ -14,6 +14,10 @@ export const useConversationListViewModel = () => {
     useRooms.getState().setACtiveRoom(room);
   };
 
+  const clearActiveRoom = () => {
+    useRooms.getState().clearActiveRoom();
+  };
+
   return {
     ...getConversationListService({
       rooms,
@@ -22,5 +26,6 @@ export const useConversationListViewModel = () => {
       currentUserId: currentUserId ?? "",
     }),
     selectRoom,
+    clearActiveRoom,
   };
 };

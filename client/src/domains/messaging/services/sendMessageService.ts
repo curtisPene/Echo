@@ -1,6 +1,6 @@
 import type { ServiceResult } from "@/types";
 import { sendMessageSocket } from "../api/messagingSocketAPI";
-import { saveMessageDB } from "../repo/messagesRepo";
+import { messagesRepo } from "../repo/messagesRepo";
 import { type Message } from "../types";
 
 export const sendMessageService = async ({
@@ -20,7 +20,7 @@ export const sendMessageService = async ({
       message: response.message,
       data: null,
     };
-  saveMessageDB({ message: response.data.message });
+  messagesRepo.saveMessage(response.data.message);
 
   return {
     success: true,

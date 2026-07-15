@@ -7,7 +7,7 @@ import {
   updateAppContext,
 } from "./appRepo";
 import { contactsRepo } from "@/domains/conversation/repo/contactsRepo";
-import { syncMessagesRepo } from "@/domains/messaging/repo/messagesRepo";
+import { messagesRepo } from "@/domains/messaging/repo/messagesRepo";
 import type { Auth } from "@/stores/useAuth";
 import type { ServiceResult } from "@/types";
 
@@ -44,7 +44,7 @@ export const syncService = async ({
   await updateAppContext({ user: auth.user, lastSync });
   await roomsRepo.sync({ rooms: syncResponse.data.rooms });
   await contactsRepo.sync(syncResponse.data.contacts);
-  await syncMessagesRepo({ messages: syncResponse.data.messages });
+  await messagesRepo.sync(syncResponse.data.messages);
 
   return {
     success: true,

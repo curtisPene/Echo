@@ -7,14 +7,15 @@ import {
   MessageScrollerButton,
 } from "@/components/ui/message-scroller";
 import { MessageListItem } from "./MessageListItem";
-import { useConversationView } from "../hooks/useConversationView";
+import { useMessageListViewModel } from "../viewModels/useMessageListViewModel";
+import { useAcceptRequestViewModel } from "@/domains/conversation/viewModels/useAcceptRequestViewModel";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import clsx from "clsx";
-import { useAcceptRequest } from "../hooks/useAcceptRequest";
 
 export const MessageList = () => {
-  const { roomMessages, user, activeRoom, isRoomAccepted } =
-    useConversationView();
-  const { onAcceptRequest } = useAcceptRequest();
+  const { messages, activeRoom, isRoomAccepted } = useMessageListViewModel();
+  const { onAcceptRequest } = useAcceptRequestViewModel();
+  const currentUser = useCurrentUser();
 
   return (
     <div className={clsx("messageList", "flex h-full flex-col p-2")}>
@@ -23,8 +24,8 @@ export const MessageList = () => {
           <MessageScroller className={clsx("min-h-0 flex-1")}>
             <MessageScrollerViewport>
               <MessageScrollerContent className={clsx("px-4 py-3")}>
-                {roomMessages?.map((message) => {
-                  const isOwnMessage = message.sender === user.id;
+                {messages.map((message) => {
+                  const isOwnMessage = message.sender === currentUser?.id;
                   return (
                     <MessageScrollerItem
                       key={message.id}

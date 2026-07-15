@@ -15,7 +15,7 @@ export const RequestsList = () => {
               room={room}
               isActive={false}
               onClick={() => {
-                selectRoom(room.id, room.name);
+                selectRoom(room);
               }}
             />
           );

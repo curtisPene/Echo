@@ -1,3 +1,4 @@
+import { useState } from "react";
 import clsx from "clsx";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,15 +11,18 @@ import { MessageList } from "@/domains/messaging/components/MessageList";
 import { EchoLogo } from "./EchoLogo";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useLayoutController } from "../hooks/useLayoutController";
+import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
-import { useDesktopShellView } from "../hooks/useDesktopShellView";
 import { ConversationDetailsContent } from "@/domains/conversation/components/ConversationDetailsContent";
+import { useConversationDetailsViewModel } from "@/domains/conversation/viewModels/useConversationDetailsViewModel";
 
 export const DesktopShell = () => {
+  const listHeader = useListHeader();
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const { desktopNavItems } = useLayoutController();
-  const { listHeader, activeRoom, isDetailsVisible, setIsDetailsVisible } =
-    useDesktopShellView();
+  const { room } = useConversationDetailsViewModel();
+
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
       <div
@@ -72,7 +76,7 @@ export const DesktopShell = () => {
         </div>
         <Outlet />
       </div>
-      {activeRoom ? (
+      {room ? (
         <div className="conversationPanel flex flex-1 flex-col gap-5">
           <div className="messagesPanel bg-card flex min-h-0 flex-1 flex-col rounded-2xl shadow-md">
             <div
@@ -85,7 +89,7 @@ export const DesktopShell = () => {
               <h2
                 className={clsx("text-foreground", "text-center font-semibold")}
               >
-                {activeRoom.name}
+                {room.name}
               </h2>
               <button
                 className={clsx("roomDetailsTrigger", "lg:hidden")}

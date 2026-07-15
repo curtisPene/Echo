@@ -1,4 +1,4 @@
-import type { Contact } from "@/domains/contacts/types";
+import type { Contact } from "@/domains/conversation/types";
 import { create } from "zustand";
 
 export type ContactsStore = {
