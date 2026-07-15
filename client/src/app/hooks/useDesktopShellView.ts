@@ -1,9 +1,11 @@
 import { useRooms } from "@/stores/useRooms";
+import { useState } from "react";
 import { useLocation } from "react-router";
 
 export const useDesktopShellView = () => {
   const pathname = useLocation().pathname;
   const activeRoom = useRooms((state) => state.activeRoom);
+  const [isDetailsVisible, setIsDetailsVisible] = useState<boolean>(false);
 
   let listHeader: string;
 
@@ -14,5 +16,5 @@ export const useDesktopShellView = () => {
     listHeader = "Profile";
   } else listHeader = "";
 
-  return { listHeader, activeRoom };
+  return { listHeader, activeRoom, isDetailsVisible, setIsDetailsVisible };
 };

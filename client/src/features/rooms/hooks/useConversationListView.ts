@@ -15,12 +15,17 @@ export const useConversationListView = () => {
       ?.status;
 
   const roomInitials = (room: Room) => {
-    const participants = room.participants.filter(
+    const otherParticipants = room.participants.filter(
       (participant) => participant.user.id !== user?.id,
     );
 
-    const initials1 = `${user?.firstName[0]}${user?.lastName[0]}`;
-    const initials2 = `${participants[0].user.firstName[0]}${participants[0].user.lastName[0]}`;
+    let initials1 = `${user?.firstName[0]}${user?.lastName[0]}`;
+    let initials2 = `${otherParticipants[0].user.firstName[0]}${otherParticipants[0].user.lastName[0]}`;
+
+    if (otherParticipants.length > 1) {
+      initials1 = `${otherParticipants[0].user.firstName[0]}${otherParticipants[0].user.lastName[0]}`;
+      initials2 = `${otherParticipants[1].user.firstName[0]}${otherParticipants[1].user.lastName[0]}`;
+    }
 
     return [initials1, initials2];
   };

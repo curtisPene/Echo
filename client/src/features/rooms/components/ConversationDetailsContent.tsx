@@ -6,10 +6,16 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
   UserPlusIcon,
   LogOutIcon,
   BanIcon,
   ChevronDownIcon,
+  MoreVerticalIcon,
 } from "lucide-react";
 import { useConversationDetailsView } from "../hooks/useConversationDetailsView";
 import clsx from "clsx";
@@ -21,7 +27,7 @@ export const ConversationDetailsContent = () => {
   if (!room) return null;
 
   return (
-    <div className={clsx("root", "flex flex-col gap-4")}>
+    <div className={clsx("root", "flex flex-col gap-4 p-4")}>
       <div
         className={clsx(
           "detailsHeader",
@@ -101,9 +107,36 @@ export const ConversationDetailsContent = () => {
                         {participant.user.lastName[0]}
                       </AvatarFallback>
                     </Avatar>
-                    <span className={clsx("text-foreground", "text-sm")}>
+                    <span
+                      className={clsx("text-foreground", "flex-1 text-sm")}
+                    >
                       {participant.user.firstName} {participant.user.lastName}
                     </span>
+                    <Popover>
+                      <PopoverTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Member options"
+                          />
+                        }
+                      >
+                        <MoreVerticalIcon size={16} strokeWidth={2} />
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className={clsx("w-auto p-1")}>
+                        <Button
+                          variant="destructive"
+                          className={clsx(
+                            "blockMemberButton",
+                            "w-full justify-start gap-2",
+                          )}
+                        >
+                          <BanIcon size={16} strokeWidth={2} />
+                          Block
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
                   </li>
                 ))}
               </ul>

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { Input } from "@/components/ui/input";
-import { MessageCircleIcon, SearchIcon } from "lucide-react";
+import { EllipsisVerticalIcon, MessageCircleIcon, SearchIcon } from "lucide-react";
 import { Composer } from "@/features/messaging/components/Composer";
 import { MessageList } from "@/features/messaging/components/MessageList";
 import { EchoLogo } from "./EchoLogo";
@@ -13,7 +13,12 @@ import { ConversationDetailsContent } from "@/features/rooms/components/Conversa
 
 export const DesktopShell = () => {
   const { desktopNavItems } = useLayoutController();
-  const { listHeader, activeRoom } = useDesktopShellView();
+  const {
+    listHeader,
+    activeRoom,
+    isDetailsVisible,
+    setIsDetailsVisible,
+  } = useDesktopShellView();
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
       <div
@@ -69,8 +74,36 @@ export const DesktopShell = () => {
       </div>
       {activeRoom ? (
         <div className="conversationPanel flex flex-1 flex-col gap-5">
-          <div className="messagesPanel bg-card min-h-0 flex-1 rounded-2xl shadow-md">
-            <MessageList />
+          <div className="messagesPanel bg-card flex min-h-0 flex-1 flex-col rounded-2xl shadow-md">
+            <div
+              className={clsx(
+                "messageListHeader",
+                "border-border hidden shrink-0 flex-row items-center justify-between border-b-2 px-4 py-2 sm:flex lg:justify-center",
+              )}
+            >
+              <span className={clsx("size-8")} aria-hidden />
+              <h2
+                className={clsx(
+                  "text-foreground",
+                  "text-center font-semibold",
+                )}
+              >
+                {activeRoom.name}
+              </h2>
+              <button
+                className={clsx("roomDetailsTrigger", "lg:hidden")}
+                onClick={() => setIsDetailsVisible(!isDetailsVisible)}
+              >
+                <EllipsisVerticalIcon size={18} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              {isDetailsVisible ? (
+                <ConversationDetailsContent />
+              ) : (
+                <MessageList />
+              )}
+            </div>
           </div>
           <Composer />
         </div>
@@ -90,7 +123,7 @@ export const DesktopShell = () => {
       <div
         className={clsx(
           "conversationDetailsPanel",
-          "bg-card hidden w-65 shrink-0 flex-col overflow-y-auto rounded-2xl p-4 shadow-md lg:flex xl:w-80",
+          "bg-card hidden w-65 shrink-0 flex-col overflow-y-auto rounded-2xl shadow-md lg:flex xl:w-80",
         )}
       >
         <ConversationDetailsContent />

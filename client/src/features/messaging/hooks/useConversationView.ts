@@ -1,8 +1,11 @@
 import { useAuth } from "@/stores/useAuth";
 import { useMessages } from "@/stores/useMessages";
 import { useRooms } from "@/stores/useRooms";
+import { useState } from "react";
 
 export const useConversationView = () => {
+  const [isDetailsVisible, setIsDetailsVisible] = useState<boolean>(false);
+
   const activeRoom = useRooms((state) => state.activeRoom);
   const rooms = useRooms((state) => state.rooms);
   const messages = useMessages((state) => state.messages);
@@ -14,13 +17,21 @@ export const useConversationView = () => {
     ? rooms.find((room) => room.id === activeRoom.id)
     : null;
 
-  const isRoomAccepted = activeRoomData?.participants.find(
-    (participant) => participant.user.id === user.id,
-  )?.status === "accepted";
+  const isRoomAccepted =
+    activeRoomData?.participants.find(
+      (participant) => participant.user.id === user.id,
+    )?.status === "accepted";
 
   const roomMessages = activeRoom
     ? messages.filter((message) => message.room === activeRoom.id)
     : null;
 
-  return { roomMessages, user, activeRoom, isRoomAccepted };
+  return {
+    roomMessages,
+    user,
+    activeRoom,
+    isRoomAccepted,
+    isDetailsVisible,
+    setIsDetailsVisible,
+  };
 };
