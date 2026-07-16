@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type { Server as HttpServer } from "node:http";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
-import { onConnectionController } from "./features/auth/controllers/authSocketControllers";
-import { onMessageSendController } from "./features/rooms/controllers/socketControllers";
+import {
+  authSocketMiddleware,
+  registerAuthSocketControllers,
+} from "./domains/authAccess/controllers/authSocketControllers";
+import { onMessageSendController } from "./domains/messaging/controllers/socketControllers";
 
 export let io: Server<
   DefaultEventsMap,
@@ -31,13 +34,12 @@ export const attachSocket = (server: HttpServer) => {
     cors: { origin: process.env.CLIENT_URL, credentials: true },
   });
 
+  io.use(authSocketMiddleware);
+
   io.on("connection", (socket) => {
-    onConnectionController(socket);
+    registerAuthSocketControllers(io, socket);
 
     socket.on("message:send", (payload, ack) => {
-      if (!socket.data.userId) {
-        return ack({ success: false, message: "Unauthorized", data: null });
-      }
       onMessageSendController({ socket, payload, ack });
     });
 

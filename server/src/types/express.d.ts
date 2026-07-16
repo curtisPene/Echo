@@ -1,4 +1,4 @@
-import { TokenPayload } from "../features/auth/types";
+import { TokenPayload } from "../domains/authAccess/types";
 
 declare global {
   namespace Express {
