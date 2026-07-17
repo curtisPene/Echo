@@ -1,5 +1,5 @@
-import { verifyRefreshTokenAPI } from "@/domains/auth & access/api/authAPI";
-import type { User } from "@/domains/auth & access/types";
+import { verifyRefreshTokenAPI } from "@/domains/authAndAccess/api/authAPI";
+import type { User } from "@/domains/authAndAccess/types";
 import type { ServiceResult } from "@/types";
 
 export const verificaitonService = async (): Promise<

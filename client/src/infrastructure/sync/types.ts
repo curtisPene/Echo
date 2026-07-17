@@ -1,5 +1,5 @@
 import z from "zod";
-import { userSchema } from "@/domains/auth & access/types";
+import { userSchema } from "@/domains/authAndAccess/types";
 import { apiResponseSchema } from "@/types";
 import { roomSchema } from "@/domains/presence/types";
 import { messageSchema } from "@/domains/messaging/types";

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import type { OnlineStatus } from "@/stores/useSocket";
 import { syncService } from "@/infrastructure/sync/syncService";
-import { verificaitonService } from "../../domains/auth & access/services/verificationService";
+import { verificaitonService } from "../../domains/authAndAccess/services/verificationService";
 import { registerMessagingSocketHandlers } from "@/domains/messaging/socketHandlers/registerMessagingSocketHandlers";
 import { registerRoomSocketHandlers } from "@/domains/presence/socketHandlers/registerRoomSocketHandlers";
 

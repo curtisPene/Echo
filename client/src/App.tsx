@@ -3,7 +3,7 @@ import { useAuth } from "./stores/useAuth";
 import { useAppStatus } from "./stores/useAppStatus";
 import { SplashScreen } from "./app/components/splashScreen/SplashScreen";
 import { useAppBootstrap } from "./app/hooks/useAppBootstrap";
-import { useContactsObserver } from "./domains/auth & access/hooks/useContactsObserver";
+import { useContactsObserver } from "./domains/authAndAccess/hooks/useContactsObserver";
 import { useRoomsObserver } from "./domains/conversation/hooks/useRoomsObserver";
 import { useRoomUnreadCountsObserver } from "./domains/presence/hooks/useRoomUnreadCountsObserver";
 import { useMessagesObserver } from "./domains/messaging/hooks/useMessagesObserver";

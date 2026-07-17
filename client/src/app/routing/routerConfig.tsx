@@ -1,13 +1,13 @@
-import { LoginPage } from "@/domains/auth & access/components/LoginPage";
+import { LoginPage } from "@/domains/authAndAccess/components/LoginPage";
 import { createBrowserRouter, Navigate } from "react-router";
 import { RootLayout } from "../../app/components/RootLayout";
 import { PublicOnlyPath } from "./components/PublicOnlyPath";
-import { RegistrationPage } from "@/domains/auth & access/components/RegistrationPage";
+import { RegistrationPage } from "@/domains/authAndAccess/components/RegistrationPage";
 import { ProtectedPath } from "./components/ProtectedPath";
 import { ConversationsList } from "@/domains/conversation/components/ConversationList";
 import { MobileChatScreen } from "@/domains/messaging/components/MobileChatScreen";
 import { RequestsList } from "@/domains/conversation/components/RequstsList";
-import { ProfilePage } from "@/domains/auth & access/components/ProfilePage";
+import { ProfilePage } from "@/domains/authAndAccess/components/ProfilePage";
 
 export const router = createBrowserRouter([
   {

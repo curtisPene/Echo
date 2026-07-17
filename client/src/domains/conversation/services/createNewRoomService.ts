@@ -1,6 +1,6 @@
 import { roomsRepo } from "@/domains/conversation/repo/roomsRepo";
 import type { Contact } from "@/domains/conversation/types";
-import type { User } from "@/domains/auth & access/types";
+import type { User } from "@/domains/authAndAccess/types";
 import { roomsAPI } from "@/domains/conversation/api/roomsAPI";
 
 export const createNewRoomService = async ({
