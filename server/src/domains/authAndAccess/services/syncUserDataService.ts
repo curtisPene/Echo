@@ -3,7 +3,7 @@ import { findRoomsForUserService } from "../../conversations/composition";
 import { findRoomMessagesService } from "../../messaging/composition";
 import { RoomDTO } from "../../conversations/domainModels/room";
 import { MessageDTO } from "../../messaging/domainModels/message";
-import { ContactDTO } from "../domainModels/contacts";
+import { ContactsDTO } from "../domainModels/contacts";
 import { RepoError } from "../../../errors/RepoError";
 import { ServiceResult } from "../../../types";
 
@@ -17,7 +17,7 @@ export async function syncUserDataService({
   ServiceResult<{
     rooms: { room: RoomDTO; unread: number }[];
     messages: MessageDTO[];
-    contacts: ContactDTO[];
+    contacts: ContactsDTO;
     lastSync: string;
   }>
 > {
@@ -43,7 +43,7 @@ export async function syncUserDataService({
     );
 
     const contacts = await contactsRepo.findByUserId({ userId });
-    const contactsView = contacts.toDTO().contacts;
+    const contactsView = contacts.toDTO();
 
     const roomsWithUnread = findMessagesResult.map((result) => ({
       room: result.room,

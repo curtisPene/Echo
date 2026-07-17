@@ -4,7 +4,7 @@ import { Contacts as ContactsDoc } from "../models/contactsModel";
 import { Contacts, NewContacts } from "../domainModels/contacts";
 import { ContactsRepository } from "../ports/ContactsRepository";
 import { userRepo } from "./UserRepo";
-import { User } from "../domainModels/user";
+import { AuthUser } from "../domainModels/authUser";
 
 async function hydrateContacts(doc: {
   id: string;
@@ -18,8 +18,8 @@ async function hydrateContacts(doc: {
   const users = await userRepo.findByIds([...contactIds, ...blockedIds]);
   const usersById = new Map(users.map((user) => [user.id, user]));
 
-  const resolve = (ids: string[]): User[] =>
-    ids.map((id) => usersById.get(id)).filter((user): user is User => user !== undefined);
+  const resolve = (ids: string[]): AuthUser[] =>
+    ids.map((id) => usersById.get(id)).filter((user): user is AuthUser => user !== undefined);
 
   return Contacts.hydrate({
     id: doc.id,

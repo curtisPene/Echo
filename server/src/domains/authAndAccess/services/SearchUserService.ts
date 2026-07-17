@@ -1,7 +1,7 @@
 import { ServiceResult } from "../../../types";
 import { contactsRepo } from "../repo/ContactsRepo";
 import { userRepo } from "../repo/UserRepo";
-import { PublicUser, userPresenter } from "../presenters/usersPresenter";
+import { Identity, IdentityDTO } from "../domainModels/identity";
 
 export class SearchUserService {
   async execute({
@@ -10,7 +10,7 @@ export class SearchUserService {
   }: {
     email: string;
     viewerId: string;
-  }): Promise<ServiceResult<{ user: PublicUser }>> {
+  }): Promise<ServiceResult<{ user: IdentityDTO }>> {
     try {
       const user = await userRepo.findByEmail({ email });
 
@@ -32,7 +32,7 @@ export class SearchUserService {
       return {
         success: true,
         message: "User found",
-        data: { user: userPresenter(user) },
+        data: { user: Identity.hydrate(user).toDTO() },
       };
     } catch (error) {
       console.log(error);

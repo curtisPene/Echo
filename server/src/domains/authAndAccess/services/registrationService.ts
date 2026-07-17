@@ -3,6 +3,8 @@ import { contactsRepo } from "../repo/ContactsRepo";
 import { userRepo } from "../repo/UserRepo";
 import { PasswordHasher } from "../ports/PasswordHasher";
 import { UserRegistrationDto } from "../types/authTypes";
+import { AuthUser } from "../domainModels/authUser";
+import { DomainError } from "../../../errors/DomainError";
 
 export type RegisterUserFailureReason =
   | "duplicate_email"
@@ -28,13 +30,22 @@ export class RegistrationService {
     lastName,
     email,
     password,
+    confirmPassword,
   }: UserRegistrationDto): Promise<RegisterUserOutput> {
     try {
-      const hashedPassword = await this.passwordHasher.hash(password);
-      const userResult = await userRepo.create({
+      const newAuthUser = AuthUser.create({
         firstName,
         lastName,
         email,
+        password,
+        confirmPassword,
+      });
+
+      const hashedPassword = await this.passwordHasher.hash(
+        newAuthUser.password,
+      );
+      const userResult = await userRepo.create({
+        ...newAuthUser,
         password: hashedPassword,
       });
 
@@ -54,6 +65,14 @@ export class RegistrationService {
         data: null,
       };
     } catch (err) {
+      if (err instanceof DomainError) {
+        return {
+          success: false,
+          message: err.message,
+          data: { reason: "validation" },
+        };
+      }
+
       console.log(err);
       return {
         success: false,

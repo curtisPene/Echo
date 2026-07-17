@@ -1,4 +1,4 @@
-import { PublicUser, userPresenter } from "../presenters/usersPresenter";
+import { Identity } from "../domainModels/identity";
 import { userRepo } from "../repo/UserRepo";
 import { TokenSigner } from "../ports/TokenSigner";
 
@@ -17,12 +17,12 @@ export class VerifyRefreshTokenService {
       return { success: false, message: "Invalid token", data: undefined };
 
     const accessToken = this.tokenSigner.signAccessToken(payload);
-    const publicUser: PublicUser = userPresenter(user);
+    const identity = Identity.hydrate(user);
 
     return {
       success: true,
       message: "Authorized",
-      data: { accessToken, user: publicUser },
+      data: { accessToken, user: identity.toDTO() },
     };
   }
 }

@@ -1,12 +1,12 @@
 import { ServiceResult } from "../../../types";
-import { PublicUser, userPresenter } from "../presenters/usersPresenter";
+import { Identity, IdentityDTO } from "../domainModels/identity";
 import { userRepo } from "../repo/UserRepo";
 import { PasswordHasher } from "../ports/PasswordHasher";
 import { TokenSigner } from "../ports/TokenSigner";
 import { UserLoginDto } from "../types/authTypes";
 
 export type LoginUserReuslt = ServiceResult<{
-  user: PublicUser;
+  user: IdentityDTO;
   accessToken: string;
   refreshToken: string;
 }>;
@@ -27,7 +27,7 @@ export class LoginService {
           message: "Invalid credentials",
           data: null,
         };
-      const publicUser = userPresenter(user);
+      const identity = Identity.hydrate(user);
 
       const passwordMatch = await this.passwordHasher.compare(
         password,
@@ -47,7 +47,7 @@ export class LoginService {
       return {
         success: true,
         message: "User logged in successfully",
-        data: { user: publicUser, accessToken, refreshToken },
+        data: { user: identity.toDTO(), accessToken, refreshToken },
       };
     } catch (error) {
       console.log(error);

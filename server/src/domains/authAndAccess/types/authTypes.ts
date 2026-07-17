@@ -19,6 +19,7 @@ export const userRegistrationSchema = z.object({
       PASSWORD_REGEX,
       "Password must be at least 8 characters and contain a letter and a number",
     ),
+  confirmPassword: z.string(),
 });
 
 export type UserRegistrationDto = z.infer<typeof userRegistrationSchema>;

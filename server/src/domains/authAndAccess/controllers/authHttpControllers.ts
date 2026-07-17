@@ -66,13 +66,14 @@ export const userRegistrationController = async (
     });
   }
 
-  const { firstName, lastName, email, password } = parsed.data;
+  const { firstName, lastName, email, password, confirmPassword } = parsed.data;
 
   const result = await registrationService.execute({
     firstName,
     lastName,
     email,
     password,
+    confirmPassword,
   });
 
   if (!result.success) {

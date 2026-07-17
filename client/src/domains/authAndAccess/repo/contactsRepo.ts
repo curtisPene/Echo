@@ -1,4 +1,4 @@
-import type { Contact } from "@/domains/conversation/types";
+import type { Contact } from "@/domains/conversations/types";
 import { db } from "@/infrastructure/sync/db";
 
 export const contactsRepo = {

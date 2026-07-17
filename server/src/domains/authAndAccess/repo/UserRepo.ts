@@ -1,35 +1,35 @@
 import mongoose from "mongoose";
 import { User as UserDoc } from "../models/userModel";
-import { User, NewUser } from "../domainModels/user";
+import { AuthUser, NewAuthUser } from "../domainModels/authUser";
 import { UserRepository, CreateUserResult } from "../ports/UserRepository";
 
 export class UserRepo implements UserRepository {
-  async findById({ id }: { id: string }): Promise<User | null> {
+  async findById({ id }: { id: string }): Promise<AuthUser | null> {
     const userDoc = await UserDoc.findById(id);
 
     if (!userDoc) return null;
 
-    return User.hydrate(userDoc.toJSON());
+    return AuthUser.hydrate(userDoc.toJSON());
   }
 
-  async findByIds(ids: string[]): Promise<User[]> {
+  async findByIds(ids: string[]): Promise<AuthUser[]> {
     const userDocs = await UserDoc.find({ _id: { $in: ids } });
 
-    return userDocs.map((doc) => User.hydrate(doc.toJSON()));
+    return userDocs.map((doc) => AuthUser.hydrate(doc.toJSON()));
   }
 
-  async findByEmail({ email }: { email: string }): Promise<User | null> {
+  async findByEmail({ email }: { email: string }): Promise<AuthUser | null> {
     const userDoc = await UserDoc.findOne({ email });
 
     if (!userDoc) return null;
 
-    return User.hydrate(userDoc.toJSON());
+    return AuthUser.hydrate(userDoc.toJSON());
   }
 
-  async create(user: NewUser): Promise<CreateUserResult> {
+  async create(user: NewAuthUser): Promise<CreateUserResult> {
     try {
       const userDoc = await UserDoc.create(user);
-      return { success: true, user: User.hydrate(userDoc.toJSON()) };
+      return { success: true, user: AuthUser.hydrate(userDoc.toJSON()) };
     } catch (error) {
       if (error instanceof mongoose.Error.ValidationError) {
         return { success: false, reason: "validation" };
@@ -46,12 +46,12 @@ export class UserRepo implements UserRepository {
     }
   }
 
-  async findLikeEmail({ email }: { email: string }): Promise<User[]> {
+  async findLikeEmail({ email }: { email: string }): Promise<AuthUser[]> {
     const userDocs = await UserDoc.find({
       email: { $regex: email, $options: "i" },
     });
 
-    return userDocs.map((doc) => User.hydrate(doc.toJSON()));
+    return userDocs.map((doc) => AuthUser.hydrate(doc.toJSON()));
   }
 }
 

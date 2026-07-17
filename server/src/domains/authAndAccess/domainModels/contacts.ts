@@ -1,5 +1,5 @@
 import { DomainError } from "../../../errors/DomainError";
-import { User } from "./user";
+import { AuthUser } from "./authUser";
 
 class Contact {
   private constructor(
@@ -9,7 +9,7 @@ class Contact {
     readonly email: string,
   ) {}
 
-  static hydrate(user: User): Contact {
+  static hydrate(user: AuthUser): Contact {
     return new Contact(user.id, user.firstName, user.lastName, user.email);
   }
 }
@@ -42,15 +42,15 @@ export class Contacts {
 
   /**
    * Reconstructs a Contacts from storage. Callers (the repo) must resolve
-   * every referenced id to a real User before calling this - Contacts
+   * every referenced id to a real AuthUser before calling this - Contacts
    * itself never reaches out for that data, it just composes what it's
    * handed.
    */
   static hydrate(params: {
     id: string;
     userId: string;
-    contacts: User[];
-    blocked: User[];
+    contacts: AuthUser[];
+    blocked: AuthUser[];
   }): Contacts {
     return new Contacts(
       params.id,
@@ -134,9 +134,9 @@ export class Contacts {
    * Adds a contact. Rejects if contactId is already blocked - a blocked
    * contact must be explicitly unblocked before they can be re-added.
    * No-op if already a contact. The caller must resolve the new contact's
-   * User first (Contacts can't reach out for it itself).
+   * AuthUser first (Contacts can't reach out for it itself).
    */
-  addContact(user: User): Contacts {
+  addContact(user: AuthUser): Contacts {
     if (this.hasBlocked(user.id)) {
       throw new DomainError(`Cannot add contact ${user.id}: already blocked`);
     }
@@ -154,9 +154,9 @@ export class Contacts {
   /**
    * Blocks a contact - moves them out of contacts and into blocked
    * (this side only; the blocked user's own Contacts is updated separately
-   * via removeContact). The caller must resolve the blocked User first.
+   * via removeContact). The caller must resolve the blocked AuthUser first.
    */
-  block(user: User): Contacts {
+  block(user: AuthUser): Contacts {
     return new Contacts(
       this.id,
       this.userId,
