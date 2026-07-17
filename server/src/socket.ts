@@ -1,8 +1,8 @@
 import "dotenv/config";
 import type { Server as HttpServer } from "node:http";
 import { DefaultEventsMap, Server, Socket } from "socket.io";
-import { onConnectionController } from "./features/auth/controllers/authSocketControllers";
-import { onMessageSendController } from "./features/rooms/controllers/socketControllers";
+import { onConnectionController } from "./domains/authAndAccess/controllers/authSocketControllers";
+import { onMessageSendController } from "./domains/messaging/controllers/socketControllers";
 
 export let io: Server<
   DefaultEventsMap,
