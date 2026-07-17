@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { User } from "@/domains/authAndAccess/types";
+import type { User } from "@/domains/authAndAccess/domainModels/user";
 
 export type AuthStatus = "unauthenticated" | "authenticated" | "unverified";
 

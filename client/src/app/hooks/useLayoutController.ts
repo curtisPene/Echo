@@ -4,7 +4,7 @@ import {
   MessageCircleIcon,
   UserIcon,
 } from "lucide-react";
-import { useConversationListViewModel } from "@/domains/conversation/viewModels/useConversationListViewModel";
+import { useConversationListViewModel } from "@/domains/conversations/viewModels/useConversationListViewModel";
 
 export const useLayoutController = () => {
   const { pendingRooms } = useConversationListViewModel();

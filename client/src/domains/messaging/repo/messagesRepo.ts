@@ -1,12 +1,12 @@
 import { db } from "@/infrastructure/sync/db";
-import type { Message } from "../types";
+import type { MessageDTO } from "../types";
 
 export const messagesRepo = {
-  async sync(messages: Message[]) {
+  async sync(messages: MessageDTO[]) {
     await db.messages.bulkPut(messages);
   },
 
-  async saveMessage(message: Message) {
+  async saveMessage(message: MessageDTO) {
     await db.messages.put(message);
   },
 

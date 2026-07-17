@@ -1,23 +1,42 @@
 import { ZodError } from "zod";
 import { httpClient } from "@/lib/httpClient";
 import { parseOrReportError } from "@/lib/parseOrReportError";
-import {
-  loginResponseSchema,
-  registrationResponseSchema,
-  type LoginResponse,
-  type RegistrationResponse,
-} from "../types";
+import { loginResponseSchema, registrationResponseSchema } from "../types";
 import type { LoginArgs } from "../services/loginService";
 import type { RegistrationServiceArgs } from "../services/registrationService";
+import { User } from "../domainModels/user";
+import type { ServiceResult } from "@/types";
 
-export async function loginAPI(loginData: LoginArgs): Promise<LoginResponse> {
+export type LoginAPIResult = ServiceResult<{
+  accessToken: string;
+  user: User;
+}>;
+
+function toLoginResult(data: unknown): LoginAPIResult {
+  const parsed = parseOrReportError(loginResponseSchema, data);
+
+  if (!parsed.success || !parsed.data) {
+    return { success: false, message: parsed.message, data: null };
+  }
+
+  return {
+    success: true,
+    message: parsed.message,
+    data: {
+      accessToken: parsed.data.accessToken,
+      user: User.hydrate(parsed.data.user),
+    },
+  };
+}
+
+export async function loginAPI(loginData: LoginArgs): Promise<LoginAPIResult> {
   const loginResponse = await httpClient.post("/auth/login", loginData);
-  return parseOrReportError(loginResponseSchema, loginResponse.data);
+  return toLoginResult(loginResponse.data);
 }
 
 export async function registrationAPI(
   registrationData: RegistrationServiceArgs,
-): Promise<RegistrationResponse> {
+) {
   const registrationResponse = await httpClient.post(
     "/auth/register",
     registrationData,
@@ -28,13 +47,10 @@ export async function registrationAPI(
   );
 }
 
-export async function verifyRefreshTokenAPI(): Promise<LoginResponse> {
+export async function verifyRefreshTokenAPI(): Promise<LoginAPIResult> {
   try {
     const tokenVerificationResponse = await httpClient.post("/auth/verify");
-    return parseOrReportError(
-      loginResponseSchema,
-      tokenVerificationResponse.data,
-    );
+    return toLoginResult(tokenVerificationResponse.data);
   } catch (error) {
     // A 401 here never throws - httpClient resolves it as a normal response
     // (well-formed body) and parseOrReportError parses it successfully. This

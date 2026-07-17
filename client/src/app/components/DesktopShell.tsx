@@ -14,8 +14,8 @@ import { useLayoutController } from "../hooks/useLayoutController";
 import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
-import { ConversationDetailsContent } from "@/domains/conversation/components/ConversationDetailsContent";
-import { useConversationDetailsViewModel } from "@/domains/conversation/viewModels/useConversationDetailsViewModel";
+import { ConversationDetailsContent } from "@/domains/conversations/components/ConversationDetailsContent";
+import { useConversationDetailsViewModel } from "@/domains/conversations/viewModels/useConversationDetailsViewModel";
 
 export const DesktopShell = () => {
   const listHeader = useListHeader();

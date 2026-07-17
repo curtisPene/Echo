@@ -2,8 +2,8 @@ import { httpClient } from "@/lib/httpClient";
 import { parseOrReportError } from "@/lib/parseOrReportError";
 import {
   createNewRoomAPIResponseSchema,
-  updateRoomParticipantResponseSchema,
-} from "../../presence/types";
+  acceptRoomInviteResponseSchema,
+} from "../types";
 
 export const roomsAPI = {
   async createRoom({
@@ -17,23 +17,10 @@ export const roomsAPI = {
     return parseOrReportError(createNewRoomAPIResponseSchema, response.data);
   },
 
-  async updateParticipant({
-    status,
-    roomId,
-    lastReadAt,
-  }: {
-    status: "pending" | "accepted";
-    lastReadAt?: string;
-    roomId: string;
-  }) {
-    const response = await httpClient.post("/rooms/update-participant", {
+  async acceptInvite({ roomId }: { roomId: string }) {
+    const response = await httpClient.post("/rooms/accept-invite", {
       roomId,
-      status,
-      lastReadAt,
     });
-    return parseOrReportError(
-      updateRoomParticipantResponseSchema,
-      response.data,
-    );
+    return parseOrReportError(acceptRoomInviteResponseSchema, response.data);
   },
 };

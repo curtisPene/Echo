@@ -1,9 +1,9 @@
-import type { Room } from "@/domains/presence/types";
+import type { RoomDTO } from "@/domains/conversations/types";
 import { create } from "zustand";
 
 type RoomsStore = {
-  rooms: Room[];
-  setRooms: (rooms: Room[]) => void;
+  rooms: RoomDTO[];
+  setRooms: (rooms: RoomDTO[]) => void;
   activeRoom: { id: string; name: string } | null;
   setACtiveRoom: (room: { id: string; name: string }) => void;
   clearActiveRoom: () => void;

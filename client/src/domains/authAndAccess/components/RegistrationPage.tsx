@@ -27,6 +27,8 @@ export const RegistrationPage = () => {
     setEmail,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     error,
     onSubmit,
   } = useRegisterViewModel();
@@ -92,6 +94,18 @@ export const RegistrationPage = () => {
                     At least 8 characters, with an uppercase letter, lowercase
                     letter, number, and symbol.
                   </FieldDescription>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="confirmPassword">
+                    Confirm password
+                  </FieldLabel>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
                 </Field>
                 <Field>
                   {error && <FieldError>{error}</FieldError>}

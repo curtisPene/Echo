@@ -1,14 +1,12 @@
-import { verifyRefreshTokenAPI } from "@/domains/authAndAccess/api/authAPI";
-import type { User } from "@/domains/authAndAccess/types";
-import type { ServiceResult } from "@/types";
+import {
+  verifyRefreshTokenAPI,
+  type LoginAPIResult,
+} from "@/domains/authAndAccess/api/authAPI";
 
-export const verificaitonService = async (): Promise<
-  ServiceResult<{ accessToken: string; user: User }>
-> => {
+export const verificaitonService = async (): Promise<LoginAPIResult> => {
   const response = await verifyRefreshTokenAPI();
 
   if (!response.success || !response.data) {
-    // setAuth({ authStatus: "unauthenticated", user: null });
     return {
       success: false,
       message: "Unauthorized",
@@ -24,11 +22,4 @@ export const verificaitonService = async (): Promise<
       user: response.data.user,
     },
   };
-
-  //   setAuth({
-  //     authStatus: "authenticated",
-  //     user: response.data.user,
-  //     accessToken: response.data.accessToken,
-  //   });
-  //   setAppStatus("syncing");
 };

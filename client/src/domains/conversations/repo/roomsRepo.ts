@@ -1,8 +1,8 @@
 import { db } from "@/infrastructure/sync/db";
-import type { Room, RoomParticipant } from "../../presence/types";
+import type { RoomDTO, ParticipantDTO } from "../types";
 
 export const roomsRepo = {
-  async sync({ rooms }: { rooms: { room: Room; unread: number }[] }) {
+  async sync({ rooms }: { rooms: { room: RoomDTO; unread: number }[] }) {
     await db.rooms.bulkPut(rooms.map(({ room }) => room));
     await db.roomUnreadCounts.bulkPut(
       rooms.map(({ room, unread }) => ({ roomId: room.id, unread })),
@@ -23,13 +23,13 @@ export const roomsRepo = {
     name,
   }: {
     roomId: string;
-    participants: RoomParticipant[];
+    participants: ParticipantDTO[];
     name: string;
   }) {
     return await db.rooms.add({ id: roomId, participants, name });
   },
 
-  async updateRoom(room: Room) {
+  async updateRoom(room: RoomDTO) {
     await db.rooms.put(room);
   },
 

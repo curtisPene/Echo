@@ -1,9 +1,9 @@
-import type { Message } from "@/domains/messaging/types";
+import type { MessageDTO } from "@/domains/messaging/types";
 import { create } from "zustand";
 
 type MessageStore = {
-  messages: Message[];
-  setMessages: (messages: Message[]) => void;
+  messages: MessageDTO[];
+  setMessages: (messages: MessageDTO[]) => void;
 };
 
 export const useMessages = create<MessageStore>((set) => ({

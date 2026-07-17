@@ -1,9 +1,8 @@
 import z from "zod";
-import { userSchema } from "@/domains/authAndAccess/types";
+import { userSchema, contactsSchema } from "@/domains/authAndAccess/types";
 import { apiResponseSchema } from "@/types";
-import { roomSchema } from "@/domains/presence/types";
+import { roomSchema } from "@/domains/conversations/types";
 import { messageSchema } from "@/domains/messaging/types";
-import { contactSchema } from "@/domains/conversation/types";
 
 export const appContextSchema = z.object({
   id: z.literal("current"),
@@ -22,7 +21,7 @@ export const appSyncResponseSchema = apiResponseSchema(
       }),
     ),
     messages: z.array(messageSchema),
-    contacts: z.array(contactSchema),
+    contacts: contactsSchema,
     lastSync: z.string(),
   }),
 );

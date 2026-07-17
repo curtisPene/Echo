@@ -1,5 +1,5 @@
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
-import type { Message } from "../types";
+import type { MessageDTO } from "../types";
 import clsx from "clsx";
 
 const formatMessageTime = (isoDate: string) => {
@@ -13,7 +13,7 @@ export const MessageListItem = ({
   message,
   isOwnMessage,
 }: {
-  message: Message;
+  message: MessageDTO;
   isOwnMessage: boolean;
 }) => {
   const align = isOwnMessage ? "end" : "start";

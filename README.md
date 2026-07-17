@@ -18,9 +18,45 @@ Chat was chosen as the domain because it's the simplest product that genuinely n
 
 Echo is built on **Hexagonal Architecture (Ports & Adapters)**, applied consistently across both client and server, with **Domain-Driven Design** structuring what sits inside that hexagon: the server is organized into bounded contexts, each with its own aggregate roots, domain models, and repositories. Nothing outside a domain ever imports another domain's repository or ORM types directly — only its exposed services. Business logic (use cases) never imports a framework directly either; it depends on a *port* (an interface), and a concrete *adapter* (Express route, Mongoose repo, Dexie table, Socket.IO handler) implements that port. Swap Mongo for Postgres, or REST for gRPC, and the use cases underneath don't change.
 
-**On the client, MVVM sits on top of the same hexagonal core.** Code is organized by domain rather than by technical layer, and each domain follows Model → Service → ViewModel → View: services are pure functions with no framework or store access; a ViewModel is the one place allowed to read/write React or Zustand state, and it's the only thing a View is allowed to call — never a service, never a store, directly. A View also never touches another domain's internals; it can call another domain's ViewModel or service (the same way an HTTP controller calls a service), but never its repo.
+**On the client, MVVM sits on top of the same hexagonal core, and React is treated as just another driving adapter.** Code is organized by domain rather than by technical layer, and each domain follows Model → Service → Controller → ViewModel → View. Controllers are plain functions — no React import, no hook, nothing that assumes a render cycle exists — and they're the single entry point into a domain's behavior: every decision ("is there an active room to send to," "what does a failed result mean for this operation") lives there, not scattered across whichever ViewModel happens to trigger it. A ViewModel's job is narrower than it sounds: subscribe to whatever React/Zustand state a View needs (only a hook can do that part), forward it into a controller untouched, and expose the controller's output in whatever shape the View binds to — it never itself decides what a piece of state *means*. The practical result: the entire application core — controllers, services, domain models, persistence — has zero dependency on React existing at all. It's provable, not just claimed: a controller can be called directly from a plain Node script, with no renderer, no DOM, no test harness, and it'll do exactly what the web UI does, because the web UI calls the same function.
 
 **Domain models are hydrated from persistence, never from each other.** There's no canonical "User" that other domains' models are derived from — `authAndAccess`'s `User`, `conversations`' `Participant`, and `messaging`'s `Sender` are three independent representations of "a person," each shaped by what its own bounded context's language actually needs (a `Participant` doesn't need a password; a `Contact` doesn't need room-membership status), each hydrated straight from the database by its owning domain's repository. Every aggregate exposes its presentable shape through one method, `toDTO()`, defined once on the aggregate itself — never re-derived ad hoc by whichever controller happens to need a view of it.
+
+The client rebuild is the clearest evidence of what this buys: before it, the client had no domain models at all, so "what does this room's participant data mean" was answered by hand at every call site that needed it, three separate times, each slightly differently:
+
+```ts
+// roomPresentation.ts — deriving "my status" and "is this 1:1"
+const myParticipant = room.participants.find(
+  (participant) => participant.user.id === ctx.currentUserId,
+);
+myStatus: myParticipant?.status ?? "pending",
+isOneOnOne: room.participants.length === 2,
+```
+
+```ts
+// useHasPendingRequests.ts — the same "am I pending" check, re-derived independently
+return rooms.some((room) =>
+  room.participants.some(
+    (participant) =>
+      participant.user.id === userId && participant.status === "pending",
+  ),
+);
+```
+
+```ts
+// createNewRoomService.ts — the same "is this 1:1 with this contact" check, a third time
+const isOneOnOne = room.participants.length === 2;
+const hasContact = room.participants.some((p) => p.user.id === contact.id);
+```
+
+Three call sites, three hand-rolled traversals of `room.participants`, each free to drift from the others since nothing forced them to agree. `Room.hydrate()` now owns this once, and every call site asks the aggregate instead of re-deriving the answer:
+
+```ts
+room.statusFor(userId)        // replaces the roomPresentation.ts lookup
+room.isPendingFor(userId)     // replaces the useHasPendingRequests.ts check
+room.isOneOnOne()             // replaces both length === 2 checks
+room.hasParticipant(userId)   // replaces the createNewRoomService.ts .some(...)
+```
 
 ### Why this much architecture for a 5-domain app
 
@@ -60,6 +96,10 @@ Every message, room, and contact is persisted locally in IndexedDB (via Dexie) a
 ### Two real shells, not one responsive layout
 
 `DesktopShell` and `MobileShell` both mount at the root simultaneously (`RootLayout.tsx`) and visibility is switched purely with responsive Tailwind classes — there's no JS media-query branching deciding which one renders. Each shell has its own navigation model and composes the same feature components differently: desktop is a persistent sidebar + panel layout, mobile is a bottom-tab, single-screen-at-a-time layout closer to a native app than a shrunk-down website. The goal was to make "responsive" mean *two designed experiences sharing one codebase*, not one layout that degrades gracefully.
+
+### Planned: a third UI, same core, as proof the architecture actually holds
+
+Not yet built. Once the controller layer above is in place, the plan is a third driving adapter alongside desktop and mobile: a terminal-styled interface, rendered in-browser (so it stays reachable with one link and keeps the existing cookie/session auth flow — a real installable CLI would need a separate distribution story and isn't worth the friction for a demo). It would call the exact same controllers the normal UI calls — no duplicated business logic, only new input/output plumbing, the same relationship the server's HTTP and Socket.IO adapters already have to *its* controllers. The point isn't the aesthetic; it's a live, checkable demonstration that the hexagonal boundary is real rather than asserted — the same core driving a second, structurally unrelated interface.
 
 ## Stack
 

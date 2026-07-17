@@ -6,7 +6,6 @@ import type { OnlineStatus } from "@/stores/useSocket";
 import { syncService } from "@/infrastructure/sync/syncService";
 import { verificaitonService } from "../../domains/authAndAccess/services/verificationService";
 import { registerMessagingSocketHandlers } from "@/domains/messaging/socketHandlers/registerMessagingSocketHandlers";
-import { registerRoomSocketHandlers } from "@/domains/presence/socketHandlers/registerRoomSocketHandlers";
 
 export const useAppBootstrap = ({
   appStatus,
@@ -62,7 +61,6 @@ export const useAppBootstrap = ({
     socket.on("disconnect", handleDisconnect);
 
     const messagingSocketCleanup = registerMessagingSocketHandlers(socket);
-    const roomSocketCleanup = registerRoomSocketHandlers(socket);
 
     socket.on("auth:unauthorized", () => {
       // Todo: handle unauthorized
@@ -72,7 +70,6 @@ export const useAppBootstrap = ({
     return () => {
       socket.off("connect", handleConnect);
       messagingSocketCleanup();
-      roomSocketCleanup();
       socket.off("disconnect", handleDisconnect);
     };
     // auth.user/accessToken are only read once authStatus === "authenticated",

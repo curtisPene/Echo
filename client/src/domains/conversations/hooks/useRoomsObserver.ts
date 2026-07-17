@@ -1,4 +1,4 @@
-import { getRoomsService } from "@/domains/conversation/services/getRoomsService";
+import { getRoomsService } from "@/domains/conversations/services/getRoomsService";
 import { type AppStatus } from "@/stores/useAppStatus";
 import { useRooms } from "@/stores/useRooms";
 import { liveQuery } from "dexie";

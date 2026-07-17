@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/message-scroller";
 import { MessageListItem } from "./MessageListItem";
 import { useMessageListViewModel } from "../viewModels/useMessageListViewModel";
-import { useAcceptRequestViewModel } from "@/domains/conversation/viewModels/useAcceptRequestViewModel";
+import { useAcceptRequestViewModel } from "@/domains/conversations/viewModels/useAcceptRequestViewModel";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import clsx from "clsx";
 
@@ -25,7 +25,7 @@ export const MessageList = () => {
             <MessageScrollerViewport>
               <MessageScrollerContent className={clsx("px-4 py-3")}>
                 {messages.map((message) => {
-                  const isOwnMessage = message.sender === currentUser?.id;
+                  const isOwnMessage = message.sender?.userId === currentUser?.id;
                   return (
                     <MessageScrollerItem
                       key={message.id}

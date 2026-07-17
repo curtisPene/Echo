@@ -1,10 +1,10 @@
 import { messagesRepo } from "../repo/messagesRepo";
-import type { Message } from "../types";
+import type { MessageDTO } from "../types";
 
 export const messageReceiveService = async ({
   message,
 }: {
-  message: Message;
+  message: MessageDTO;
 }) => {
   // Room status (pending/accepted) is a display-only concern handled by
   // useConversationListViewModel - a message is always saved regardless

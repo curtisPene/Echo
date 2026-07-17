@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { registrationService } from "../services/registrationService";
+import { registerController } from "../controllers/RegisterController";
 
 export const useRegisterViewModel = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -14,11 +15,12 @@ export const useRegisterViewModel = () => {
     e.preventDefault();
     setError(null);
 
-    const result = await registrationService({
+    const result = await registerController({
       firstName,
       lastName,
       email,
       password,
+      confirmPassword,
     });
 
     if (!result.success) {
@@ -38,6 +40,8 @@ export const useRegisterViewModel = () => {
     setEmail,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     error,
     onSubmit,
   };

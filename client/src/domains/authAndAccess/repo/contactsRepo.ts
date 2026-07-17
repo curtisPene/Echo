@@ -1,16 +1,30 @@
-import type { Contact } from "@/domains/conversations/types";
+import { Contacts, type ContactDTO, type ContactsDTO } from "../domainModels/contacts";
 import { db } from "@/infrastructure/sync/db";
 
 export const contactsRepo = {
-  async addContact(contact: Contact) {
+  async addContact(contact: ContactDTO) {
     await db.contacts.add(contact);
   },
 
-  async sync(contacts: Contact[]) {
-    await db.contacts.bulkPut(contacts);
+  async sync(contactsDTO: ContactsDTO) {
+    await db.contacts.bulkPut(contactsDTO.contacts);
+    await db.blockedContacts.bulkPut(contactsDTO.blocked);
   },
 
-  async getContacts() {
+  async getContacts(): Promise<ContactDTO[]> {
     return await db.contacts.toArray();
+  },
+
+  async getBlocked(): Promise<ContactDTO[]> {
+    return await db.blockedContacts.toArray();
+  },
+
+  async getContactsAggregate(userId: string): Promise<Contacts> {
+    const [contacts, blocked] = await Promise.all([
+      db.contacts.toArray(),
+      db.blockedContacts.toArray(),
+    ]);
+
+    return Contacts.hydrate({ id: userId, userId, contacts, blocked });
   },
 };

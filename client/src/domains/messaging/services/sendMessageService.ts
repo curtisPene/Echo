@@ -1,7 +1,7 @@
 import type { ServiceResult } from "@/types";
 import { sendMessageSocket } from "../api/messagingSocketAPI";
 import { messagesRepo } from "../repo/messagesRepo";
-import { type Message } from "../types";
+import { type MessageDTO } from "../types";
 
 export const sendMessageService = async ({
   message,
@@ -9,7 +9,7 @@ export const sendMessageService = async ({
 }: {
   message: string;
   roomId: string;
-}): Promise<ServiceResult<Message>> => {
+}): Promise<ServiceResult<MessageDTO>> => {
   const response = await sendMessageSocket({
     payload: { message, roomId },
   });

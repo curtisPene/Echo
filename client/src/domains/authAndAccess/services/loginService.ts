@@ -1,6 +1,4 @@
-import { loginAPI } from "../api/authAPI";
-import type { User } from "../types";
-import type { ServiceResult } from "@/types";
+import { loginAPI, type LoginAPIResult } from "../api/authAPI";
 
 export type LoginArgs = {
   email: string;
@@ -10,7 +8,7 @@ export type LoginArgs = {
 export async function loginService({
   email,
   password,
-}: LoginArgs): Promise<ServiceResult<{ accessToken: string; user: User }>> {
+}: LoginArgs): Promise<LoginAPIResult> {
   const result = await loginAPI({ email, password });
 
   if (!result.success || !result.data) {

@@ -1,4 +1,4 @@
-import type { Room } from "@/domains/presence/types";
+import type { RoomDTO } from "../types";
 import type { ServiceResult } from "@/types";
 import { roomsRepo } from "../repo/roomsRepo";
 import { roomsAPI } from "../api/roomsAPI";
@@ -7,11 +7,8 @@ export const acceptRequestService = async ({
   roomId,
 }: {
   roomId: string;
-}): Promise<ServiceResult<Room>> => {
-  const response = await roomsAPI.updateParticipant({
-    roomId,
-    status: "accepted",
-  });
+}): Promise<ServiceResult<RoomDTO>> => {
+  const response = await roomsAPI.acceptInvite({ roomId });
 
   if (!response.success) {
     return {

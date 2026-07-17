@@ -1,35 +1,32 @@
-import type { Room, RoomParticipant } from "@/domains/presence/types";
+import { Room } from "../domainModels/room";
+import type { RoomDTO, ParticipantDTO } from "../types";
 
 export type RoomPresentation = {
   id: string;
   name: string;
-  participants: RoomParticipant[];
+  participants: ParticipantDTO[];
   myStatus: "pending" | "accepted";
   isOneOnOne: boolean;
 };
 
 export function toRoomPresentation(
-  room: Room,
+  dto: RoomDTO,
   ctx: { currentUserId: string },
 ): RoomPresentation {
-  const myParticipant = room.participants.find(
-    (participant) => participant.user.id === ctx.currentUserId,
-  );
+  const room = Room.hydrate(dto);
 
   return {
     id: room.id,
     name: room.name,
-    participants: room.participants,
-    myStatus: myParticipant?.status ?? "pending",
-    isOneOnOne: room.participants.length === 2,
+    participants: room.getParticipants(),
+    myStatus: room.statusFor(ctx.currentUserId),
+    isOneOnOne: room.isOneOnOne(),
   };
 }
 
 export function getOtherParticipants(
-  participants: RoomParticipant[],
+  participants: ParticipantDTO[],
   currentUserId: string,
-) {
-  return participants
-    .filter((participant) => participant.user.id !== currentUserId)
-    .map((participant) => participant.user);
+): ParticipantDTO[] {
+  return participants.filter((p) => p.userId !== currentUserId);
 }

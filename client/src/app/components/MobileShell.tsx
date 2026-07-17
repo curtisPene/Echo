@@ -4,8 +4,8 @@ import { ChevronLeftIcon } from "lucide-react";
 import { useLayoutController } from "../hooks/useLayoutController";
 import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
-import { useConversationDetailsViewModel } from "@/domains/conversation/viewModels/useConversationDetailsViewModel";
-import { useConversationListViewModel } from "@/domains/conversation/viewModels/useConversationListViewModel";
+import { useConversationDetailsViewModel } from "@/domains/conversations/viewModels/useConversationDetailsViewModel";
+import { useConversationListViewModel } from "@/domains/conversations/viewModels/useConversationListViewModel";
 import { MessageList } from "@/domains/messaging/components/MessageList";
 import { Composer } from "@/domains/messaging/components/Composer";
 

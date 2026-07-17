@@ -1,9 +1,9 @@
-import type { Contact } from "@/domains/conversation/types";
+import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
 import { create } from "zustand";
 
 export type ContactsStore = {
-  contacts: Contact[];
-  setContacts: (contacts: Contact[]) => void;
+  contacts: ContactDTO[];
+  setContacts: (contacts: ContactDTO[]) => void;
 };
 
 export const useContacts = create<ContactsStore>((set) => ({

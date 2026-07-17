@@ -1,5 +1,5 @@
-import type { Message } from "@/domains/messaging/types";
-import type { Room, RoomUnreadCount } from "@/domains/presence/types";
+import type { MessageDTO } from "@/domains/messaging/types";
+import type { RoomDTO, RoomUnreadCount } from "../types";
 import {
   toRoomPresentation,
   type RoomPresentation,
@@ -17,16 +17,16 @@ export const getConversationListService = ({
   unreadCounts,
   currentUserId,
 }: {
-  rooms: Room[];
-  messages: Message[];
+  rooms: RoomDTO[];
+  messages: MessageDTO[];
   unreadCounts: RoomUnreadCount[];
   currentUserId: string;
 }): { rooms: RoomListEntry[]; pendingRooms: RoomListEntry[] } => {
-  const toListEntry = (room: Room): RoomListEntry => {
+  const toListEntry = (room: RoomDTO): RoomListEntry => {
     const presentation = toRoomPresentation(room, { currentUserId });
 
     const roomMessages = messages
-      .filter((message) => message.room === room.id)
+      .filter((message) => message.roomId === room.id)
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),

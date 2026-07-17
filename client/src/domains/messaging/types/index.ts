@@ -1,50 +1,50 @@
 import { apiResponseSchema } from "@/types";
 import z from "zod";
 
-/**
- * Database schema types for Message feature
- */
-
-// Populated user info, for rendering a name/avatar (e.g. "who reacted", "who read this").
-export const messageUserSchema = z.object({
-  id: z.string(),
+export const senderSchema = z.object({
+  userId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
-  email: z.string(),
 });
 
-export const messageReactionSchema = z.object({
-  user: messageUserSchema,
+export type SenderDTO = z.infer<typeof senderSchema>;
+
+export const reactionSchema = z.object({
+  userId: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
   emoji: z.string(),
 });
 
-export type MessageReaction = z.infer<typeof messageReactionSchema>;
+export type ReactionDTO = z.infer<typeof reactionSchema>;
 
-export const messageReadSchema = z.object({
-  user: messageUserSchema,
+export const readSchema = z.object({
+  userId: z.string(),
   readAt: z.iso.datetime(),
 });
 
-export type MessageRead = z.infer<typeof messageReadSchema>;
+export type ReadDTO = z.infer<typeof readSchema>;
 
 const messageBaseSchema = z.object({
   id: z.string(),
-  room: z.string(), // FK -> Room.id, scopes which conversation this message belongs to
+  roomId: z.string(),
   createdAt: z.iso.datetime(),
 });
 
 export const normalMessageSchema = messageBaseSchema.extend({
   redacted: z.literal(false),
-  sender: z.string(), // user id only (not populated) - UI just compares to currentUserId for bubble alignment
+  sender: senderSchema,
   text: z.string(),
-  reactions: z.array(messageReactionSchema),
-  readBy: z.array(messageReadSchema),
+  reactions: z.array(reactionSchema),
+  readBy: z.array(readSchema),
 });
 
 export const redactedMessageSchema = messageBaseSchema.extend({
   redacted: z.literal(true),
-  sender: z.null(), // anonymized along with text once redacted
+  sender: z.null(),
   text: z.null(),
+  reactions: z.array(reactionSchema),
+  readBy: z.array(readSchema),
 });
 
 export const messageSchema = z.discriminatedUnion("redacted", [
@@ -52,7 +52,7 @@ export const messageSchema = z.discriminatedUnion("redacted", [
   redactedMessageSchema,
 ]);
 
-export type Message = z.infer<typeof messageSchema>;
+export type MessageDTO = z.infer<typeof messageSchema>;
 
 export const onMessageReceivePayloadSchema = apiResponseSchema(
   z.object({

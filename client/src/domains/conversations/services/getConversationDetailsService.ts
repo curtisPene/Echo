@@ -1,4 +1,4 @@
-import type { Room } from "@/domains/presence/types";
+import type { RoomDTO } from "../types";
 import {
   toRoomPresentation,
   type RoomPresentation,
@@ -9,7 +9,7 @@ export const getConversationDetailsService = ({
   activeRoomId,
   currentUserId,
 }: {
-  rooms: Room[];
+  rooms: RoomDTO[];
   activeRoomId: string | null;
   currentUserId: string;
 }): RoomPresentation | null => {

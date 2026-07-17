@@ -6,6 +6,7 @@ export type RegistrationServiceArgs = {
   lastName: string;
   email: string;
   password: string;
+  confirmPassword: string;
 };
 
 const patterns = {
@@ -26,6 +27,8 @@ function validate(
     return { valid: false, message: "Invalid email" };
   if (!patterns.password.test(fields.password))
     return { valid: false, message: "Invalid password" };
+  if (fields.password !== fields.confirmPassword)
+    return { valid: false, message: "Passwords do not match" };
   return { valid: true };
 }
 
@@ -34,10 +37,17 @@ export async function registrationService({
   lastName,
   email,
   password,
+  confirmPassword,
 }: RegistrationServiceArgs): Promise<
   ServiceResult<null, { reason: "unknown" | "duplicate_email" | "validation" }>
 > {
-  const validation = validate({ firstName, lastName, email, password });
+  const validation = validate({
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+  });
 
   if (!validation.valid) {
     return {
@@ -52,6 +62,7 @@ export async function registrationService({
     lastName,
     email,
     password,
+    confirmPassword,
   });
 
   return response;

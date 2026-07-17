@@ -1,7 +1,8 @@
 import { useAuth } from "@/stores/useAuth";
 import { useMessages } from "@/stores/useMessages";
 import { useRooms } from "@/stores/useRooms";
-import { getConversationDetailsService } from "@/domains/conversation/services/getConversationDetailsService";
+import { getConversationDetailsService } from "@/domains/conversations/services/getConversationDetailsService";
+import { getRoomMessagesService } from "../services/getRoomMessagesService";
 
 export const useMessageListViewModel = () => {
   const activeRoom = useRooms((state) => state.activeRoom);
@@ -15,9 +16,10 @@ export const useMessageListViewModel = () => {
     currentUserId: currentUserId ?? "",
   });
 
-  const messagesInActiveRoom = activeRoom
-    ? messages.filter((message) => message.room === activeRoom.id)
-    : [];
+  const messagesInActiveRoom = getRoomMessagesService({
+    messages,
+    roomId: activeRoom?.id ?? null,
+  });
 
   return {
     messages: messagesInActiveRoom,

@@ -104,7 +104,7 @@ export const ConversationDetailsContent = () => {
               <ul className={clsx("flex flex-col gap-1 pt-1")}>
                 {room.participants.map((participant) => (
                   <li
-                    key={participant.user.id}
+                    key={participant.userId}
                     className={clsx(
                       "hover:bg-brand/10",
                       "flex items-center gap-2 rounded-lg p-2",
@@ -118,13 +118,13 @@ export const ConversationDetailsContent = () => {
                     >
                       <AvatarFallback className={clsx("text-xs")}>
                         {getInitials(
-                          participant.user.firstName,
-                          participant.user.lastName,
+                          participant.firstName,
+                          participant.lastName,
                         )}
                       </AvatarFallback>
                     </Avatar>
                     <span className={clsx("text-foreground", "flex-1 text-sm")}>
-                      {participant.user.firstName} {participant.user.lastName}
+                      {participant.firstName} {participant.lastName}
                     </span>
                     <Popover>
                       <PopoverTrigger

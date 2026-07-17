@@ -1,7 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { loginService } from "../services/loginService";
-import { useAuth } from "@/stores/useAuth";
-import { useAppStatus } from "@/stores/useAppStatus";
+import { loginController } from "../controllers/LoginController";
 
 export const useLoginViewModel = () => {
   const [email, setEmail] = useState("");
@@ -12,19 +10,11 @@ export const useLoginViewModel = () => {
     e.preventDefault();
     setError(null);
 
-    const result = await loginService({ email, password });
+    const result = await loginController({ email, password });
 
-    if (!result.success || !result.data) {
+    if (!result.success) {
       setError(result.message);
-      return;
     }
-
-    useAuth.getState().setAuth({
-      authStatus: "authenticated",
-      user: result.data.user,
-      accessToken: result.data.accessToken,
-    });
-    useAppStatus.getState().setAppStatus("syncing");
   };
 
   return { email, setEmail, password, setPassword, error, onSubmit };
