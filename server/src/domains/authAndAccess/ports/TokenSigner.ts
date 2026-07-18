@@ -1,8 +1,8 @@
-import type { TokenPayload } from "../types/authTypes";
+import type { IdentityDTO } from "../domainModels/identity";
 
 export interface TokenSigner {
-  signAccessToken(payload: TokenPayload): string;
-  signRefreshToken(payload: TokenPayload): string;
-  verifyAccessToken(token: string): TokenPayload | null;
-  verifyRefreshToken(token: string): TokenPayload | null;
+  signAccessToken(payload: IdentityDTO): string;
+  signRefreshToken(payload: IdentityDTO): string;
+  verifyAccessToken(token: string): IdentityDTO | null;
+  verifyRefreshToken(token: string): IdentityDTO | null;
 }

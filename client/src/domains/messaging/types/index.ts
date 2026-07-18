@@ -65,7 +65,7 @@ export type MessageReceivePayload = z.infer<
 >;
 
 export const messageSendPayloadSchema = z.object({
-  message: z.string(),
+  text: z.string(),
   roomId: z.string(),
 });
 

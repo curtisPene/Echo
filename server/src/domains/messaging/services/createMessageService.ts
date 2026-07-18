@@ -1,34 +1,19 @@
 import mongoose from "mongoose";
 import { ServiceResult } from "../../../types";
-import { MessageDTO } from "../domainModels/message";
+import { MessageDTO, NewMessage, SenderEntity } from "../domainModels/message";
 import { MessageRepo } from "../repo/mongooseMessageRepo";
-import { findUserIdentitiesService } from "../../authAndAccess/composition";
 
 export const createMessageService = async ({
-  userId,
-  roomId,
-  message,
+  sender,
+  newMessage,
 }: {
-  userId: string;
-  roomId: string;
-  message: string;
+  sender: SenderEntity;
+  newMessage: Omit<NewMessage, "sender">;
 }): Promise<ServiceResult<{ message: MessageDTO }>> => {
   try {
-    const identities = await findUserIdentitiesService.execute({ userIds: [userId] });
-    const sender = identities[0];
-
-    if (!sender) {
-      return {
-        success: false,
-        message: "Sender not found",
-        data: null,
-      };
-    }
-
     const createdMessage = await MessageRepo.create({
-      roomId,
+      ...newMessage,
       sender,
-      text: message,
     });
 
     return {

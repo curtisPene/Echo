@@ -4,14 +4,14 @@ import { messagesRepo } from "../repo/messagesRepo";
 import { type MessageDTO } from "../types";
 
 export const sendMessageService = async ({
-  message,
+  text,
   roomId,
 }: {
-  message: string;
+  text: string;
   roomId: string;
 }): Promise<ServiceResult<MessageDTO>> => {
   const response = await sendMessageSocket({
-    payload: { message, roomId },
+    payload: { text, roomId },
   });
 
   if (!response.success)

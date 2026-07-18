@@ -30,7 +30,3 @@ export const userLoginSchema = z.object({
 });
 
 export type UserLoginDto = z.infer<typeof userLoginSchema>;
-
-export interface TokenPayload {
-  id: string;
-}

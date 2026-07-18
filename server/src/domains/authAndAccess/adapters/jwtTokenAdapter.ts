@@ -1,33 +1,46 @@
 import jwt from "jsonwebtoken";
-import type { TokenPayload } from "../types/authTypes";
+import type { IdentityDTO } from "../domainModels/identity";
 import type { TokenSigner } from "../ports/TokenSigner";
 
 const secret = process.env.JWT_SECRET ?? "";
 
 export class JwtTokenSigner implements TokenSigner {
-  signAccessToken(payload: TokenPayload): string {
+  signAccessToken(payload: IdentityDTO): string {
     return jwt.sign(payload, secret, { expiresIn: "15m" });
   }
 
-  signRefreshToken(payload: TokenPayload): string {
+  signRefreshToken(payload: IdentityDTO): string {
     return jwt.sign(payload, secret, { expiresIn: "7d" });
   }
 
-  verifyAccessToken(token: string): TokenPayload | null {
+  verifyAccessToken(token: string): IdentityDTO | null {
     return this.verify(token);
   }
 
-  verifyRefreshToken(token: string): TokenPayload | null {
+  verifyRefreshToken(token: string): IdentityDTO | null {
     return this.verify(token);
   }
 
-  private verify(token: string): TokenPayload | null {
+  private verify(token: string): IdentityDTO | null {
     try {
       const decoded = jwt.verify(token, secret);
 
-      if (typeof decoded === "string" || !decoded.id) return null;
+      if (
+        typeof decoded === "string" ||
+        !decoded.id ||
+        !decoded.firstName ||
+        !decoded.lastName ||
+        !decoded.email
+      ) {
+        return null;
+      }
 
-      return { id: decoded.id };
+      return {
+        id: decoded.id,
+        firstName: decoded.firstName,
+        lastName: decoded.lastName,
+        email: decoded.email,
+      };
     } catch {
       return null;
     }

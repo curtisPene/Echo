@@ -13,7 +13,7 @@ export const useComposerViewModel = () => {
     setError(null);
 
     const result = await sendMessageController({
-      message,
+      text: message,
       roomId: activeRoom.id,
     });
 

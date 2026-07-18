@@ -5,13 +5,13 @@ export type SendMessageControllerResult =
   | { success: false; message: string };
 
 export const sendMessageController = async ({
-  message,
+  text,
   roomId,
 }: {
-  message: string;
+  text: string;
   roomId: string;
 }): Promise<SendMessageControllerResult> => {
-  const result = await sendMessageService({ message, roomId });
+  const result = await sendMessageService({ text, roomId });
 
   if (!result.success) {
     return { success: false, message: result.message };

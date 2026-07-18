@@ -1,35 +1,49 @@
-import { Socket } from "socket.io";
-import { OnMessageSendPayload } from "../types";
-import { io } from "../../../socket";
+import { onMessageSendPayloadSchema } from "../types";
+import { io, type AuthSocket } from "../../../socket";
 import { createMessageService } from "../services/createMessageService";
+import { MessageDTO } from "../domainModels/message";
+import { ServiceResult } from "../../../types";
 
 export const onMessageSendController = async ({
   socket,
   payload,
   ack,
 }: {
-  socket: Socket;
-  payload: OnMessageSendPayload;
-  ack: (response: { message: string }) => void;
+  socket: AuthSocket;
+  payload: unknown;
+  ack: (response: ServiceResult<{ message: MessageDTO }>) => void;
 }) => {
-  const { roomId, message } = payload;
-  const userId = socket.data.userId;
+  const parsed = onMessageSendPayloadSchema.safeParse(payload);
 
-  const isInRoom = socket.rooms.has(roomId);
+  if (!parsed.success) {
+    return ack({
+      success: false,
+      message: "Invalid input",
+      data: null,
+    });
+  }
+
+  const { id, firstName, lastName } = socket.data.identity;
+
+  const isInRoom = socket.rooms.has(parsed.data.roomId);
   if (!isInRoom) {
-    socket.emit("auth:unauthorized room access");
-    return;
+    return ack({
+      success: false,
+      message: "Unauthorized room access",
+      data: null,
+    });
   }
 
   const serviceResult = await createMessageService({
-    userId,
-    message,
-    roomId,
+    sender: { id, firstName, lastName },
+    newMessage: parsed.data,
   });
 
-  if (!serviceResult.success) return;
+  if (!serviceResult.success) {
+    return ack(serviceResult);
+  }
 
-  io.to(roomId).emit("message:receive", serviceResult);
+  io.to(parsed.data.roomId).emit("message:receive", serviceResult);
 
   ack(serviceResult);
 };

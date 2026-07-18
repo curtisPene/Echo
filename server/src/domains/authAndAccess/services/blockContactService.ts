@@ -3,6 +3,7 @@ import { ServiceResult } from "../../../types";
 import { contactsRepo } from "../repo/ContactsRepo";
 import { userRepo } from "../repo/UserRepo";
 import { ContactsDTO } from "../domainModels/contacts";
+import { RoomDTO } from "../../conversations/domainModels/room";
 import {
   findRoomsForUserService,
   removeParticipantFromRoomService,
@@ -12,6 +13,10 @@ import {
   deleteRoomMessagesService,
   redactUserMessagesInRoomService,
 } from "../../messaging/composition";
+
+export type BlockedRoomResult =
+  | { roomId: string }
+  | { roomId: string; room: RoomDTO };
 
 export const blockContactService = async ({
   user,
@@ -23,10 +28,7 @@ export const blockContactService = async ({
   ServiceResult<{
     blocker: ContactsDTO;
     blocked: ContactsDTO;
-    rooms: {
-      roomId: string;
-      isOneOnOne: boolean;
-    }[];
+    rooms: BlockedRoomResult[];
     affectedParticipantIds: string[];
   }>
 > => {
@@ -68,27 +70,37 @@ export const blockContactService = async ({
 
         // If the room is one on one delete the room and all the associated messages
         // otherwise remove the blocker from the room and redact their leftover messages
-        let remainingParticipantIds: string[] | null = null;
         if (isOneOnOne) {
           await deleteRoomService.execute({ roomId });
           await deleteRoomMessagesService.execute({ roomId });
-          remainingParticipantIds = null;
-        } else {
-          const updatedRoom = await removeParticipantFromRoomService.execute({
-            roomId,
-            userId: user,
-          });
-          remainingParticipantIds = updatedRoom?.participants.map((p) => p.userId) ?? [];
-          await redactUserMessagesInRoomService.execute({ userId: user, roomId });
+
+          const blockedRoom: BlockedRoomResult = { roomId };
+          return { blockedRoom, remainingParticipantIds: null };
         }
 
-        return { roomId, isOneOnOne, remainingParticipantIds };
+        const updatedRoom = await removeParticipantFromRoomService.execute({
+          roomId,
+          userId: user,
+        });
+        await redactUserMessagesInRoomService.execute({ userId: user, roomId });
+
+        if (!updatedRoom) return null;
+
+        const blockedRoom: BlockedRoomResult = {
+          roomId,
+          room: updatedRoom,
+        };
+
+        return {
+          blockedRoom,
+          remainingParticipantIds: updatedRoom.participants.map((p) => p.userId),
+        };
       }),
     );
 
     const affectedRooms = updatedRoomData
       .filter((data): data is NonNullable<typeof data> => data !== null)
-      .map(({ roomId, isOneOnOne }) => ({ roomId, isOneOnOne }));
+      .map((data) => data.blockedRoom);
 
     const reducedParticipantIds: string[] = [];
     updatedRoomData.forEach((data) => {

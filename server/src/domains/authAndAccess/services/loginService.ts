@@ -41,13 +41,14 @@ export class LoginService {
           data: null,
         };
 
-      const accessToken = this.tokenSigner.signAccessToken({ id: user.id });
-      const refreshToken = this.tokenSigner.signRefreshToken({ id: user.id });
+      const identityDTO = identity.toDTO();
+      const accessToken = this.tokenSigner.signAccessToken(identityDTO);
+      const refreshToken = this.tokenSigner.signRefreshToken(identityDTO);
 
       return {
         success: true,
         message: "User logged in successfully",
-        data: { user: identity.toDTO(), accessToken, refreshToken },
+        data: { user: identityDTO, accessToken, refreshToken },
       };
     } catch (error) {
       console.log(error);

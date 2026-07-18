@@ -126,17 +126,28 @@ export const blockContactController = async (
   rooms.forEach((room) => {
     blockersSockets.forEach((socket) => socket.leave(room.roomId));
 
-    if (room.isOneOnOne) {
+    if (!("room" in room)) {
       blockedUserSockets.forEach((socket) => socket.leave(room.roomId));
     }
   });
 
   // Notify every remaining group member (already deduplicated by the service)
   // so their client re-syncs the affected rooms without receiving the event
-  // more than once, even if they share multiple group rooms with the blocker
+  // more than once, even if they share multiple group rooms with the blocker.
+  // 1:1 rooms are deleted (no RoomDTO left to send, just the id to remove
+  // locally); group rooms still exist with the blocker removed, so they get
+  // a normal room:updated with the fresh RoomDTO.
   affectedParticipantIds.forEach((participantId) => {
-    io.to(`user:${participantId}`).emit("room:blocked", {
-      rooms,
+    rooms.forEach((room) => {
+      if (!("room" in room)) {
+        io.to(`user:${participantId}`).emit("room:deleted", {
+          roomId: room.roomId,
+        });
+      } else {
+        io.to(`user:${participantId}`).emit("room:updated", {
+          room: room.room,
+        });
+      }
     });
   });
 

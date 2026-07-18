@@ -16,13 +16,13 @@ export class VerifyRefreshTokenService {
     if (!user)
       return { success: false, message: "Invalid token", data: undefined };
 
-    const accessToken = this.tokenSigner.signAccessToken(payload);
-    const identity = Identity.hydrate(user);
+    const identityDTO = Identity.hydrate(user).toDTO();
+    const accessToken = this.tokenSigner.signAccessToken(identityDTO);
 
     return {
       success: true,
       message: "Authorized",
-      data: { accessToken, user: identity.toDTO() },
+      data: { accessToken, user: identityDTO },
     };
   }
 }

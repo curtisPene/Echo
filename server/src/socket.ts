@@ -1,50 +1,62 @@
 import "dotenv/config";
 import type { Server as HttpServer } from "node:http";
-import { DefaultEventsMap, Server, Socket } from "socket.io";
-import { onConnectionController } from "./domains/authAndAccess/controllers/authSocketControllers";
-import { onMessageSendController } from "./domains/messaging/controllers/socketControllers";
+import { Server, Socket } from "socket.io";
+import { socketAuthMiddleware } from "./domains/authAndAccess/middleware/socketAuthMiddleware";
+import { registerAuthSocketHandlers } from "./domains/authAndAccess/socketHandlers/registerAuthSocketHandlers";
+import { registerMessagingSocketHandlers } from "./domains/messaging/socketHandlers/registerMessagingSocketHandlers";
+import type { IdentityDTO } from "./domains/authAndAccess/domainModels/identity";
+import type {
+  MessagingClientToServerEvents,
+  MessagingServerToClientEvents,
+} from "./domains/messaging/socketEvents";
+import type { ConversationsServerToClientEvents } from "./domains/conversations/socketEvents";
+import type { AuthServerToClientEvents } from "./domains/authAndAccess/socketEvents";
 
-export let io: Server<
-  DefaultEventsMap,
-  DefaultEventsMap,
-  DefaultEventsMap,
-  SocketData
->;
+interface ClientToServerEvents extends MessagingClientToServerEvents {}
+
+interface ServerToClientEvents
+  extends MessagingServerToClientEvents,
+    ConversationsServerToClientEvents,
+    AuthServerToClientEvents {}
+
+interface InterServerEvents {}
 
 interface SocketData {
-  userId: string;
+  identity: IdentityDTO;
 }
 
-export type AuthSocket = Socket<
-  DefaultEventsMap,
-  DefaultEventsMap,
-  DefaultEventsMap,
+export let io: Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
   SocketData
 >;
+
+export type AuthSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
 export const attachSocket = (server: HttpServer) => {
   io = new Server<
-    DefaultEventsMap,
-    DefaultEventsMap,
-    DefaultEventsMap,
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
     SocketData
   >(server, {
     cors: { origin: process.env.CLIENT_URL, credentials: true },
   });
 
-  io.on("connection", (socket) => {
-    onConnectionController(socket);
+  io.use(socketAuthMiddleware);
 
-    socket.on("message:send", (payload, ack) => {
-      if (!socket.data.userId) {
-        return ack({ success: false, message: "Unauthorized", data: null });
-      }
-      onMessageSendController({ socket, payload, ack });
-    });
+  const onConnection = (socket: AuthSocket) => {
+    registerAuthSocketHandlers(io, socket);
+    registerMessagingSocketHandlers(io, socket);
+  };
 
-    socket.on("contact:request", (payload) => {
-      console.log(payload);
-    });
-  });
+  io.on("connection", onConnection);
 
   return io;
 };
