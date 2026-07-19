@@ -87,22 +87,22 @@ export class BlockContactService {
             return { blockedRoom, remainingParticipantIds: null };
           }
 
-          const updatedRoom = await this.removeParticipantFromRoomService.execute({
+          const removeResult = await this.removeParticipantFromRoomService.execute({
             roomId,
             userId: user,
           });
           await this.redactUserMessagesInRoomService.execute({ userId: user, roomId });
 
-          if (!updatedRoom) return null;
+          if (!removeResult.success || !removeResult.data) return null;
 
           const blockedRoom: BlockedRoomResult = {
             roomId,
-            room: updatedRoom,
+            room: removeResult.data,
           };
 
           return {
             blockedRoom,
-            remainingParticipantIds: updatedRoom.participants.map((p) => p.userId),
+            remainingParticipantIds: removeResult.data.participants.map((p) => p.userId),
           };
         }),
       );

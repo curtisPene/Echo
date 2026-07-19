@@ -4,6 +4,7 @@ import request from "supertest";
 import { createApp } from "../../../../app";
 import { mongooseConnect } from "../../../../server";
 import { userRepo } from "../../repo/UserRepo";
+import * as composition from "../../../../composition";
 import { cleanupUser } from "../testHelpers";
 import mongoose from "mongoose";
 
@@ -12,7 +13,7 @@ const uniqueEmail = () =>
 
 const VALID_PASSWORD = "Password1!";
 
-const app = createApp();
+const app = createApp(composition);
 
 beforeAll(async () => {
   await mongooseConnect();

@@ -1,12 +1,13 @@
 import "dotenv/config";
 import { beforeAll, afterAll, beforeEach, describe, expect, it } from "vitest";
-import { createNewRoomService } from "../../composition";
+import { createNewRoomService } from "../../../../composition";
 import { AddContactService } from "../../services/AddContactService";
 import { BlockContactService } from "../../services/BlockContactService";
 import { userRepo } from "../../repo/UserRepo";
 import { contactsRepo } from "../../repo/ContactsRepo";
 import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";
 import { RoomRepo } from "../../../conversations/repo/mongooseRoomRepo";
+import { MessageRepo } from "../../../messaging/repo/mongooseMessageRepo";
 import { FindRoomsForUserService } from "../../../conversations/services/FindRoomsForUserService";
 import { RemoveParticipantFromRoomService } from "../../../conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../../conversations/services/DeleteRoomService";
@@ -20,6 +21,7 @@ let fakeSocket: ReturnType<typeof createFakeSocket>;
 let addContactService: AddContactService;
 
 const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
+const messageRepo = new MessageRepo(new FindUserIdentitiesService(userRepo));
 
 // Used as setup in one test ("rejects adding a user that has blocked the
 // adder") - not the subject under test, but still needs a socket that
@@ -32,8 +34,8 @@ const blockContactService = new BlockContactService(
   new FindRoomsForUserService(roomRepo),
   new RemoveParticipantFromRoomService(roomRepo),
   new DeleteRoomService(roomRepo),
-  new DeleteRoomMessagesService(),
-  new RedactUserMessagesInRoomService(),
+  new DeleteRoomMessagesService(messageRepo),
+  new RedactUserMessagesInRoomService(messageRepo),
 );
 
 beforeEach(() => {

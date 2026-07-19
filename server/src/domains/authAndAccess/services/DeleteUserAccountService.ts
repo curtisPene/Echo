@@ -61,22 +61,22 @@ export class DeleteUserAccountService {
             return { deletedRoom, remainingParticipantIds: [] };
           }
 
-          const updatedRoom = await this.removeParticipantFromRoomService.execute({
+          const removeResult = await this.removeParticipantFromRoomService.execute({
             roomId,
             userId,
           });
           await this.redactUserMessagesInRoomService.execute({ userId, roomId });
 
-          if (!updatedRoom) {
+          if (!removeResult.success || !removeResult.data) {
             const deletedRoom: DeletedRoomResult = { roomId };
             return { deletedRoom, remainingParticipantIds: [] };
           }
 
-          const deletedRoom: DeletedRoomResult = { roomId, room: updatedRoom };
+          const deletedRoom: DeletedRoomResult = { roomId, room: removeResult.data };
 
           return {
             deletedRoom,
-            remainingParticipantIds: updatedRoom.participants.map(
+            remainingParticipantIds: removeResult.data.participants.map(
               (p) => p.userId,
             ),
           };

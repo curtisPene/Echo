@@ -1,16 +1,14 @@
 import express from "express";
-import {
-  userLoginController,
-  userRegistrationController,
-  verifyRefreshTokenController,
-} from "../controllers/authHttpControllers";
+import type { AuthControllers } from "../controllers/authHttpControllers";
 
-const router = express.Router();
+export const createAuthRouter = (controllers: AuthControllers) => {
+  const router = express.Router();
 
-router.post("/login", userLoginController);
+  router.post("/login", controllers.userLoginController);
 
-router.post("/register", userRegistrationController);
+  router.post("/register", controllers.userRegistrationController);
 
-router.post("/verify", verifyRefreshTokenController);
+  router.post("/verify", controllers.verifyRefreshTokenController);
 
-export default router;
+  return router;
+};

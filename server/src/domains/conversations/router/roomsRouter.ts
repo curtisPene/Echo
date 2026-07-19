@@ -1,13 +1,12 @@
 import express from "express";
-import {
-  createNewRoomController,
-  acceptRoomInviteController,
-} from "../controllers/httpControllers";
+import type { RoomsControllers } from "../controllers/httpControllers";
 
-const router = express.Router();
+export const createRoomsRouter = (controllers: RoomsControllers) => {
+  const router = express.Router();
 
-router.post("/", createNewRoomController);
+  router.post("/", controllers.createNewRoomController);
 
-router.post("/accept-invite", acceptRoomInviteController);
+  router.post("/accept-invite", controllers.acceptRoomInviteController);
 
-export default router;
+  return router;
+};

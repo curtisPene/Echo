@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { registrationService, loginService } from "../composition";
+import { registrationService, loginService } from "../../../composition";
 import { User as UserDoc } from "../models/userModel";
 import { Contacts as ContactsDoc } from "../models/contactsModel";
 import { Room as RoomDoc } from "../../conversations/models/roomModel";

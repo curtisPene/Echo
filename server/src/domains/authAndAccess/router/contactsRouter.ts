@@ -1,18 +1,16 @@
-import express, { NextFunction, Request, Response } from "express";
-import {
-  addContactController,
-  blockContactController,
-  searchContactController,
-} from "../controllers/contactsHttpControllers";
+import express from "express";
+import type { ContactsControllers } from "../controllers/contactsHttpControllers";
 
-const router = express.Router();
+export const createContactsRouter = (controllers: ContactsControllers) => {
+  const router = express.Router();
 
-router.post("/search", searchContactController);
+  router.post("/search", controllers.searchContactController);
 
-router.post("/request", searchContactController);
+  router.post("/request", controllers.searchContactController);
 
-router.post("/add", addContactController);
+  router.post("/add", controllers.addContactController);
 
-router.post("/block", blockContactController);
+  router.post("/block", controllers.blockContactController);
 
-export default router;
+  return router;
+};

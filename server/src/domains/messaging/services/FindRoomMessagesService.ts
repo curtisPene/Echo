@@ -2,6 +2,8 @@ import { MessageDTO } from "../domainModels/message";
 import { MessageRepo } from "../repo/mongooseMessageRepo";
 
 export class FindRoomMessagesService {
+  constructor(private readonly messageRepo: MessageRepo) {}
+
   async execute({
     roomId,
     userId,
@@ -12,8 +14,8 @@ export class FindRoomMessagesService {
     since?: Date;
   }): Promise<{ messages: MessageDTO[]; unread: number }> {
     const [messages, unread] = await Promise.all([
-      MessageRepo.findRoomMessages({ roomId, since }),
-      MessageRepo.countUnreadMessages({ roomId, userId }),
+      this.messageRepo.findRoomMessages({ roomId, since }),
+      this.messageRepo.countUnreadMessages({ roomId, userId }),
     ]);
 
     return {

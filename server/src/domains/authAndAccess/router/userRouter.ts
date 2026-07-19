@@ -1,38 +1,12 @@
 import express from "express";
-import { syncUserDataService } from "../composition";
-import { sinceSchema } from "../types/usersTypes";
-import { deleteAccountController } from "../controllers/httpUserControllers";
+import type { UserControllers } from "../controllers/httpUserControllers";
 
-const router = express.Router();
+export const createUserRouter = (controllers: UserControllers) => {
+  const router = express.Router();
 
-router.get("/sync", async (req, res) => {
-  const userId = req.user?.id;
-  const since =
-    typeof req.query.since === "string" ? req.query.since : undefined;
-  const parsedSince = sinceSchema.safeParse(since);
+  router.get("/sync", controllers.syncUserDataController);
 
-  if (!userId || !parsedSince.success) {
-    return res.status(400).json({
-      success: false,
-      message: "Malformed request",
-      data: null,
-    });
-  }
+  router.post("/delete-account", controllers.deleteAccountController);
 
-  const result = await syncUserDataService.execute({
-    userId,
-    since: parsedSince.data,
-  });
-
-  if (!result.success) {
-    return res.status(500).json(result);
-  }
-
-  return res.status(200).json(result);
-
-  // since absent -> full/cold bootstrap sync, since present -> delta sync
-});
-
-router.post("/delete-account", deleteAccountController);
-
-export default router;
+  return router;
+};

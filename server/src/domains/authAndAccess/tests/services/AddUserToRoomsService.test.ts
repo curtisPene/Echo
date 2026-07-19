@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
-import { createNewRoomService } from "../../composition";
+import { createNewRoomService } from "../../../../composition";
 import { AddUserToRoomsService } from "../../services/AddUserToRoomsService";
 import { userRepo } from "../../repo/UserRepo";
 import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";

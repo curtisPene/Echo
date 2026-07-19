@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { beforeAll, afterAll, afterEach, describe, expect, it } from "vitest";
-import { registrationService } from "../../composition";
+import { registrationService } from "../../../../composition";
 import { userRepo } from "../../repo/UserRepo";
 import { cleanupUser } from "../testHelpers";
 import { mongooseConnect } from "../../../../server";

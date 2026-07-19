@@ -1,47 +1,44 @@
 import { NextFunction, Request, Response } from "express";
-import { verifyAccessTokenService } from "../composition";
+import type { VerifyAccessTokenService } from "../services/VerifyAccessTokenService";
 
-export const authMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const path = req.path;
+export const createAuthMiddleware = (verifyAccessTokenService: VerifyAccessTokenService) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    const path = req.path;
 
-  const isPublicRoute =
-    path === "/auth/login" ||
-    path === "/auth/register" ||
-    path === "/auth/verify" ||
-    path === "/health";
+    const isPublicRoute =
+      path === "/auth/login" ||
+      path === "/auth/register" ||
+      path === "/auth/verify" ||
+      path === "/health";
 
-  if (isPublicRoute) {
-    return next();
-  }
+    if (isPublicRoute) {
+      return next();
+    }
 
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice("Bearer ".length)
-    : null;
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length)
+      : null;
 
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized - No credentials provided",
-      data: null,
-    });
-  }
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - No credentials provided",
+        data: null,
+      });
+    }
 
-  const result = verifyAccessTokenService.execute({ accessToken: token });
+    const result = verifyAccessTokenService.execute({ accessToken: token });
 
-  if (!result.success) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized - Invalid or expired token",
-      data: null,
-    });
-  }
+    if (!result.success) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - Invalid or expired token",
+        data: null,
+      });
+    }
 
-  req.user = result.data;
+    req.user = result.data;
 
-  next();
-};
+    next();
+  };

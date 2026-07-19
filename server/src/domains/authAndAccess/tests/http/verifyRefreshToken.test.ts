@@ -4,10 +4,11 @@ import request from "supertest";
 import { createApp } from "../../../../app";
 import { mongooseConnect } from "../../../../server";
 import { userRepo } from "../../repo/UserRepo";
+import * as composition from "../../../../composition";
 import { cleanupUser } from "../testHelpers";
 import mongoose from "mongoose";
 
-const app = createApp();
+const app = createApp(composition);
 const VALID_PASSWORD = "Password1!";
 const uniqueEmail = () =>
   `test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;

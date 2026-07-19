@@ -6,12 +6,14 @@ import { MessageRepo } from "../repo/mongooseMessageRepo";
 export const createMessageService = async ({
   sender,
   newMessage,
+  messageRepo,
 }: {
   sender: SenderEntity;
   newMessage: Omit<NewMessage, "sender">;
+  messageRepo: MessageRepo;
 }): Promise<ServiceResult<{ message: MessageDTO }>> => {
   try {
-    const createdMessage = await MessageRepo.create({
+    const createdMessage = await messageRepo.create({
       ...newMessage,
       sender,
     });

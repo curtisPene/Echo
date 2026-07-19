@@ -1,9 +1,13 @@
 import { Server } from "socket.io";
 import type { AuthSocket } from "../../../socket";
-import { onMessageSendController } from "../controllers/socketControllers";
+import type { MessagingControllers } from "../controllers/socketControllers";
 
-export const registerMessagingSocketHandlers = (io: Server, socket: AuthSocket) => {
+export const registerMessagingSocketHandlers = (
+  io: Server,
+  socket: AuthSocket,
+  controllers: MessagingControllers,
+) => {
   socket.on("message:send", (payload, ack) => {
-    onMessageSendController({ socket, payload, ack });
+    controllers.onMessageSendController({ socket, payload, ack });
   });
 };

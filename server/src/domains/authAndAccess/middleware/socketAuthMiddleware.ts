@@ -1,18 +1,16 @@
 import { Socket } from "socket.io";
-import { verifyAccessTokenService } from "../composition";
+import type { VerifyAccessTokenService } from "../services/VerifyAccessTokenService";
 
-export const socketAuthMiddleware = (
-  socket: Socket,
-  next: (err?: Error) => void,
-) => {
-  const { accessToken } = socket.handshake.auth;
-  const result = verifyAccessTokenService.execute({ accessToken });
+export const createSocketAuthMiddleware = (verifyAccessTokenService: VerifyAccessTokenService) =>
+  (socket: Socket, next: (err?: Error) => void) => {
+    const { accessToken } = socket.handshake.auth;
+    const result = verifyAccessTokenService.execute({ accessToken });
 
-  if (!result.success || !result.data) {
-    return next(new Error("Unauthorized"));
-  }
+    if (!result.success || !result.data) {
+      return next(new Error("Unauthorized"));
+    }
 
-  socket.data.identity = result.data;
+    socket.data.identity = result.data;
 
-  next();
-};
+    next();
+  };
