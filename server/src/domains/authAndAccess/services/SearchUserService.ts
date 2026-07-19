@@ -1,9 +1,14 @@
 import { ServiceResult } from "../../../types";
-import { contactsRepo } from "../repo/ContactsRepo";
-import { userRepo } from "../repo/UserRepo";
+import { ContactsRepository } from "../ports/ContactsRepository";
+import { UserRepository } from "../ports/UserRepository";
 import { Identity, IdentityDTO } from "../domainModels/identity";
 
 export class SearchUserService {
+  constructor(
+    private readonly userRepo: UserRepository,
+    private readonly contactsRepo: ContactsRepository,
+  ) {}
+
   async execute({
     email,
     viewerId,
@@ -12,7 +17,7 @@ export class SearchUserService {
     viewerId: string;
   }): Promise<ServiceResult<{ user: IdentityDTO }>> {
     try {
-      const user = await userRepo.findByEmail({ email });
+      const user = await this.userRepo.findByEmail({ email });
 
       if (!user)
         return {
@@ -21,7 +26,7 @@ export class SearchUserService {
           data: null,
         };
 
-      const userContacts = await contactsRepo.findByUserId({
+      const userContacts = await this.contactsRepo.findByUserId({
         userId: user.id,
       });
 

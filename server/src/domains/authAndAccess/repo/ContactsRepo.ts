@@ -117,6 +117,24 @@ export class ContactsRepo implements ContactsRepository {
       await session.endSession();
     }
   }
+
+  async delete({ userId }: { userId: string }): Promise<boolean> {
+    const result = await ContactsDoc.deleteOne({ user: userId });
+
+    return result.deletedCount > 0;
+  }
+
+  /**
+   * Strips a deleted user out of every other user's contacts/blocked lists -
+   * the multi-party counterpart to saveBlockPair, which only ever updates
+   * one blocker/blocked pair at a time.
+   */
+  async removeUserFromAllLists({ userId }: { userId: string }): Promise<void> {
+    await ContactsDoc.updateMany(
+      { $or: [{ contacts: userId }, { blocked: userId }] },
+      { $pull: { contacts: userId, blocked: userId } },
+    );
+  }
 }
 
 export const contactsRepo = new ContactsRepo();

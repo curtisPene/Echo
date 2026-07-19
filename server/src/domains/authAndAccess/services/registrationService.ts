@@ -1,6 +1,6 @@
 import { ServiceResult } from "../../../types";
-import { contactsRepo } from "../repo/ContactsRepo";
-import { userRepo } from "../repo/UserRepo";
+import { ContactsRepository } from "../ports/ContactsRepository";
+import { UserRepository } from "../ports/UserRepository";
 import { PasswordHasher } from "../ports/PasswordHasher";
 import { UserRegistrationDto } from "../types/authTypes";
 import { AuthUser } from "../domainModels/authUser";
@@ -23,7 +23,11 @@ const FAILURE_MESSAGES: Record<RegisterUserFailureReason, string> = {
 };
 
 export class RegistrationService {
-  constructor(private readonly passwordHasher: PasswordHasher) {}
+  constructor(
+    private readonly userRepo: UserRepository,
+    private readonly contactsRepo: ContactsRepository,
+    private readonly passwordHasher: PasswordHasher,
+  ) {}
 
   async execute({
     firstName,
@@ -44,7 +48,7 @@ export class RegistrationService {
       const hashedPassword = await this.passwordHasher.hash(
         newAuthUser.password,
       );
-      const userResult = await userRepo.create({
+      const userResult = await this.userRepo.create({
         ...newAuthUser,
         password: hashedPassword,
       });
@@ -57,7 +61,7 @@ export class RegistrationService {
         };
       }
 
-      await contactsRepo.create({ userId: userResult.user.id });
+      await this.contactsRepo.create({ userId: userResult.user.id });
 
       return {
         success: true,

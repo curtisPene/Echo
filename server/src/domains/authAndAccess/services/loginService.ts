@@ -1,6 +1,6 @@
 import { ServiceResult } from "../../../types";
 import { Identity, IdentityDTO } from "../domainModels/identity";
-import { userRepo } from "../repo/UserRepo";
+import { UserRepository } from "../ports/UserRepository";
 import { PasswordHasher } from "../ports/PasswordHasher";
 import { TokenSigner } from "../ports/TokenSigner";
 import { UserLoginDto } from "../types/authTypes";
@@ -13,13 +13,14 @@ export type LoginUserReuslt = ServiceResult<{
 
 export class LoginService {
   constructor(
+    private readonly userRepo: UserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly tokenSigner: TokenSigner,
   ) {}
 
   async execute({ email, password }: UserLoginDto): Promise<LoginUserReuslt> {
     try {
-      const user = await userRepo.findByEmail({ email });
+      const user = await this.userRepo.findByEmail({ email });
 
       if (!user)
         return {

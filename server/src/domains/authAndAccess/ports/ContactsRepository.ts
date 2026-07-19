@@ -8,4 +8,6 @@ export interface ContactsRepository {
     blocker: Contacts;
     blocked: Contacts;
   }): Promise<{ blocker: Contacts; blocked: Contacts }>;
+  delete(params: { userId: string }): Promise<boolean>;
+  removeUserFromAllLists(params: { userId: string }): Promise<void>;
 }

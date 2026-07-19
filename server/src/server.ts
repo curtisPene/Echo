@@ -1,10 +1,17 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 
-const uri = process.env.MONGO_URI;
+const uri =
+  process.env.NODE_ENV === "production"
+    ? process.env.MONGO_URI_ATLAS
+    : process.env.MONGO_URI_LOCAL;
 
 if (!uri) {
-  throw new Error("MONGO_URI is not defined");
+  throw new Error(
+    process.env.NODE_ENV === "production"
+      ? "MONGO_URI_ATLAS is not defined"
+      : "MONGO_URI_LOCAL is not defined",
+  );
 }
 
 export const mongooseConnect = async () => {

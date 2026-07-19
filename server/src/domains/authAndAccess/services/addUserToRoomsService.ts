@@ -1,28 +1,32 @@
 import { Socket } from "socket.io";
-import { findRoomsForUserService } from "../../conversations/composition";
+import { FindRoomsForUserService } from "../../conversations/services/FindRoomsForUserService";
 import { ServiceResult } from "../../../types";
 
-export const addUserToRoomsService = async ({
-  socket,
-  userId,
-}: {
-  socket: Socket;
-  userId: string;
-}): Promise<ServiceResult<null>> => {
-  try {
-    // Join every room the user is a participant in - pending/accepted status
-    // is a client-side rendering concern only, not a socket access boundary
+export class AddUserToRoomsService {
+  constructor(private readonly findRoomsForUserService: FindRoomsForUserService) {}
 
-    const rooms = await findRoomsForUserService.execute({ userId });
+  async execute({
+    socket,
+    userId,
+  }: {
+    socket: Socket;
+    userId: string;
+  }): Promise<ServiceResult<null>> {
+    try {
+      // Join every room the user is a participant in - pending/accepted status
+      // is a client-side rendering concern only, not a socket access boundary
 
-    rooms.forEach((room) => socket.join(room.id));
+      const rooms = await this.findRoomsForUserService.execute({ userId });
 
-    // create the users personal room for receiving notifications across all devices
-    socket.join(`user:${userId}`);
+      rooms.forEach((room) => socket.join(room.id));
 
-    return { success: true, message: "Rooms joined successfully", data: null };
-  } catch (error) {
-    console.log(error);
-    return { success: false, message: "Rooms not joined", data: null };
+      // create the users personal room for receiving notifications across all devices
+      socket.join(`user:${userId}`);
+
+      return { success: true, message: "Rooms joined successfully", data: null };
+    } catch (error) {
+      console.log(error);
+      return { success: false, message: "Rooms not joined", data: null };
+    }
   }
-};
+}

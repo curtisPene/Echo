@@ -53,6 +53,12 @@ export class UserRepo implements UserRepository {
 
     return userDocs.map((doc) => AuthUser.hydrate(doc.toJSON()));
   }
+
+  async delete({ id }: { id: string }): Promise<boolean> {
+    const result = await UserDoc.deleteOne({ _id: id });
+
+    return result.deletedCount > 0;
+  }
 }
 
 export const userRepo = new UserRepo();

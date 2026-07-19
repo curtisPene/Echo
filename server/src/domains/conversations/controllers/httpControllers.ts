@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { acceptRoomInviteService } from "../services/AcceptRoomInviteService";
-import { createNewRoomService } from "../services/createNewRoomService";
+import { createNewRoomService } from "../composition";
 import { io } from "../../../socket";
 
 export const createNewRoomController = async (
@@ -19,7 +19,7 @@ export const createNewRoomController = async (
     });
   }
 
-  const serviceResult = await createNewRoomService({
+  const serviceResult = await createNewRoomService.execute({
     user: userId,
     participants: participants,
     name: name,

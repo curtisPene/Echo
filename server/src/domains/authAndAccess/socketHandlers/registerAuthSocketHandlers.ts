@@ -1,7 +1,10 @@
 import { Server } from "socket.io";
 import type { AuthSocket } from "../../../socket";
-import { addUserToRoomsService } from "../services/addUserToRoomsService";
+import { addUserToRoomsService } from "../composition";
 
-export const registerAuthSocketHandlers = (io: Server, socket: AuthSocket) => {
-  addUserToRoomsService({ socket, userId: socket.data.identity.id });
+export const registerAuthSocketHandlers = async (
+  io: Server,
+  socket: AuthSocket,
+) => {
+  await addUserToRoomsService.execute({ socket, userId: socket.data.identity.id });
 };

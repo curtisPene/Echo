@@ -18,7 +18,7 @@ export const userLoginController = async (
     return res.status(400).json({
       success: false,
       message: "Invalid input",
-      data: { errors: parsed.error.issues },
+      data: null,
     });
   }
 
@@ -40,6 +40,7 @@ export const userLoginController = async (
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     })
+    .status(201)
     .json({
       success: true,
       message: "User logged in successfully",
@@ -47,8 +48,7 @@ export const userLoginController = async (
         accessToken: loginResult.data.accessToken,
         user: loginResult.data.user,
       },
-    })
-    .status(201);
+    });
 };
 
 export const userRegistrationController = async (
@@ -62,7 +62,7 @@ export const userRegistrationController = async (
     return res.status(400).json({
       success: false,
       message: "Invalid input",
-      data: { errors: parsed.error.issues },
+      data: { reason: "validation" },
     });
   }
 

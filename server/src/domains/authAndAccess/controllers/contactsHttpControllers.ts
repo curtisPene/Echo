@@ -1,9 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { searchUserService } from "../composition";
+import { searchUserService, addContactService, blockContactService } from "../composition";
 import { searchContactsRequestSchema } from "../types/contactsTypes";
-import { addContactService } from "../services/addContactService";
-import { blockContactService } from "../services/blockContactService";
-import { io } from "../../../socket";
 
 export const searchContactController = async (
   req: Request,
@@ -65,7 +62,7 @@ export const addContactController = async (
     });
   }
 
-  const serviceResult = await addContactService({
+  const serviceResult = await addContactService.execute({
     userId: req.user.id,
     contactId,
   });
@@ -101,7 +98,7 @@ export const blockContactController = async (
     });
   }
 
-  const serviceResult = await blockContactService({
+  const serviceResult = await blockContactService.execute({
     user: userId,
     blockedUser,
   });
@@ -113,43 +110,6 @@ export const blockContactController = async (
       data: null,
     });
   }
-  const { rooms, affectedParticipantIds } = serviceResult.data;
-
-  // The blocker is the one removed from every affected room (1:1 deleted, or
-  // pulled from group participants) - their sockets always need to leave. The
-  // blocked user is only removed from the room in the 1:1 case (room deleted
-  // entirely); in a group chat the blocked user stays a participant, so their
-  // sockets stay joined.
-  const blockersSockets = await io.in(`user:${userId}`).fetchSockets();
-  const blockedUserSockets = await io.in(`user:${blockedUser}`).fetchSockets();
-
-  rooms.forEach((room) => {
-    blockersSockets.forEach((socket) => socket.leave(room.roomId));
-
-    if (!("room" in room)) {
-      blockedUserSockets.forEach((socket) => socket.leave(room.roomId));
-    }
-  });
-
-  // Notify every remaining group member (already deduplicated by the service)
-  // so their client re-syncs the affected rooms without receiving the event
-  // more than once, even if they share multiple group rooms with the blocker.
-  // 1:1 rooms are deleted (no RoomDTO left to send, just the id to remove
-  // locally); group rooms still exist with the blocker removed, so they get
-  // a normal room:updated with the fresh RoomDTO.
-  affectedParticipantIds.forEach((participantId) => {
-    rooms.forEach((room) => {
-      if (!("room" in room)) {
-        io.to(`user:${participantId}`).emit("room:deleted", {
-          roomId: room.roomId,
-        });
-      } else {
-        io.to(`user:${participantId}`).emit("room:updated", {
-          room: room.room,
-        });
-      }
-    });
-  });
 
   // The blocking client needs the blocked contact's id and the affected
   // rooms so it can remove them from local storage
@@ -158,7 +118,7 @@ export const blockContactController = async (
     message: "Contact blocked successfully",
     data: {
       blockedContactId: blockedUser,
-      updatedRooms: rooms,
+      updatedRooms: serviceResult.data.rooms,
     },
   });
 };

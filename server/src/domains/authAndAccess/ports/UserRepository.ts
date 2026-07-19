@@ -10,4 +10,5 @@ export interface UserRepository {
   findByEmail(params: { email: string }): Promise<AuthUser | null>;
   create(user: NewAuthUser): Promise<CreateUserResult>;
   findLikeEmail(params: { email: string }): Promise<AuthUser[]>;
+  delete(params: { id: string }): Promise<boolean>;
 }

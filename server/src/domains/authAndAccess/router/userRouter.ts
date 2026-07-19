@@ -1,6 +1,7 @@
 import express from "express";
-import { syncUserDataService } from "../services/syncUserDataService";
+import { syncUserDataService } from "../composition";
 import { sinceSchema } from "../types/usersTypes";
+import { deleteAccountController } from "../controllers/httpUserControllers";
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.get("/sync", async (req, res) => {
     });
   }
 
-  const result = await syncUserDataService({
+  const result = await syncUserDataService.execute({
     userId,
     since: parsedSince.data,
   });
@@ -31,5 +32,7 @@ router.get("/sync", async (req, res) => {
 
   // since absent -> full/cold bootstrap sync, since present -> delta sync
 });
+
+router.post("/delete-account", deleteAccountController);
 
 export default router;

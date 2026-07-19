@@ -51,8 +51,13 @@ export const attachSocket = (server: HttpServer) => {
 
   io.use(socketAuthMiddleware);
 
-  const onConnection = (socket: AuthSocket) => {
-    registerAuthSocketHandlers(io, socket);
+  const onConnection = async (socket: AuthSocket) => {
+    // Must await room-joining before wiring message:send - otherwise a
+    // client can be "connected" and have its send listener live before its
+    // socket has actually joined the rooms it belongs to, causing a
+    // spurious "Unauthorized room access" rejection on a legitimate send
+    // right after connect/reconnect.
+    await registerAuthSocketHandlers(io, socket);
     registerMessagingSocketHandlers(io, socket);
   };
 

@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 const NAME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]{1,50}$/;
-const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,64}$/;
 
 export const userRegistrationSchema = z.object({
   firstName: z
@@ -17,7 +18,7 @@ export const userRegistrationSchema = z.object({
     .string()
     .regex(
       PASSWORD_REGEX,
-      "Password must be at least 8 characters and contain a letter and a number",
+      "Password must be 8-64 characters and contain an uppercase letter, lowercase letter, number, and symbol",
     ),
   confirmPassword: z.string(),
 });

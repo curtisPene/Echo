@@ -1,0 +1,94 @@
+import "dotenv/config";
+import { beforeAll, afterAll, describe, expect, it } from "vitest";
+import { searchUserService } from "../../composition";
+import { BlockContactService } from "../../services/BlockContactService";
+import { userRepo } from "../../repo/UserRepo";
+import { contactsRepo } from "../../repo/ContactsRepo";
+import { FindRoomsForUserService } from "../../../conversations/services/FindRoomsForUserService";
+import { RemoveParticipantFromRoomService } from "../../../conversations/services/RemoveParticipantFromRoomService";
+import { DeleteRoomService } from "../../../conversations/services/DeleteRoomService";
+import { DeleteRoomMessagesService } from "../../../messaging/services/DeleteRoomMessagesService";
+import { RedactUserMessagesInRoomService } from "../../../messaging/services/RedactUserMessagesInRoomService";
+import { registerAndLogin, createFakeSocket, cleanupUser } from "../testHelpers";
+import { mongooseConnect } from "../../../../server";
+import mongoose from "mongoose";
+
+// blockContactService is only used here as setup (to establish a blocked
+// relationship) - not the subject under test - but it still needs a socket
+// that won't throw, so it's constructed locally with a fake one rather than
+// using the real composed instance from composition.ts.
+const blockContactService = new BlockContactService(
+  userRepo,
+  contactsRepo,
+  createFakeSocket().socket,
+  new FindRoomsForUserService(),
+  new RemoveParticipantFromRoomService(),
+  new DeleteRoomService(),
+  new DeleteRoomMessagesService(),
+  new RedactUserMessagesInRoomService(),
+);
+
+beforeAll(async () => {
+  await mongooseConnect();
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+});
+
+describe("SearchUserService", () => {
+  it("finds a real user by email", async () => {
+    const searcher = await registerAndLogin("Searcher");
+    const target = await registerAndLogin("Target");
+
+    const result = await searchUserService.execute({
+      email: target.email,
+      viewerId: searcher.id,
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success || !result.data) throw new Error("unreachable");
+
+    expect(result.data.user.id).toBe(target.id);
+    expect(result.data.user.email).toBe(target.email);
+
+    await cleanupUser(searcher);
+    await cleanupUser(target);
+  });
+
+  it("fails with 'User not found' for an unregistered email", async () => {
+    const searcher = await registerAndLogin("Searcher");
+
+    const result = await searchUserService.execute({
+      email: "no-such-user@example.com",
+      viewerId: searcher.id,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toBe("User not found");
+
+    await cleanupUser(searcher);
+  });
+
+  it("fails with 'User blocked' when the found user has blocked the viewer", async () => {
+    const searcher = await registerAndLogin("Searcher");
+    const target = await registerAndLogin("Target");
+
+    const blockResult = await blockContactService.execute({
+      user: target.id,
+      blockedUser: searcher.id,
+    });
+    expect(blockResult.success).toBe(true);
+
+    const result = await searchUserService.execute({
+      email: target.email,
+      viewerId: searcher.id,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toBe("User blocked");
+
+    await cleanupUser(searcher);
+    await cleanupUser(target);
+  });
+});

@@ -1,4 +1,4 @@
-import { userRepo } from "../repo/UserRepo";
+import { UserRepository } from "../ports/UserRepository";
 
 export interface UserIdentity {
   id: string;
@@ -7,8 +7,10 @@ export interface UserIdentity {
 }
 
 export class FindUserIdentitiesService {
+  constructor(private readonly userRepo: UserRepository) {}
+
   async execute({ userIds }: { userIds: string[] }): Promise<UserIdentity[]> {
-    const users = await userRepo.findByIds(userIds);
+    const users = await this.userRepo.findByIds(userIds);
 
     return users.map((user) => ({
       id: user.id,
