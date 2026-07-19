@@ -2,6 +2,9 @@ import "dotenv/config";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { createNewRoomService } from "../../composition";
 import { AddUserToRoomsService } from "../../services/AddUserToRoomsService";
+import { userRepo } from "../../repo/UserRepo";
+import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";
+import { RoomRepo } from "../../../conversations/repo/mongooseRoomRepo";
 import { FindRoomsForUserService } from "../../../conversations/services/FindRoomsForUserService";
 import { registerAndLogin, cleanupUser } from "../testHelpers";
 import { mongooseConnect } from "../../../../server";
@@ -20,7 +23,8 @@ function createFakeSocket() {
   };
 }
 
-const addUserToRoomsService = new AddUserToRoomsService(new FindRoomsForUserService());
+const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
+const addUserToRoomsService = new AddUserToRoomsService(new FindRoomsForUserService(roomRepo));
 
 beforeAll(async () => {
   await mongooseConnect();
@@ -36,7 +40,7 @@ describe("AddUserToRoomsService", () => {
     const b = await registerAndLogin("B");
 
     const room = await createNewRoomService.execute({
-      user: a.id,
+      user: a,
       participants: [{ user: b.id }],
       name: "A, B",
     });

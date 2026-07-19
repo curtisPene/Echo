@@ -1,14 +1,16 @@
 import { RoomDTO } from "../domainModels/room";
-import { RoomRepo } from "../repo/mongooseRoomRepo";
+import { RoomRepository } from "../ports/RoomRepository";
 
 export class RemoveParticipantFromRoomService {
+  constructor(private readonly roomRepo: RoomRepository) {}
+
   async execute({ roomId, userId }: { roomId: string; userId: string }): Promise<RoomDTO | null> {
-    const room = await RoomRepo.findById({ roomId });
+    const room = await this.roomRepo.findById({ roomId });
 
     if (!room) return null;
 
     const updated = room.removeParticipant(userId);
-    const saved = await RoomRepo.update(updated);
+    const saved = await this.roomRepo.update(updated);
 
     return saved.toDTO();
   }

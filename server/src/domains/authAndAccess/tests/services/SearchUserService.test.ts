@@ -4,6 +4,8 @@ import { searchUserService } from "../../composition";
 import { BlockContactService } from "../../services/BlockContactService";
 import { userRepo } from "../../repo/UserRepo";
 import { contactsRepo } from "../../repo/ContactsRepo";
+import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";
+import { RoomRepo } from "../../../conversations/repo/mongooseRoomRepo";
 import { FindRoomsForUserService } from "../../../conversations/services/FindRoomsForUserService";
 import { RemoveParticipantFromRoomService } from "../../../conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../../conversations/services/DeleteRoomService";
@@ -13,6 +15,8 @@ import { registerAndLogin, createFakeSocket, cleanupUser } from "../testHelpers"
 import { mongooseConnect } from "../../../../server";
 import mongoose from "mongoose";
 
+const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
+
 // blockContactService is only used here as setup (to establish a blocked
 // relationship) - not the subject under test - but it still needs a socket
 // that won't throw, so it's constructed locally with a fake one rather than
@@ -21,9 +25,9 @@ const blockContactService = new BlockContactService(
   userRepo,
   contactsRepo,
   createFakeSocket().socket,
-  new FindRoomsForUserService(),
-  new RemoveParticipantFromRoomService(),
-  new DeleteRoomService(),
+  new FindRoomsForUserService(roomRepo),
+  new RemoveParticipantFromRoomService(roomRepo),
+  new DeleteRoomService(roomRepo),
   new DeleteRoomMessagesService(),
   new RedactUserMessagesInRoomService(),
 );

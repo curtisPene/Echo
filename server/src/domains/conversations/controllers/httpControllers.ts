@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { acceptRoomInviteService } from "../services/AcceptRoomInviteService";
-import { createNewRoomService } from "../composition";
-import { io } from "../../../socket";
+import { acceptRoomInviteService, createNewRoomService } from "../composition";
 
 export const createNewRoomController = async (
   req: Request,
@@ -9,9 +7,9 @@ export const createNewRoomController = async (
   next: NextFunction,
 ) => {
   const { participants, name } = req.body;
-  const userId = req.user?.id;
+  const user = req.user;
 
-  if (!participants || !name || !userId) {
+  if (!participants || !name || !user) {
     return res.status(400).json({
       success: false,
       message: "Missing request fields",
@@ -20,7 +18,7 @@ export const createNewRoomController = async (
   }
 
   const serviceResult = await createNewRoomService.execute({
-    user: userId,
+    user,
     participants: participants,
     name: name,
   });
@@ -56,8 +54,8 @@ export const acceptRoomInviteController = async (
     });
   }
 
-  const serviceResult = await acceptRoomInviteService({
-    userId: user.id,
+  const serviceResult = await acceptRoomInviteService.execute({
+    user,
     roomId,
   });
 
@@ -69,22 +67,9 @@ export const acceptRoomInviteController = async (
     });
   }
 
-  const roomView = serviceResult.data;
-
-  const otherParticipants = roomView.participants.filter(
-    (participant) => participant.userId !== user.id,
-  );
-
-  // Notify other participants of the update
-  otherParticipants.forEach((participant) => {
-    io.to(`user:${participant.userId}`).emit("room:updated", {
-      room: roomView,
-    });
-  });
-
   res.status(201).json({
     success: true,
     message: "Room invite accepted successfully",
-    data: roomView,
+    data: serviceResult.data,
   });
 };

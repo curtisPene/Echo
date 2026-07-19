@@ -1,7 +1,8 @@
 import { Room as RoomDoc, RoomParticipant } from "../models/roomModel";
 import { RepoError } from "../../../errors/RepoError";
 import { Room, NewRoom } from "../domainModels/room";
-import { findUserIdentitiesService } from "../../authAndAccess/composition";
+import { RoomRepository } from "../ports/RoomRepository";
+import { FindUserIdentitiesService } from "../../authAndAccess/services/FindUserIdentitiesService";
 
 function toPersistedParticipants(
   participants: { userId: string; status: "pending" | "accepted" }[],
@@ -12,40 +13,42 @@ function toPersistedParticipants(
   }));
 }
 
-async function toRoomParams(doc: {
-  _id: { toString(): string };
-  name: string;
-  participants: RoomParticipant[];
-}) {
-  const userIds = doc.participants.map((participant) => participant.user.toString());
-  const entities = await findUserIdentitiesService.execute({ userIds });
-  const entitiesById = new Map(entities.map((entity) => [entity.id, entity]));
+export class RoomRepo implements RoomRepository {
+  constructor(private readonly findUserIdentitiesService: FindUserIdentitiesService) {}
 
-  return {
-    id: doc._id.toString(),
-    name: doc.name,
-    participants: doc.participants
-      .map((participant) => {
-        const entity = entitiesById.get(participant.user.toString());
+  private async toRoomParams(doc: {
+    _id: { toString(): string };
+    name: string;
+    participants: RoomParticipant[];
+  }) {
+    const userIds = doc.participants.map((participant) => participant.user.toString());
+    const entities = await this.findUserIdentitiesService.execute({ userIds });
+    const entitiesById = new Map(entities.map((entity) => [entity.id, entity]));
 
-        if (!entity) return null;
+    return {
+      id: doc._id.toString(),
+      name: doc.name,
+      participants: doc.participants
+        .map((participant) => {
+          const entity = entitiesById.get(participant.user.toString());
 
-        return { entity, status: participant.status ?? ("pending" as const) };
-      })
-      .filter((p): p is NonNullable<typeof p> => p !== null),
-  };
-}
+          if (!entity) return null;
 
-export class RoomRepo {
-  static async findById({ roomId }: { roomId: string }): Promise<Room | null> {
+          return { entity, status: participant.status ?? ("pending" as const) };
+        })
+        .filter((p): p is NonNullable<typeof p> => p !== null),
+    };
+  }
+
+  async findById({ roomId }: { roomId: string }): Promise<Room | null> {
     const doc = await RoomDoc.findById(roomId);
 
     if (!doc) return null;
 
-    return Room.hydrate(await toRoomParams(doc));
+    return Room.hydrate(await this.toRoomParams(doc));
   }
 
-  static async findRoomsWithUserId({
+  async findRoomsWithUserId({
     userId,
     since,
   }: {
@@ -57,10 +60,10 @@ export class RoomRepo {
       ...(since ? { updatedAt: { $gt: since } } : {}),
     });
 
-    return Promise.all(docs.map(async (doc) => Room.hydrate(await toRoomParams(doc))));
+    return Promise.all(docs.map(async (doc) => Room.hydrate(await this.toRoomParams(doc))));
   }
 
-  static async create(room: NewRoom): Promise<Room> {
+  async create(room: NewRoom): Promise<Room> {
     const doc = await RoomDoc.create({
       name: room.name,
       participants: toPersistedParticipants(
@@ -81,7 +84,7 @@ export class RoomRepo {
    * writes it and returns the same instance. No re-hydration: hydrate only
    * happens when reading fresh data out of storage, never on update.
    */
-  static async update(room: Room): Promise<Room> {
+  async update(room: Room): Promise<Room> {
     const result = await RoomDoc.updateOne(
       { _id: room.id },
       {
@@ -97,7 +100,7 @@ export class RoomRepo {
     return room;
   }
 
-  static async deleteById({ roomId }: { roomId: string }): Promise<boolean> {
+  async deleteById({ roomId }: { roomId: string }): Promise<boolean> {
     const result = await RoomDoc.deleteOne({ _id: roomId });
 
     return result.deletedCount > 0;

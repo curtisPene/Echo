@@ -5,6 +5,7 @@ import type { UserRepository } from "../ports/UserRepository";
 import type { AuthAndAccessSocket } from "../ports/AuthAndAccessSocket";
 import { CreateNewRoomService } from "../../conversations/services/createNewRoomService";
 import { RoomDTO } from "../../conversations/domainModels/room";
+import { Identity } from "../domainModels/identity";
 
 export class AddContactService {
   constructor(
@@ -77,7 +78,7 @@ export class AddContactService {
       // the added contact starts pending. This IS the "contact request":
       // there's no separate request/pending entity, the pending room is it.
       const roomResult = await this.createNewRoomService.execute({
-        user: userId,
+        user: Identity.hydrate(adder).toDTO(),
         participants: [{ user: contactId }],
         name: `${adder.firstName}, ${addedUser.firstName}`,
       });

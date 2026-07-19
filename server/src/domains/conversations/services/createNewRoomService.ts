@@ -5,13 +5,15 @@ import { VerifyUserIdService } from "../../authAndAccess/services/VerifyUserIdSe
 import { GetUsersContactsService } from "../../authAndAccess/services/GetUsersContactsService";
 import { FindUserIdentitiesService } from "../../authAndAccess/services/FindUserIdentitiesService";
 import { Room, RoomDTO } from "../domainModels/room";
-import { RoomRepo } from "../repo/mongooseRoomRepo";
+import { RoomRepository } from "../ports/RoomRepository";
+import { IdentityDTO } from "../../authAndAccess/domainModels/identity";
 
 export class CreateNewRoomService {
   constructor(
     private readonly verifyUserIdService: VerifyUserIdService,
     private readonly getUsersContactsService: GetUsersContactsService,
     private readonly findUserIdentitiesService: FindUserIdentitiesService,
+    private readonly roomRepo: RoomRepository,
   ) {}
 
   async execute({
@@ -19,7 +21,7 @@ export class CreateNewRoomService {
     participants,
     name,
   }: {
-    user: string;
+    user: IdentityDTO;
     participants: { user: string }[];
     name: string;
   }): Promise<ServiceResult<RoomDTO>> {
@@ -40,7 +42,7 @@ export class CreateNewRoomService {
 
       // Fetch each side's blocked-id lists so the domain model can decide
       // whether this room is allowed to be created
-      const creatorContacts = await this.getUsersContactsService.execute({ userId: user });
+      const creatorContacts = await this.getUsersContactsService.execute({ userId: user.id });
 
       const participantContactsResults = await Promise.all(
         participantIds.map((id) => this.getUsersContactsService.execute({ userId: id })),
@@ -51,7 +53,7 @@ export class CreateNewRoomService {
       );
 
       const canCreateResult = Room.canCreate({
-        creatorId: user,
+        creatorId: user.id,
         participantIds,
         creatorBlockedIds: creatorContacts.blockedIds,
         participantBlockedIds,
@@ -66,13 +68,16 @@ export class CreateNewRoomService {
         return { success: false, message, data: null };
       }
 
-      // Resolve every participant's identity (name) before constructing the room
+      // Resolve every participant's identity (name) before constructing the room -
+      // re-verified against the DB here rather than trusted from the caller's DTO,
+      // since the DTO only proves the id's provenance, not that the rest of its
+      // fields are still current.
       const identities = await this.findUserIdentitiesService.execute({
-        userIds: [user, ...participantIds],
+        userIds: [user.id, ...participantIds],
       });
       const identitiesById = new Map(identities.map((identity) => [identity.id, identity]));
 
-      const creatorIdentity = identitiesById.get(user);
+      const creatorIdentity = identitiesById.get(user.id);
 
       if (!creatorIdentity)
         return { success: false, message: "Internal server error", data: null };
@@ -89,7 +94,7 @@ export class CreateNewRoomService {
         participants: participantIdentities as NonNullable<(typeof participantIdentities)[number]>[],
       });
 
-      const roomDoc = await RoomRepo.create(newRoom);
+      const roomDoc = await this.roomRepo.create(newRoom);
 
       return {
         success: true,

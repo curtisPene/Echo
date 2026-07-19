@@ -5,6 +5,8 @@ import { AddContactService } from "../../services/AddContactService";
 import { DeleteUserAccountService } from "../../services/DeleteUserAccountService";
 import { userRepo } from "../../repo/UserRepo";
 import { contactsRepo } from "../../repo/ContactsRepo";
+import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";
+import { RoomRepo } from "../../../conversations/repo/mongooseRoomRepo";
 import { FindRoomsForUserService } from "../../../conversations/services/FindRoomsForUserService";
 import { RemoveParticipantFromRoomService } from "../../../conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../../conversations/services/DeleteRoomService";
@@ -14,6 +16,8 @@ import { registerAndLogin, createFakeSocket, cleanupUser } from "../testHelpers"
 import { mongooseConnect } from "../../../../server";
 import mongoose from "mongoose";
 
+const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
+
 // This IS the subject under test, so it's constructed here directly with a
 // fake socket - isolating it from the real SocketIOAuthAndAccessSocket
 // adapter (which needs a real attached io) rather than reusing the real
@@ -22,9 +26,9 @@ const deleteUserAccountService = new DeleteUserAccountService(
   userRepo,
   contactsRepo,
   createFakeSocket().socket,
-  new FindRoomsForUserService(),
-  new RemoveParticipantFromRoomService(),
-  new DeleteRoomService(),
+  new FindRoomsForUserService(roomRepo),
+  new RemoveParticipantFromRoomService(roomRepo),
+  new DeleteRoomService(roomRepo),
   new DeleteRoomMessagesService(),
   new RedactUserMessagesInRoomService(),
 );
@@ -119,7 +123,7 @@ describe("DeleteUserAccountService", () => {
     const c = await registerAndLogin("C");
 
     const room = await createNewRoomService.execute({
-      user: a.id,
+      user: a,
       participants: [{ user: b.id }, { user: c.id }],
       name: "Group chat",
     });

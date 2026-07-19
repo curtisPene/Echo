@@ -5,6 +5,8 @@ import { AddContactService } from "../../services/AddContactService";
 import { BlockContactService } from "../../services/BlockContactService";
 import { userRepo } from "../../repo/UserRepo";
 import { contactsRepo } from "../../repo/ContactsRepo";
+import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";
+import { RoomRepo } from "../../../conversations/repo/mongooseRoomRepo";
 import { FindRoomsForUserService } from "../../../conversations/services/FindRoomsForUserService";
 import { RemoveParticipantFromRoomService } from "../../../conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../../conversations/services/DeleteRoomService";
@@ -13,6 +15,8 @@ import { RedactUserMessagesInRoomService } from "../../../messaging/services/Red
 import { registerAndLogin, createFakeSocket, cleanupUser } from "../testHelpers";
 import { mongooseConnect } from "../../../../server";
 import mongoose from "mongoose";
+
+const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
 
 const addContactService = new AddContactService(
   userRepo,
@@ -29,9 +33,9 @@ const blockContactService = new BlockContactService(
   userRepo,
   contactsRepo,
   createFakeSocket().socket,
-  new FindRoomsForUserService(),
-  new RemoveParticipantFromRoomService(),
-  new DeleteRoomService(),
+  new FindRoomsForUserService(roomRepo),
+  new RemoveParticipantFromRoomService(roomRepo),
+  new DeleteRoomService(roomRepo),
   new DeleteRoomMessagesService(),
   new RedactUserMessagesInRoomService(),
 );
@@ -110,7 +114,7 @@ describe("BlockContactService", () => {
     const third = await registerAndLogin("Third");
 
     const room = await createNewRoomService.execute({
-      user: blocker.id,
+      user: blocker,
       participants: [{ user: target.id }, { user: third.id }],
       name: "Group chat",
     });
