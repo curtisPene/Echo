@@ -5,6 +5,7 @@ import { Contacts as ContactsDoc } from "../models/contactsModel";
 import { Room as RoomDoc } from "../../conversations/models/roomModel";
 import { Message as MessageDoc } from "../../messaging/models/messageModel";
 import type { AuthAndAccessSocket } from "../ports/AuthAndAccessSocket";
+import type { MessagingSocket } from "../../messaging/ports/MessagingSocket";
 
 export const PASSWORD = "Password1!";
 
@@ -71,6 +72,18 @@ export function createFakeSocket() {
     },
     disconnectUser: async (params) => {
       calls.push({ method: "disconnectUser", args: params });
+    },
+  };
+
+  return { socket, calls };
+}
+
+export function createFakeMessagingSocket() {
+  const calls: { method: string; args: unknown }[] = [];
+
+  const socket: MessagingSocket = {
+    emitToRoom: async (params) => {
+      calls.push({ method: "emitToRoom", args: params });
     },
   };
 

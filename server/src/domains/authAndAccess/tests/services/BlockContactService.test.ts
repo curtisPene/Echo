@@ -117,7 +117,7 @@ describe("BlockContactService", () => {
 
     const room = await createNewRoomService.execute({
       user: blocker,
-      participants: [{ user: target.id }, { user: third.id }],
+      participants: [{ id: target.id }, { id: third.id }],
       name: "Group chat",
     });
     expect(room.success).toBe(true);

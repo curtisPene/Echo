@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { CreateNewRoomService } from "../services/createNewRoomService";
 import { AcceptRoomInviteService } from "../services/AcceptRoomInviteService";
+import { createNewRoomRequestSchema, acceptRoomInviteRequestSchema } from "../types/roomsTypes";
 
 export class RoomsControllers {
   constructor(
@@ -9,10 +10,7 @@ export class RoomsControllers {
   ) {}
 
   createNewRoomController = async (req: Request, res: Response, next: NextFunction) => {
-    const { participants, name } = req.body;
-    const user = req.user;
-
-    if (!participants || !name || !user) {
+    if (!req.user) {
       return res.status(400).json({
         success: false,
         message: "Missing request fields",
@@ -20,10 +18,20 @@ export class RoomsControllers {
       });
     }
 
+    const parsed = createNewRoomRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
     const serviceResult = await this.createNewRoomService.execute({
-      user,
-      participants: participants,
-      name: name,
+      user: req.user,
+      participants: parsed.data.participants,
+      name: parsed.data.name,
     });
 
     if (!serviceResult.success) {
@@ -42,10 +50,7 @@ export class RoomsControllers {
   };
 
   acceptRoomInviteController = async (req: Request, res: Response, next: NextFunction) => {
-    const { roomId } = req.body;
-    const user = req.user;
-
-    if (!roomId || !user) {
+    if (!req.user) {
       return res.status(400).json({
         success: false,
         message: "Missing request fields",
@@ -53,9 +58,19 @@ export class RoomsControllers {
       });
     }
 
+    const parsed = acceptRoomInviteRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
     const serviceResult = await this.acceptRoomInviteService.execute({
-      user,
-      roomId,
+      user: req.user,
+      roomId: parsed.data.roomId,
     });
 
     if (!serviceResult.success) {

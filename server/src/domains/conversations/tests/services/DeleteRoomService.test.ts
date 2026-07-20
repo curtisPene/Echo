@@ -27,7 +27,7 @@ describe("DeleteRoomService", () => {
 
     const room = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: b.id }],
+      participants: [{ id: b.id }],
       name: "Creator, B",
     });
     expect(room.success).toBe(true);

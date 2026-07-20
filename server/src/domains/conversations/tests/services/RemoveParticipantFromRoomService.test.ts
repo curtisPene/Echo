@@ -28,7 +28,7 @@ describe("RemoveParticipantFromRoomService", () => {
 
     const room = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: b.id }, { user: c.id }],
+      participants: [{ id: b.id }, { id: c.id }],
       name: "Group chat",
     });
     expect(room.success).toBe(true);
@@ -73,7 +73,7 @@ describe("RemoveParticipantFromRoomService", () => {
 
     const room = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: b.id }],
+      participants: [{ id: b.id }],
       name: "Creator, B",
     });
     expect(room.success).toBe(true);

@@ -126,7 +126,7 @@ describe("DeleteUserAccountService", () => {
 
     const room = await createNewRoomService.execute({
       user: a,
-      participants: [{ user: b.id }, { user: c.id }],
+      participants: [{ id: b.id }, { id: c.id }],
       name: "Group chat",
     });
     expect(room.success).toBe(true);

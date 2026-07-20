@@ -49,7 +49,7 @@ describe("CreateNewRoomService", () => {
 
     const result = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: participant.id }],
+      participants: [{ id: participant.id }],
       name: "Creator, Participant",
     });
 
@@ -75,7 +75,7 @@ describe("CreateNewRoomService", () => {
 
     const result = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: b.id }, { user: c.id }],
+      participants: [{ id: b.id }, { id: c.id }],
       name: "Group chat",
     });
 
@@ -95,7 +95,7 @@ describe("CreateNewRoomService", () => {
 
     const result = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: new mongoose.Types.ObjectId().toString() }],
+      participants: [{ id: new mongoose.Types.ObjectId().toString() }],
       name: "Ghost",
     });
 
@@ -117,7 +117,7 @@ describe("CreateNewRoomService", () => {
 
     const result = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: blocked.id }],
+      participants: [{ id: blocked.id }],
       name: "Creator, Blocked",
     });
 
@@ -140,7 +140,7 @@ describe("CreateNewRoomService", () => {
 
     const result = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: blocker.id }],
+      participants: [{ id: blocker.id }],
       name: "Creator, Blocker",
     });
 

@@ -34,7 +34,7 @@ describe("AcceptRoomInviteService", () => {
 
     const room = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: invitee.id }],
+      participants: [{ id: invitee.id }],
       name: "Creator, Invitee",
     });
     expect(room.success).toBe(true);
@@ -61,7 +61,7 @@ describe("AcceptRoomInviteService", () => {
 
     const room = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: invitee.id }],
+      participants: [{ id: invitee.id }],
       name: "Creator, Invitee",
     });
     expect(room.success).toBe(true);
@@ -102,7 +102,7 @@ describe("AcceptRoomInviteService", () => {
 
     const room = await createNewRoomService.execute({
       user: creator,
-      participants: [{ user: invitee.id }],
+      participants: [{ id: invitee.id }],
       name: "Creator, Invitee",
     });
     expect(room.success).toBe(true);

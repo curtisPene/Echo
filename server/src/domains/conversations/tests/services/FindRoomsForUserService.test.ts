@@ -28,12 +28,12 @@ describe("FindRoomsForUserService", () => {
 
     const roomOne = await createNewRoomService.execute({
       user: a,
-      participants: [{ user: b.id }],
+      participants: [{ id: b.id }],
       name: "A, B",
     });
     const roomTwo = await createNewRoomService.execute({
       user: a,
-      participants: [{ user: c.id }],
+      participants: [{ id: c.id }],
       name: "A, C",
     });
     expect(roomOne.success).toBe(true);
@@ -69,7 +69,7 @@ describe("FindRoomsForUserService", () => {
 
     const room = await createNewRoomService.execute({
       user: b,
-      participants: [{ user: c.id }],
+      participants: [{ id: c.id }],
       name: "B, C",
     });
     expect(room.success).toBe(true);

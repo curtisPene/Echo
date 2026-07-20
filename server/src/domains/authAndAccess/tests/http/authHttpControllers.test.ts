@@ -7,6 +7,7 @@ import { userRepo } from "../../repo/UserRepo";
 import * as composition from "../../../../composition";
 import { cleanupUser } from "../testHelpers";
 import mongoose from "mongoose";
+import { NewAuthUserInput } from "../../domainModels/authUser";
 
 const uniqueEmail = () =>
   `test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
@@ -34,13 +35,15 @@ describe("POST /auth/register", () => {
   it("returns 201 with a well-formed success body for valid input", async () => {
     const email = uniqueEmail();
 
-    const response = await request(app).post("/auth/register").send({
-      firstName: "Ada",
-      lastName: "Lovelace",
-      email,
-      password: VALID_PASSWORD,
-      confirmPassword: VALID_PASSWORD,
-    });
+    const response = await request(app)
+      .post("/auth/register")
+      .send({
+        firstName: "Ada",
+        lastName: "Lovelace",
+        email,
+        password: VALID_PASSWORD,
+        confirmPassword: VALID_PASSWORD,
+      } as NewAuthUserInput);
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({
@@ -70,13 +73,15 @@ describe("POST /auth/register", () => {
   it("returns 409 with reason 'duplicate_email' for a repeat email", async () => {
     const email = uniqueEmail();
 
-    const first = await request(app).post("/auth/register").send({
-      firstName: "Ada",
-      lastName: "Lovelace",
-      email,
-      password: VALID_PASSWORD,
-      confirmPassword: VALID_PASSWORD,
-    });
+    const first = await request(app)
+      .post("/auth/register")
+      .send({
+        firstName: "Ada",
+        lastName: "Lovelace",
+        email,
+        password: VALID_PASSWORD,
+        confirmPassword: VALID_PASSWORD,
+      } as NewAuthUserInput);
     expect(first.status).toBe(201);
 
     const second = await request(app).post("/auth/register").send({
@@ -98,13 +103,15 @@ describe("POST /auth/login", () => {
   it("returns 201 for valid credentials", async () => {
     const email = uniqueEmail();
 
-    const registered = await request(app).post("/auth/register").send({
-      firstName: "Ada",
-      lastName: "Lovelace",
-      email,
-      password: VALID_PASSWORD,
-      confirmPassword: VALID_PASSWORD,
-    });
+    const registered = await request(app)
+      .post("/auth/register")
+      .send({
+        firstName: "Ada",
+        lastName: "Lovelace",
+        email,
+        password: VALID_PASSWORD,
+        confirmPassword: VALID_PASSWORD,
+      } as NewAuthUserInput);
     expect(registered.status).toBe(201);
 
     const response = await request(app).post("/auth/login").send({
@@ -122,13 +129,15 @@ describe("POST /auth/login", () => {
   it("returns 404 for a wrong password", async () => {
     const email = uniqueEmail();
 
-    const registered = await request(app).post("/auth/register").send({
-      firstName: "Ada",
-      lastName: "Lovelace",
-      email,
-      password: VALID_PASSWORD,
-      confirmPassword: VALID_PASSWORD,
-    });
+    const registered = await request(app)
+      .post("/auth/register")
+      .send({
+        firstName: "Ada",
+        lastName: "Lovelace",
+        email,
+        password: VALID_PASSWORD,
+        confirmPassword: VALID_PASSWORD,
+      } as NewAuthUserInput);
     expect(registered.status).toBe(201);
 
     const response = await request(app).post("/auth/login").send({

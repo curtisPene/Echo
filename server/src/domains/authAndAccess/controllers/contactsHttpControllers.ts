@@ -2,7 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { SearchUserService } from "../services/SearchUserService";
 import { AddContactService } from "../services/AddContactService";
 import { BlockContactService } from "../services/BlockContactService";
-import { searchContactsRequestSchema } from "../types/contactsTypes";
+import {
+  searchContactsRequestSchema,
+  addContactRequestSchema,
+  blockContactRequestSchema,
+} from "../types/contactsTypes";
 
 export class ContactsControllers {
   constructor(
@@ -53,9 +57,7 @@ export class ContactsControllers {
   };
 
   addContactController = async (req: Request, res: Response, next: NextFunction) => {
-    const { contactId } = req.body;
-
-    if (!contactId || !req.user) {
+    if (!req.user) {
       return res.status(400).json({
         success: false,
         message: "Missing request fields",
@@ -63,9 +65,19 @@ export class ContactsControllers {
       });
     }
 
+    const parsed = addContactRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
     const serviceResult = await this.addContactService.execute({
       userId: req.user.id,
-      contactId,
+      contactId: parsed.data.userId,
     });
 
     if (!serviceResult.success) {
@@ -85,15 +97,26 @@ export class ContactsControllers {
 
   blockContactController = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
-    const blockedUser = req.body.blockedUserId;
 
-    if (!userId || !blockedUser) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: "Missing request fields",
         data: null,
       });
     }
+
+    const parsed = blockContactRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
+    const blockedUser = parsed.data.userId;
 
     const serviceResult = await this.blockContactService.execute({
       user: userId,

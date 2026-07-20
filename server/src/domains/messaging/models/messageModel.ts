@@ -77,6 +77,10 @@ export const messageSchema = new Schema<Message>(
       type: [messageReadSchema],
       default: [],
     },
+    redacted: {
+      type: Schema.Types.Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

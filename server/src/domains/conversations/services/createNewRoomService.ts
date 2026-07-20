@@ -22,11 +22,11 @@ export class CreateNewRoomService {
     name,
   }: {
     user: IdentityDTO;
-    participants: { user: string }[];
+    participants: { id: string }[];
     name: string;
   }): Promise<ServiceResult<RoomDTO>> {
     try {
-      const participantIds = participants.map((participant) => participant.user);
+      const participantIds = participants.map((participant) => participant.id);
 
       // Ensure all participants exist, return success false if not
       const existenceChecks = await Promise.all(

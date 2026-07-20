@@ -79,7 +79,7 @@ export class AddContactService {
       // there's no separate request/pending entity, the pending room is it.
       const roomResult = await this.createNewRoomService.execute({
         user: Identity.hydrate(adder).toDTO(),
-        participants: [{ user: contactId }],
+        participants: [{ id: contactId }],
         name: `${adder.firstName}, ${addedUser.firstName}`,
       });
 

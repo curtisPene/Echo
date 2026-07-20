@@ -1,12 +1,11 @@
 import { onMessageSendPayloadSchema } from "../types";
-import { io, type AuthSocket } from "../../../socket";
-import { createMessageService } from "../services/createMessageService";
-import { MessageDTO } from "../domainModels/message";
-import { MessageRepo } from "../repo/mongooseMessageRepo";
+import type { AuthSocket } from "../../../socket";
+import { CreateMessageService } from "../services/createMessageService";
+import { MessageDTO, SenderEntity } from "../domainModels/message";
 import { ServiceResult } from "../../../types";
 
 export class MessagingControllers {
-  constructor(private readonly messageRepo: MessageRepo) {}
+  constructor(private readonly createMessageService: CreateMessageService) {}
 
   onMessageSendController = async ({
     socket,
@@ -27,8 +26,6 @@ export class MessagingControllers {
       });
     }
 
-    const { id, firstName, lastName } = socket.data.identity;
-
     const isInRoom = socket.rooms.has(parsed.data.roomId);
     if (!isInRoom) {
       return ack({
@@ -38,17 +35,13 @@ export class MessagingControllers {
       });
     }
 
-    const serviceResult = await createMessageService({
-      sender: { id, firstName, lastName },
+    const { id, firstName, lastName } = socket.data.identity;
+    const sender = { id, firstName, lastName } satisfies SenderEntity;
+
+    const serviceResult = await this.createMessageService.execute({
+      sender,
       newMessage: parsed.data,
-      messageRepo: this.messageRepo,
     });
-
-    if (!serviceResult.success) {
-      return ack(serviceResult);
-    }
-
-    io.to(parsed.data.roomId).emit("message:receive", serviceResult);
 
     ack(serviceResult);
   };

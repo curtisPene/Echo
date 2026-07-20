@@ -5,6 +5,7 @@ import { MessageRepo } from "./domains/messaging/repo/mongooseMessageRepo";
 import { BcryptPasswordHasher } from "./domains/authAndAccess/adapters/BCryptAdapter";
 import { JwtTokenSigner } from "./domains/authAndAccess/adapters/JWTTokenAdapter";
 import { SocketIOAuthAndAccessSocket } from "./domains/authAndAccess/adapters/SocketIOAuthAndAccessSocket";
+import { SocketIOMessagingSocket } from "./domains/messaging/adapters/SocketIOMessagingSocket";
 
 import { LoginService } from "./domains/authAndAccess/services/LoginService";
 import { RegistrationService } from "./domains/authAndAccess/services/RegistrationService";
@@ -29,6 +30,7 @@ import { AcceptRoomInviteService } from "./domains/conversations/services/Accept
 import { FindRoomMessagesService } from "./domains/messaging/services/FindRoomMessagesService";
 import { DeleteRoomMessagesService } from "./domains/messaging/services/DeleteRoomMessagesService";
 import { RedactUserMessagesInRoomService } from "./domains/messaging/services/RedactUserMessagesInRoomService";
+import { CreateMessageService } from "./domains/messaging/services/createMessageService";
 
 import { AuthControllers } from "./domains/authAndAccess/controllers/authHttpControllers";
 import { ContactsControllers } from "./domains/authAndAccess/controllers/contactsHttpControllers";
@@ -40,6 +42,7 @@ import { MessagingControllers } from "./domains/messaging/controllers/socketCont
 const passwordHasher = new BcryptPasswordHasher();
 const tokenSigner = new JwtTokenSigner();
 const authAndAccessSocket = new SocketIOAuthAndAccessSocket();
+const messagingSocket = new SocketIOMessagingSocket();
 export const findUserIdentitiesService = new FindUserIdentitiesService(userRepo);
 const roomRepo = new RoomRepo(findUserIdentitiesService);
 const messageRepo = new MessageRepo(findUserIdentitiesService);
@@ -58,6 +61,7 @@ export const deleteRoomService = new DeleteRoomService(roomRepo);
 export const deleteRoomMessagesService = new DeleteRoomMessagesService(messageRepo);
 export const redactUserMessagesInRoomService = new RedactUserMessagesInRoomService(messageRepo);
 export const findRoomMessagesService = new FindRoomMessagesService(messageRepo);
+export const createMessageService = new CreateMessageService(messageRepo, messagingSocket);
 
 // 3. Cross-domain services. Freely reference anything above - all one file,
 // no cycle is possible because nothing here is ever imported by anything
@@ -121,4 +125,4 @@ export const roomsControllers = new RoomsControllers(
   createNewRoomService,
   acceptRoomInviteService,
 );
-export const messagingControllers = new MessagingControllers(messageRepo);
+export const messagingControllers = new MessagingControllers(createMessageService);

@@ -41,7 +41,7 @@ describe("AddUserToRoomsService", () => {
 
     const room = await createNewRoomService.execute({
       user: a,
-      participants: [{ user: b.id }],
+      participants: [{ id: b.id }],
       name: "A, B",
     });
     expect(room.success).toBe(true);
