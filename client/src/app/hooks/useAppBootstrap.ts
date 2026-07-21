@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { socket } from "@/lib/socket";
 import type { OnlineStatus } from "@/stores/useSocket";
 import { syncService } from "@/infrastructure/sync/syncService";
-import { verificaitonService } from "../../domains/authAndAccess/services/verificationService";
+import { verificationService, messagingControllers } from "@/composition";
 import { registerMessagingSocketHandlers } from "@/domains/messaging/socketHandlers/registerMessagingSocketHandlers";
 
 export const useAppBootstrap = ({
@@ -25,7 +25,7 @@ export const useAppBootstrap = ({
   useEffect(() => {
     if (appStatus !== "idle" || auth.authStatus !== "unverified") return;
 
-    verificaitonService().then((result) => {
+    verificationService.execute().then((result) => {
       if (!result.success || !result.data) {
         return setAuth({ authStatus: "unauthenticated", user: null });
       }
@@ -60,7 +60,10 @@ export const useAppBootstrap = ({
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
 
-    const messagingSocketCleanup = registerMessagingSocketHandlers(socket);
+    const messagingSocketCleanup = registerMessagingSocketHandlers(
+      socket,
+      messagingControllers,
+    );
 
     socket.on("auth:unauthorized", () => {
       // Todo: handle unauthorized

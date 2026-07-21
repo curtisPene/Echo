@@ -1,3 +1,5 @@
+import { DomainError } from "@/errors/DomainError";
+
 export interface ParticipantDTO {
   userId: string;
   firstName: string;
@@ -20,6 +22,23 @@ class Participant {
 
   static hydrate(dto: ParticipantDTO): Participant {
     return new Participant(dto);
+  }
+
+  /**
+   * Accepts a pending participant. The only valid status transition -
+   * throws if not currently pending.
+   */
+  accept(): Participant {
+    if (this.status !== "pending") {
+      throw new DomainError(`Cannot accept participant ${this.userId}: not pending`);
+    }
+
+    return new Participant({
+      userId: this.userId,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      status: "accepted",
+    });
   }
 }
 
@@ -74,6 +93,26 @@ export class Room {
   }
 
   /**
+   * Accepts a pending participant. Throws if the participant isn't found,
+   * delegating the pending->accepted transition itself to Participant.
+   */
+  acceptParticipant(userId: string): Room {
+    const participant = this.findParticipant(userId);
+
+    if (!participant) {
+      throw new DomainError(`Cannot accept participant ${userId}: not found in room ${this.id}`);
+    }
+
+    const accepted = participant.accept();
+
+    return new Room(
+      this.id,
+      this.name,
+      this.participants.map((p) => (p.userId === userId ? accepted : p)),
+    );
+  }
+
+  /**
    * Returns every participant except the given user, as plain data - the
    * only way outside code can read participant state. No Participant
    * instance ever leaves this module.
@@ -89,5 +128,17 @@ export class Room {
       lastName: p.lastName,
       status: p.status,
     }));
+  }
+
+  /**
+   * The domain's own canonical, presentable shape - the single place this
+   * aggregate defines how it looks to any caller.
+   */
+  toDTO(): RoomDTO {
+    return {
+      id: this.id,
+      name: this.name,
+      participants: this.getParticipants(),
+    };
   }
 }

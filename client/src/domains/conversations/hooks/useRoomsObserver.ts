@@ -1,4 +1,4 @@
-import { getRoomsService } from "@/domains/conversations/services/getRoomsService";
+import { getRoomsService } from "@/composition";
 import { type AppStatus } from "@/stores/useAppStatus";
 import { useRooms } from "@/stores/useRooms";
 import { liveQuery } from "dexie";
@@ -9,9 +9,9 @@ export const useRoomsObserver = ({ appStatus }: { appStatus: AppStatus }) => {
 
   useEffect(() => {
     if (appStatus !== "synced") return;
-    const subscription = liveQuery(() => getRoomsService()).subscribe(
+    const subscription = liveQuery(() => getRoomsService.execute()).subscribe(
       (rooms) => {
-        setRooms(rooms);
+        setRooms(rooms.map((room) => room.toDTO()));
       },
     );
 

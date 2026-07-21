@@ -1,13 +1,8 @@
-import { Room } from "../domainModels/room";
-import type { RoomDTO } from "../types";
+import { Room, type RoomDTO } from "../domainModels/room";
 
-export const hasPendingRequestsService = ({
-  rooms,
-  userId,
-}: {
-  rooms: RoomDTO[];
-  userId: string | null;
-}): boolean => {
-  if (!userId) return false;
-  return rooms.some((dto) => Room.hydrate(dto).isPendingFor(userId));
-};
+export class HasPendingRequestsService {
+  execute({ rooms, userId }: { rooms: RoomDTO[]; userId: string | null }): boolean {
+    if (!userId) return false;
+    return rooms.some((dto) => Room.hydrate(dto).isPendingFor(userId));
+  }
+}

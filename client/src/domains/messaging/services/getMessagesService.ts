@@ -1,5 +1,13 @@
-import { messagesRepo } from "../repo/messagesRepo";
+import type { MessagesRepository } from "../ports/MessagesRepository";
 
-export const getMessagesService = async () => {
-  return await messagesRepo.getMessages();
-};
+export class GetMessagesService {
+  private readonly messagesRepo: MessagesRepository;
+
+  constructor(messagesRepo: MessagesRepository) {
+    this.messagesRepo = messagesRepo;
+  }
+
+  async execute() {
+    return await this.messagesRepo.getMessages();
+  }
+}

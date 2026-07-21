@@ -1,29 +1,29 @@
 import { apiResponseSchema } from "@/types";
 import z from "zod";
+import type {
+  SenderDTO,
+  ReactionDTO,
+  ReadDTO,
+  MessageDTO,
+} from "../domainModels/message";
 
 export const senderSchema = z.object({
   userId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
-});
-
-export type SenderDTO = z.infer<typeof senderSchema>;
+}) satisfies z.ZodType<SenderDTO>;
 
 export const reactionSchema = z.object({
   userId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
   emoji: z.string(),
-});
-
-export type ReactionDTO = z.infer<typeof reactionSchema>;
+}) satisfies z.ZodType<ReactionDTO>;
 
 export const readSchema = z.object({
   userId: z.string(),
   readAt: z.iso.datetime(),
-});
-
-export type ReadDTO = z.infer<typeof readSchema>;
+}) satisfies z.ZodType<ReadDTO>;
 
 const messageBaseSchema = z.object({
   id: z.string(),
@@ -43,16 +43,14 @@ export const redactedMessageSchema = messageBaseSchema.extend({
   redacted: z.literal(true),
   sender: z.null(),
   text: z.null(),
-  reactions: z.array(reactionSchema),
-  readBy: z.array(readSchema),
+  reactions: z.null(),
+  readBy: z.null(),
 });
 
 export const messageSchema = z.discriminatedUnion("redacted", [
   normalMessageSchema,
   redactedMessageSchema,
-]);
-
-export type MessageDTO = z.infer<typeof messageSchema>;
+]) satisfies z.ZodType<MessageDTO>;
 
 export const onMessageReceivePayloadSchema = apiResponseSchema(
   z.object({

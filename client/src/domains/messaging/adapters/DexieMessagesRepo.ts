@@ -1,0 +1,17 @@
+import { db } from "@/infrastructure/sync/db";
+import type { MessageDTO } from "../domainModels/message";
+import type { MessagesRepository } from "../ports/MessagesRepository";
+
+export class DexieMessagesRepo implements MessagesRepository {
+  async sync(messages: MessageDTO[]) {
+    await db.messages.bulkPut(messages);
+  }
+
+  async saveMessage(message: MessageDTO) {
+    await db.messages.put(message);
+  }
+
+  async getMessages() {
+    return await db.messages.toArray();
+  }
+}

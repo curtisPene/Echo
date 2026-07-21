@@ -1,4 +1,4 @@
-import type { MessageDTO } from "@/domains/messaging/types";
+import type { MessageDTO } from "@/domains/messaging/domainModels/message";
 import { create } from "zustand";
 
 type MessageStore = {

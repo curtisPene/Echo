@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { registerController } from "../controllers/RegisterController";
+import { authControllers } from "@/composition";
 
 export const useRegisterViewModel = () => {
   const [firstName, setFirstName] = useState("");
@@ -15,7 +15,7 @@ export const useRegisterViewModel = () => {
     e.preventDefault();
     setError(null);
 
-    const result = await registerController({
+    const result = await authControllers.register({
       firstName,
       lastName,
       email,

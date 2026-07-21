@@ -1,8 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { getOtherParticipants } from "../presentation/roomPresentation";
-import type { RoomListEntry } from "../services/getConversationListService";
+import { getOtherParticipants, type RoomListEntry } from "../presentation/roomPresentation";
 
 const formatTimestamp = (isoDate: string | null) => {
   if (!isoDate) return "";

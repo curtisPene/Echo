@@ -1,4 +1,4 @@
-import { getMessagesService } from "../services/getMessagesService";
+import { getMessagesService } from "@/composition";
 import { type AppStatus } from "@/stores/useAppStatus";
 import { useMessages } from "@/stores/useMessages";
 import { liveQuery } from "dexie";
@@ -14,7 +14,7 @@ export const useMessagesObserver = ({
   useEffect(() => {
     if (appStatus !== "synced") return;
     const subscription = liveQuery(() => {
-      return getMessagesService();
+      return getMessagesService.execute();
     }).subscribe((messages) => {
       setMessages(messages);
     });

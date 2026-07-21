@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useRooms } from "@/stores/useRooms";
-import { acceptRequestController } from "../controllers/AcceptRequestController";
+import { roomsControllers } from "@/composition";
 
 export const useAcceptRequestViewModel = () => {
   const activeRoom = useRooms((state) => state.activeRoom);
@@ -10,7 +10,7 @@ export const useAcceptRequestViewModel = () => {
     if (!activeRoom) return;
     setError(null);
 
-    const result = await acceptRequestController({ roomId: activeRoom.id });
+    const result = await roomsControllers.acceptRequest({ roomId: activeRoom.id });
 
     if (!result.success) {
       setError(result.message);

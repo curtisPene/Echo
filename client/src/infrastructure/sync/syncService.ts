@@ -1,4 +1,4 @@
-import { roomsRepo } from "@/domains/conversations/repo/roomsRepo";
+import { roomsRepo, contactsRepo, messagesRepo } from "@/composition";
 import { appSyncGateway } from "./appGateway";
 import {
   createAppContext,
@@ -6,8 +6,6 @@ import {
   getAppContext,
   updateAppContext,
 } from "./appRepo";
-import { contactsRepo } from "@/domains/authAndAccess/repo/contactsRepo";
-import { messagesRepo } from "@/domains/messaging/repo/messagesRepo";
 import type { Auth } from "@/stores/useAuth";
 import type { ServiceResult } from "@/types";
 

@@ -1,5 +1,13 @@
-import { roomsRepo } from "../repo/roomsRepo";
+import type { RoomsRepository } from "../ports/RoomsRepository";
 
-export const getRoomsService = async () => {
-  return await roomsRepo.getRooms();
-};
+export class GetRoomsService {
+  private readonly roomsRepo: RoomsRepository;
+
+  constructor(roomsRepo: RoomsRepository) {
+    this.roomsRepo = roomsRepo;
+  }
+
+  async execute() {
+    return await this.roomsRepo.getRooms();
+  }
+}

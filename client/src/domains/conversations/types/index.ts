@@ -1,22 +1,19 @@
 import { apiResponseSchema } from "@/types";
 import z from "zod";
+import type { ParticipantDTO, RoomDTO } from "../domainModels/room";
 
 export const participantSchema = z.object({
   userId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
   status: z.enum(["pending", "accepted"]),
-});
-
-export type ParticipantDTO = z.infer<typeof participantSchema>;
+}) satisfies z.ZodType<ParticipantDTO>;
 
 export const roomSchema = z.object({
   id: z.string(),
   participants: z.array(participantSchema),
   name: z.string(),
-});
-
-export type RoomDTO = z.infer<typeof roomSchema>;
+}) satisfies z.ZodType<RoomDTO>;
 
 export const createNewRoomAPIResponseSchema = apiResponseSchema(roomSchema);
 

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useRooms } from "@/stores/useRooms";
-import { sendMessageController } from "../controllers/SendMessageController";
+import { messagingControllers } from "@/composition";
 
 export const useComposerViewModel = () => {
   const [message, setMessage] = useState("");
@@ -12,7 +12,7 @@ export const useComposerViewModel = () => {
     if (!activeRoom || !message.trim()) return;
     setError(null);
 
-    const result = await sendMessageController({
+    const result = await messagingControllers.sendMessage({
       text: message,
       roomId: activeRoom.id,
     });

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { apiResponseSchema } from "@/types";
 import type { UserDTO } from "../domainModels/user";
 import type { ContactDTO, ContactsDTO } from "../domainModels/contacts";
+import { roomSchema } from "@/domains/conversations/types";
 
 export const userSchema = z.object({
   id: z.string(),
@@ -44,4 +45,9 @@ export const registrationResponseSchema = apiResponseSchema(
 
 export const contactsSearchResponseSchema = apiResponseSchema(userSchema);
 
-export const addContactResponseSchema = apiResponseSchema(contactSchema);
+export const addContactResponseSchema = apiResponseSchema(
+  z.object({
+    addedUser: contactSchema,
+    room: roomSchema,
+  }),
+);

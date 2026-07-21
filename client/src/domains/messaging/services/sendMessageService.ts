@@ -1,30 +1,43 @@
 import type { ServiceResult } from "@/types";
-import { sendMessageSocket } from "../api/messagingSocketAPI";
-import { messagesRepo } from "../repo/messagesRepo";
-import { type MessageDTO } from "../types";
+import type { MessageDTO } from "../domainModels/message";
+import type { MessagingSocketApi } from "../ports/MessagingSocketApi";
+import type { MessagesRepository } from "../ports/MessagesRepository";
 
-export const sendMessageService = async ({
-  text,
-  roomId,
-}: {
-  text: string;
-  roomId: string;
-}): Promise<ServiceResult<MessageDTO>> => {
-  const response = await sendMessageSocket({
-    payload: { text, roomId },
-  });
+export class SendMessageService {
+  private readonly messagingSocketApi: MessagingSocketApi;
+  private readonly messagesRepo: MessagesRepository;
 
-  if (!response.success)
+  constructor(
+    messagingSocketApi: MessagingSocketApi,
+    messagesRepo: MessagesRepository,
+  ) {
+    this.messagingSocketApi = messagingSocketApi;
+    this.messagesRepo = messagesRepo;
+  }
+
+  async execute({
+    text,
+    roomId,
+  }: {
+    text: string;
+    roomId: string;
+  }): Promise<ServiceResult<MessageDTO>> {
+    const response = await this.messagingSocketApi.sendMessage({ text, roomId });
+
+    if (!response.success) {
+      return {
+        success: false,
+        message: response.message,
+        data: null,
+      };
+    }
+
+    await this.messagesRepo.saveMessage(response.data.message);
+
     return {
-      success: false,
-      message: response.message,
-      data: null,
+      success: true,
+      message: "Message sent successfully",
+      data: response.data.message,
     };
-  messagesRepo.saveMessage(response.data.message);
-
-  return {
-    success: true,
-    message: "Message sent successfully",
-    data: response.data.message,
-  };
-};
+  }
+}

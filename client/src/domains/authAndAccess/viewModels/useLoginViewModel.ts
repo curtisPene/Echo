@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { loginController } from "../controllers/LoginController";
+import { authControllers } from "@/composition";
 
 export const useLoginViewModel = () => {
   const [email, setEmail] = useState("");
@@ -10,7 +10,7 @@ export const useLoginViewModel = () => {
     e.preventDefault();
     setError(null);
 
-    const result = await loginController({ email, password });
+    const result = await authControllers.login({ email, password });
 
     if (!result.success) {
       setError(result.message);
