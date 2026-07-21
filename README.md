@@ -122,11 +122,15 @@ cd client && npm install && npm run dev   # http://localhost:5173
 
 Server `.env`:
 ```
-JWT_SECRET=
-MONGO_URI=
+JWT_ACCESS_SECRET=
+JWT_REFRESH_SECRET=
+MONGO_URI_LOCAL=mongodb://127.0.0.1:27017
+MONGO_URI_ATLAS=
 MONGO_DB=echo
 PORT=3000
 ```
+
+`NODE_ENV=production` selects `MONGO_URI_ATLAS`; anything else (local dev, tests) uses `MONGO_URI_LOCAL`, which must be a single-node **replica set** (not the installer's default standalone mode) since `ContactsRepo.saveBlockPair` runs inside a real Mongo transaction. One-time setup: uncomment `replication:` / add `replSetName: rs0` in `mongod.cfg`, restart the service, then `mongosh --eval "rs.initiate()"`.
 
 Client `.env`:
 ```
@@ -135,7 +139,8 @@ VITE_API_URL=http://localhost:3000
 
 ## What's built
 
-- **Auth** — registration, login, JWT-based sessions.
+- **Auth** — registration, login, JWT-based sessions (separate access/refresh secrets).
+- **Account deletion** — removes the user doc, their contacts doc, dissolves/updates shared rooms, redacts their messages, and disconnects their sockets.
 - **Contacts** — search by email, add, block (with mutual removal, shared-room cleanup, and live notification to affected users).
 - **Real-time messaging** — send/receive over Socket.IO, delivered to every device joined to a room.
 - **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
@@ -150,17 +155,18 @@ VITE_API_URL=http://localhost:3000
 
 ## Current API surface
 
-| Method | Path                       | Purpose                          |
-|--------|-----------------------------|-----------------------------------|
-| POST   | /auth/register               | Create account                    |
-| POST   | /auth/login                  | Authenticate, issue JWT           |
-| POST   | /auth/verify                 | Refresh session                   |
-| GET    | /user/sync                   | Delta/cold sync of user's data    |
-| POST   | /contacts/search              | Search users by email             |
-| POST   | /contacts/add                 | Add a contact                     |
-| POST   | /contacts/block                | Block a contact                   |
-| POST   | /rooms                        | Create a room                     |
-| POST   | /rooms/accept-invite          | Accept a pending room invite      |
-| GET    | /health                       | Health check                      |
+| Method | Path                   | Purpose                          |
+|--------|------------------------|-----------------------------------|
+| POST   | /auth/register         | Create account                    |
+| POST   | /auth/login            | Authenticate, issue JWT           |
+| POST   | /auth/verify           | Refresh session                   |
+| GET    | /user/sync             | Delta/cold sync of user's data    |
+| POST   | /user/delete-account   | Delete account (cascades contacts, rooms, messages) |
+| POST   | /contacts/search       | Search users by email             |
+| POST   | /contacts/add          | Add a contact                     |
+| POST   | /contacts/block        | Block a contact                   |
+| POST   | /rooms                 | Create a room                     |
+| POST   | /rooms/accept-invite   | Accept a pending room invite      |
+| GET    | /health                | Health check                      |
 
-Socket events: `message:send` / `message:receive`, `room:updated`, `room:blocked`.
+Socket events: `message:send` / `message:receive`, `room:updated`.

@@ -15,6 +15,9 @@ build/
 npm-debug.log*
 notepad.txt
 
+# Test output
+test-results.json
+
 # OS
 .DS_Store
 Thumbs.db
