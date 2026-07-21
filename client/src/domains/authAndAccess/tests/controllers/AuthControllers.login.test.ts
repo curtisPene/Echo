@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
-import { User } from "../../domainModels/user";
+import { User } from "../../entities/user";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
 import type { AuthApi } from "../../ports/AuthApi";

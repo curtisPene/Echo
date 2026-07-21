@@ -2,10 +2,10 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { CreateNewRoomService } from "../../services/createNewRoomService";
 import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
-import { User } from "@/domains/authAndAccess/domainModels/user";
-import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
+import { User } from "@/domains/authAndAccess/entities/user";
+import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import type { RoomsApi } from "../../ports/RoomsApi";
-import type { RoomDTO } from "../../domainModels/room";
+import type { RoomDTO } from "../../entities/room";
 
 const CURRENT_USER = User.hydrate({
   id: "user-1",
@@ -25,8 +25,18 @@ const EXISTING_ONE_ON_ONE_ROOM: RoomDTO = {
   id: "room-1",
   name: "Ada, Grace",
   participants: [
-    { userId: CURRENT_USER.id, firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-    { userId: CONTACT.userId, firstName: "Grace", lastName: "Hopper", status: "accepted" },
+    {
+      userId: CURRENT_USER.id,
+      firstName: "Ada",
+      lastName: "Lovelace",
+      status: "accepted",
+    },
+    {
+      userId: CONTACT.userId,
+      firstName: "Grace",
+      lastName: "Hopper",
+      status: "accepted",
+    },
   ],
 };
 
@@ -40,8 +50,18 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
           id: "room-2",
           name: "New Room",
           participants: [
-            { userId: CURRENT_USER.id, firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-            { userId: CONTACT.userId, firstName: "Grace", lastName: "Hopper", status: "pending" },
+            {
+              userId: CURRENT_USER.id,
+              firstName: "Ada",
+              lastName: "Lovelace",
+              status: "accepted",
+            },
+            {
+              userId: CONTACT.userId,
+              firstName: "Grace",
+              lastName: "Hopper",
+              status: "pending",
+            },
           ],
         },
       };
@@ -59,9 +79,15 @@ beforeEach(async () => {
 
 describe("CreateNewRoomService", () => {
   it("creates a new room via the api and persists it to Dexie", async () => {
-    const service = new CreateNewRoomService(createFakeRoomsApi(), new DexieRoomsRepo());
+    const service = new CreateNewRoomService(
+      createFakeRoomsApi(),
+      new DexieRoomsRepo(),
+    );
 
-    const result = await service.execute({ user: CURRENT_USER, contacts: [CONTACT] });
+    const result = await service.execute({
+      user: CURRENT_USER,
+      contacts: [CONTACT],
+    });
 
     expect(result).toEqual({
       success: true,
@@ -70,8 +96,18 @@ describe("CreateNewRoomService", () => {
         id: "room-2",
         name: "New Room",
         participants: [
-          { userId: CURRENT_USER.id, firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-          { userId: CONTACT.userId, firstName: "Grace", lastName: "Hopper", status: "pending" },
+          {
+            userId: CURRENT_USER.id,
+            firstName: "Ada",
+            lastName: "Lovelace",
+            status: "accepted",
+          },
+          {
+            userId: CONTACT.userId,
+            firstName: "Grace",
+            lastName: "Hopper",
+            status: "pending",
+          },
         ],
       },
     });
@@ -82,12 +118,17 @@ describe("CreateNewRoomService", () => {
     await db.rooms.put(EXISTING_ONE_ON_ONE_ROOM);
     const roomsApi = createFakeRoomsApi({
       async create() {
-        throw new Error("should not create a new room when a 1:1 already exists");
+        throw new Error(
+          "should not create a new room when a 1:1 already exists",
+        );
       },
     });
     const service = new CreateNewRoomService(roomsApi, new DexieRoomsRepo());
 
-    const result = await service.execute({ user: CURRENT_USER, contacts: [CONTACT] });
+    const result = await service.execute({
+      user: CURRENT_USER,
+      contacts: [CONTACT],
+    });
 
     expect(result).toEqual({
       success: true,
@@ -128,7 +169,10 @@ describe("CreateNewRoomService", () => {
     });
     const service = new CreateNewRoomService(roomsApi, new DexieRoomsRepo());
 
-    const result = await service.execute({ user: CURRENT_USER, contacts: [CONTACT] });
+    const result = await service.execute({
+      user: CURRENT_USER,
+      contacts: [CONTACT],
+    });
 
     expect(result).toEqual({
       success: false,

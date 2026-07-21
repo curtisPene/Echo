@@ -1,7 +1,7 @@
 import type { AddContactService } from "../services/AddContactService";
 import { useAuth } from "@/stores/useAuth";
-import type { ContactDTO } from "../domainModels/contacts";
-import type { RoomDTO } from "@/domains/conversations/domainModels/room";
+import type { ContactDTO } from "../entities/contacts";
+import type { RoomDTO } from "@/domains/conversations/entities/room";
 
 export type AddContactControllerResult =
   | { success: true; contact: ContactDTO; room: RoomDTO }

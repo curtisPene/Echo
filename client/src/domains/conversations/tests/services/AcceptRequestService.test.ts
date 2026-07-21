@@ -3,7 +3,7 @@ import { AcceptRequestService } from "../../services/acceptRequestService";
 import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
 import type { RoomsApi } from "../../ports/RoomsApi";
-import type { RoomDTO } from "../../domainModels/room";
+import type { RoomDTO } from "../../entities/room";
 
 const ACCEPTED_ROOM: RoomDTO = {
   id: "room-1",

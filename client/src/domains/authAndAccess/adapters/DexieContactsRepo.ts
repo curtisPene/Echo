@@ -1,4 +1,8 @@
-import { Contacts, type ContactDTO, type ContactsDTO } from "../domainModels/contacts";
+import {
+  Contacts,
+  type ContactDTO,
+  type ContactsDTO,
+} from "../entities/contacts";
 import { db } from "@/infrastructure/sync/db";
 import type { ContactsRepository } from "../ports/ContactsRepository";
 

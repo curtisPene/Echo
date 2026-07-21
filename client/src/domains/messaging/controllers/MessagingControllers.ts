@@ -1,6 +1,6 @@
 import { SendMessageService } from "../services/sendMessageService";
 import { MessageReceiveService } from "../services/messageReceiveService";
-import type { MessageDTO } from "../domainModels/message";
+import type { MessageDTO } from "../entities/message";
 
 export type SendMessageResult =
   | { success: true }

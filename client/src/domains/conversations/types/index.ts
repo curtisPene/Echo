@@ -1,6 +1,6 @@
 import { apiResponseSchema } from "@/types";
 import z from "zod";
-import type { ParticipantDTO, RoomDTO } from "../domainModels/room";
+import type { ParticipantDTO, RoomDTO } from "../entities/room";
 
 export const participantSchema = z.object({
   userId: z.string(),

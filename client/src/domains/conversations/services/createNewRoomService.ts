@@ -1,7 +1,7 @@
-import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
-import type { User } from "@/domains/authAndAccess/domainModels/user";
+import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
+import type { User } from "@/domains/authAndAccess/entities/user";
 import type { ServiceResult } from "@/types";
-import type { RoomDTO } from "../domainModels/room";
+import type { RoomDTO } from "../entities/room";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 import type { RoomsApi } from "../ports/RoomsApi";
 

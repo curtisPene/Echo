@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiResponseSchema } from "@/types";
-import type { UserDTO } from "../domainModels/user";
-import type { ContactDTO, ContactsDTO } from "../domainModels/contacts";
+import type { UserDTO } from "../entities/user";
+import type { ContactDTO, ContactsDTO } from "../entities/contacts";
 import { roomSchema } from "@/domains/conversations/types";
 
 export const userSchema = z.object({

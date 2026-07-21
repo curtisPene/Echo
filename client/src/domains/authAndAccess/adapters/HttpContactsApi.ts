@@ -4,10 +4,10 @@ import {
 } from "../types";
 import { httpClient } from "@/lib/httpClient";
 import { parseOrReportError } from "@/lib/parseOrReportError";
-import { User } from "../domainModels/user";
+import { User } from "../entities/user";
 import type { ServiceResult } from "@/types";
-import type { ContactDTO } from "../domainModels/contacts";
-import type { RoomDTO } from "@/domains/conversations/domainModels/room";
+import type { ContactDTO } from "../entities/contacts";
+import type { RoomDTO } from "@/domains/conversations/entities/room";
 import type { ContactsApi } from "../ports/ContactsApi";
 
 export class HttpContactsApi implements ContactsApi {

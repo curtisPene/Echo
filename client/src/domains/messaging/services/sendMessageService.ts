@@ -1,5 +1,5 @@
 import type { ServiceResult } from "@/types";
-import type { MessageDTO } from "../domainModels/message";
+import type { MessageDTO } from "../entities/message";
 import type { MessagingSocketApi } from "../ports/MessagingSocketApi";
 import type { MessagesRepository } from "../ports/MessagesRepository";
 

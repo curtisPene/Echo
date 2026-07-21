@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { GetRoomsService } from "../../services/getRoomsService";
 import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
-import type { RoomDTO } from "../../domainModels/room";
+import type { RoomDTO } from "../../entities/room";
 
 const ROOM: RoomDTO = {
   id: "room-1",

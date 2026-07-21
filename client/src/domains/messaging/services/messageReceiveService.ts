@@ -1,4 +1,4 @@
-import type { MessageDTO } from "../domainModels/message";
+import type { MessageDTO } from "../entities/message";
 import type { MessagesRepository } from "../ports/MessagesRepository";
 
 export class MessageReceiveService {

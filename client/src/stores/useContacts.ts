@@ -1,4 +1,4 @@
-import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
+import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import { create } from "zustand";
 
 export type ContactsStore = {

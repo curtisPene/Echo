@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GetConversationDetailsService } from "../../services/getConversationDetailsService";
-import type { RoomDTO } from "../../domainModels/room";
+import type { RoomDTO } from "../../entities/room";
 
 const service = new GetConversationDetailsService();
 

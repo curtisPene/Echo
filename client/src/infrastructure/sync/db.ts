@@ -1,10 +1,10 @@
 import type { EntityTable } from "dexie";
 import Dexie from "dexie";
-import type { MessageDTO } from "@/domains/messaging/domainModels/message";
+import type { MessageDTO } from "@/domains/messaging/entities/message";
 import type { AppContext } from "./types";
-import type { RoomDTO } from "@/domains/conversations/domainModels/room";
+import type { RoomDTO } from "@/domains/conversations/entities/room";
 import type { RoomUnreadCount } from "@/domains/conversations/types";
-import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
+import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 
 export const db = new Dexie("echo") as Dexie & {
   rooms: EntityTable<RoomDTO, "id">;

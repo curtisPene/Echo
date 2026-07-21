@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { VerificationService } from "../../services/VerificationService";
-import { User } from "../../domainModels/user";
+import { User } from "../../entities/user";
 import type { AuthApi } from "../../ports/AuthApi";
 
 function createFakeAuthApi(overrides: Partial<AuthApi> = {}): AuthApi {

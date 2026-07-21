@@ -1,4 +1,4 @@
-import { Room, type RoomDTO } from "../domainModels/room";
+import { Room, type RoomDTO } from "../entities/room";
 import type { ServiceResult } from "@/types";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 import type { RoomsApi } from "../ports/RoomsApi";

@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { GetMessagesService } from "../../services/getMessagesService";
 import { DexieMessagesRepo } from "../../adapters/DexieMessagesRepo";
 import { db } from "@/infrastructure/sync/db";
-import type { MessageDTO } from "../../domainModels/message";
+import type { MessageDTO } from "../../entities/message";
 
 const MESSAGE: MessageDTO = {
   id: "message-1",

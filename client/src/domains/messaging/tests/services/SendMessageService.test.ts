@@ -3,7 +3,7 @@ import { SendMessageService } from "../../services/sendMessageService";
 import { DexieMessagesRepo } from "../../adapters/DexieMessagesRepo";
 import { db } from "@/infrastructure/sync/db";
 import type { MessagingSocketApi } from "../../ports/MessagingSocketApi";
-import type { MessageDTO } from "../../domainModels/message";
+import type { MessageDTO } from "../../entities/message";
 
 const SENT_MESSAGE: MessageDTO = {
   id: "message-1",

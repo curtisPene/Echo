@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GetRoomMessagesService } from "../../services/getRoomMessagesService";
-import type { MessageDTO } from "../../domainModels/message";
+import type { MessageDTO } from "../../entities/message";
 
 const ROOM_1_MESSAGE: MessageDTO = {
   id: "message-1",

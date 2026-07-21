@@ -1,4 +1,4 @@
-import type { RoomDTO } from "@/domains/conversations/domainModels/room";
+import type { RoomDTO } from "@/domains/conversations/entities/room";
 import { create } from "zustand";
 
 type RoomsStore = {

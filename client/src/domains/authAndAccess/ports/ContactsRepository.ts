@@ -1,4 +1,4 @@
-import type { Contacts, ContactDTO, ContactsDTO } from "../domainModels/contacts";
+import type { Contacts, ContactDTO, ContactsDTO } from "../entities/contacts";
 
 export interface ContactsRepository {
   add(contact: ContactDTO): Promise<void>;

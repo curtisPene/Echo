@@ -1,4 +1,4 @@
-import { Room, type RoomDTO } from "../domainModels/room";
+import { Room, type RoomDTO } from "../entities/room";
 
 export class HasPendingRequestsService {
   execute({ rooms, userId }: { rooms: RoomDTO[]; userId: string | null }): boolean {

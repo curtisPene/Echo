@@ -1,5 +1,5 @@
 import { db } from "@/infrastructure/sync/db";
-import { Room, type RoomDTO, type ParticipantDTO } from "../domainModels/room";
+import { Room, type RoomDTO, type ParticipantDTO } from "../entities/room";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 
 export class DexieRoomsRepo implements RoomsRepository {

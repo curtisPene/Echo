@@ -4,7 +4,7 @@ import { parseOrReportError } from "@/lib/parseOrReportError";
 import { loginResponseSchema, registrationResponseSchema } from "../types";
 import type { LoginArgs } from "../services/LoginService";
 import type { RegistrationServiceArgs } from "../services/RegistrationService";
-import { User } from "../domainModels/user";
+import { User } from "../entities/user";
 import type { ServiceResult } from "@/types";
 import type { AuthApi } from "../ports/AuthApi";
 

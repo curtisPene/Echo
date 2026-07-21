@@ -1,8 +1,8 @@
 import type { ContactsApi } from "../ports/ContactsApi";
 import type { ContactsRepository } from "../ports/ContactsRepository";
 import type { RoomsRepository } from "@/domains/conversations/ports/RoomsRepository";
-import type { ContactDTO } from "../domainModels/contacts";
-import { Room, type RoomDTO } from "@/domains/conversations/domainModels/room";
+import type { ContactDTO } from "../entities/contacts";
+import { Room, type RoomDTO } from "@/domains/conversations/entities/room";
 import type { ServiceResult } from "@/types";
 
 export class AddContactService {

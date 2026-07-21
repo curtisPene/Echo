@@ -1,4 +1,4 @@
-import type { Room, RoomDTO, ParticipantDTO } from "../domainModels/room";
+import type { Room, RoomDTO, ParticipantDTO } from "../entities/room";
 import type { RoomUnreadCount } from "../types";
 
 export interface RoomsRepository {

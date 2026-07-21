@@ -1,4 +1,4 @@
-import type { MessageDTO } from "../domainModels/message";
+import type { MessageDTO } from "../entities/message";
 
 export interface MessagesRepository {
   sync(messages: MessageDTO[]): Promise<void>;

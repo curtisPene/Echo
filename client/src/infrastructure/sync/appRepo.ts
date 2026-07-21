@@ -1,4 +1,4 @@
-import type { User } from "@/domains/authAndAccess/domainModels/user";
+import type { User } from "@/domains/authAndAccess/entities/user";
 import { db } from "./db";
 import type { Auth } from "@/stores/useAuth";
 import type { AppContext } from "./types";

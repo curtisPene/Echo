@@ -1,13 +1,12 @@
 import { useRooms } from "@/stores/useRooms";
 import type { AcceptRequestService } from "../services/acceptRequestService";
 import type { CreateNewRoomService } from "../services/createNewRoomService";
-import type { User } from "@/domains/authAndAccess/domainModels/user";
-import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
-import type { RoomDTO } from "../domainModels/room";
+import type { User } from "@/domains/authAndAccess/entities/user";
+import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
+import type { RoomDTO } from "../entities/room";
 
 export type AcceptRequestControllerResult =
-  | { success: true }
-  | { success: false; message: string };
+  { success: true } | { success: false; message: string };
 
 export type CreateNewRoomControllerResult =
   | { success: true; roomId: string; name: string }
@@ -17,7 +16,10 @@ export class RoomsControllers {
   private readonly acceptRequestService: AcceptRequestService;
   private readonly createNewRoomService: CreateNewRoomService;
 
-  constructor(acceptRequestService: AcceptRequestService, createNewRoomService: CreateNewRoomService) {
+  constructor(
+    acceptRequestService: AcceptRequestService,
+    createNewRoomService: CreateNewRoomService,
+  ) {
     this.acceptRequestService = acceptRequestService;
     this.createNewRoomService = createNewRoomService;
   }

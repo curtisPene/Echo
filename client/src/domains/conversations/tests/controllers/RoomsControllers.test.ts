@@ -5,10 +5,10 @@ import { CreateNewRoomService } from "../../services/createNewRoomService";
 import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
 import { useRooms } from "@/stores/useRooms";
-import { User } from "@/domains/authAndAccess/domainModels/user";
-import type { ContactDTO } from "@/domains/authAndAccess/domainModels/contacts";
+import { User } from "@/domains/authAndAccess/entities/user";
+import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import type { RoomsApi } from "../../ports/RoomsApi";
-import type { RoomDTO } from "../../domainModels/room";
+import type { RoomDTO } from "../../entities/room";
 
 const CURRENT_USER = User.hydrate({
   id: "user-1",
@@ -28,8 +28,18 @@ const ACCEPTED_ROOM: RoomDTO = {
   id: "room-1",
   name: "Ada, Grace",
   participants: [
-    { userId: CURRENT_USER.id, firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-    { userId: CONTACT.userId, firstName: "Grace", lastName: "Hopper", status: "accepted" },
+    {
+      userId: CURRENT_USER.id,
+      firstName: "Ada",
+      lastName: "Lovelace",
+      status: "accepted",
+    },
+    {
+      userId: CONTACT.userId,
+      firstName: "Grace",
+      lastName: "Hopper",
+      status: "accepted",
+    },
   ],
 };
 
@@ -43,14 +53,28 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
           id: "room-2",
           name: "New Room",
           participants: [
-            { userId: CURRENT_USER.id, firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-            { userId: CONTACT.userId, firstName: "Grace", lastName: "Hopper", status: "pending" },
+            {
+              userId: CURRENT_USER.id,
+              firstName: "Ada",
+              lastName: "Lovelace",
+              status: "accepted",
+            },
+            {
+              userId: CONTACT.userId,
+              firstName: "Grace",
+              lastName: "Hopper",
+              status: "pending",
+            },
           ],
         },
       };
     },
     async acceptInvite() {
-      return { success: true, message: "Request accepted successfully", data: ACCEPTED_ROOM };
+      return {
+        success: true,
+        message: "Request accepted successfully",
+        data: ACCEPTED_ROOM,
+      };
     },
     ...overrides,
   };
@@ -74,7 +98,9 @@ describe("RoomsControllers.acceptRequest", () => {
   it("returns success and persists the accepted room to Dexie", async () => {
     const controllers = createRoomsControllers(createFakeRoomsApi());
 
-    const result = await controllers.acceptRequest({ roomId: ACCEPTED_ROOM.id });
+    const result = await controllers.acceptRequest({
+      roomId: ACCEPTED_ROOM.id,
+    });
 
     expect(result).toEqual({ success: true });
     expect(await db.rooms.get(ACCEPTED_ROOM.id)).toEqual(ACCEPTED_ROOM);
@@ -98,15 +124,32 @@ describe("RoomsControllers.createRoom", () => {
   it("creates a room, persists it to Dexie, selects it as active, and returns its id/name", async () => {
     const controllers = createRoomsControllers(createFakeRoomsApi());
 
-    const result = await controllers.createRoom({ user: CURRENT_USER, contacts: [CONTACT] });
+    const result = await controllers.createRoom({
+      user: CURRENT_USER,
+      contacts: [CONTACT],
+    });
 
-    expect(result).toEqual({ success: true, roomId: "room-2", name: "New Room" });
+    expect(result).toEqual({
+      success: true,
+      roomId: "room-2",
+      name: "New Room",
+    });
     expect(useRooms.getState().activeRoom).toEqual({
       id: "room-2",
       name: "New Room",
       participants: [
-        { userId: CURRENT_USER.id, firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-        { userId: CONTACT.userId, firstName: "Grace", lastName: "Hopper", status: "pending" },
+        {
+          userId: CURRENT_USER.id,
+          firstName: "Ada",
+          lastName: "Lovelace",
+          status: "accepted",
+        },
+        {
+          userId: CONTACT.userId,
+          firstName: "Grace",
+          lastName: "Hopper",
+          status: "pending",
+        },
       ],
     });
     expect(await db.rooms.get("room-2")).toBeDefined();
@@ -116,25 +159,41 @@ describe("RoomsControllers.createRoom", () => {
     await db.rooms.put(ACCEPTED_ROOM);
     const roomsApi = createFakeRoomsApi({
       async create() {
-        throw new Error("should not create a new room when a 1:1 already exists");
+        throw new Error(
+          "should not create a new room when a 1:1 already exists",
+        );
       },
     });
     const controllers = createRoomsControllers(roomsApi);
 
-    const result = await controllers.createRoom({ user: CURRENT_USER, contacts: [CONTACT] });
+    const result = await controllers.createRoom({
+      user: CURRENT_USER,
+      contacts: [CONTACT],
+    });
 
-    expect(result).toEqual({ success: true, roomId: ACCEPTED_ROOM.id, name: ACCEPTED_ROOM.name });
+    expect(result).toEqual({
+      success: true,
+      roomId: ACCEPTED_ROOM.id,
+      name: ACCEPTED_ROOM.name,
+    });
   });
 
   it("surfaces the api's failure message when room creation fails", async () => {
     const roomsApi = createFakeRoomsApi({
       async create() {
-        return { success: false, message: "One or more participants could not be found", data: null };
+        return {
+          success: false,
+          message: "One or more participants could not be found",
+          data: null,
+        };
       },
     });
     const controllers = createRoomsControllers(roomsApi);
 
-    const result = await controllers.createRoom({ user: CURRENT_USER, contacts: [CONTACT] });
+    const result = await controllers.createRoom({
+      user: CURRENT_USER,
+      contacts: [CONTACT],
+    });
 
     expect(result).toEqual({
       success: false,

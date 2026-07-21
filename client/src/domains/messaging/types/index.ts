@@ -5,7 +5,7 @@ import type {
   ReactionDTO,
   ReadDTO,
   MessageDTO,
-} from "../domainModels/message";
+} from "../entities/message";
 
 export const senderSchema = z.object({
   userId: z.string(),

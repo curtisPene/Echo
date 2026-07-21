@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { HasPendingRequestsService } from "../../services/hasPendingRequestsService";
-import type { RoomDTO } from "../../domainModels/room";
+import type { RoomDTO } from "../../entities/room";
 
 const service = new HasPendingRequestsService();
 

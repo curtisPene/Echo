@@ -1,5 +1,5 @@
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
-import type { MessageDTO } from "../domainModels/message";
+import type { MessageDTO } from "../entities/message";
 import clsx from "clsx";
 
 const formatMessageTime = (isoDate: string) => {
