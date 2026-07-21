@@ -4,16 +4,14 @@ import { ChevronLeftIcon } from "lucide-react";
 import { useLayoutController } from "../hooks/useLayoutController";
 import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
-import { useConversationDetailsViewModel } from "@/domains/conversations/viewModels/useConversationDetailsViewModel";
-import { useConversationListViewModel } from "@/domains/conversations/viewModels/useConversationListViewModel";
 import { MessageList } from "@/domains/messaging/components/MessageList";
 import { Composer } from "@/domains/messaging/components/Composer";
 
 export const MobileShell = () => {
   const listHeader = useListHeader();
   const { mobileNavItems } = useLayoutController();
-  const { room } = useConversationDetailsViewModel();
-  const { clearActiveRoom } = useConversationListViewModel();
+  const room = null;
+  const clearActiveRoom = () => {};
 
   return (
     <div
@@ -39,7 +37,7 @@ export const MobileShell = () => {
           </button>
         )}
         <h1 className="text-foreground min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">
-          {room ? room.name : listHeader}
+          {listHeader}
         </h1>
       </div>
       <div

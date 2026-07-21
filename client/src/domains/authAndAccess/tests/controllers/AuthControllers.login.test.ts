@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
+import { VerificationService } from "../../services/VerificationService";
 import { User } from "../../entities/user";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
@@ -49,6 +50,7 @@ beforeEach(() => {
   authControllers = new AuthControllers(
     new LoginService(fakeAuthApi),
     new RegistrationService(fakeAuthApi),
+    new VerificationService(fakeAuthApi),
   );
 });
 

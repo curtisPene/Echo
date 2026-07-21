@@ -17,24 +17,10 @@ import {
   ChevronDownIcon,
   MoreVerticalIcon,
 } from "lucide-react";
-import { useConversationDetailsViewModel } from "../viewModels/useConversationDetailsViewModel";
-import { getOtherParticipants } from "../presentation/roomPresentation";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getInitials } from "@/lib/utils";
 import clsx from "clsx";
 
 export const ConversationDetailsContent = () => {
-  const { room } = useConversationDetailsViewModel();
-  const currentUser = useCurrentUser();
-
-  if (!room) return null;
-
-  const headerParticipant = getOtherParticipants(
-    room.participants,
-    currentUser?.id ?? "",
-  )[0];
-  const isRoomPending = room.myStatus === "pending";
-
   return (
     <div className={clsx("root", "flex flex-col gap-4 p-4")}>
       <div
@@ -47,22 +33,11 @@ export const ConversationDetailsContent = () => {
           size="lg"
           className={clsx("ring-brand", "size-16 rounded-full ring-2")}
         >
-          <AvatarFallback className={clsx("text-lg")}>
-            {headerParticipant
-              ? getInitials(
-                  headerParticipant.firstName,
-                  headerParticipant.lastName,
-                )
-              : ""}
-          </AvatarFallback>
+          <AvatarFallback className={clsx("text-lg")}></AvatarFallback>
         </Avatar>
         <div>
-          <h2 className={clsx("text-foreground", "font-semibold")}>
-            {room.name}
-          </h2>
-          <p className={clsx("text-muted-foreground", "text-xs")}>
-            {room.participants.length} members
-          </p>
+          <h2 className={clsx("text-foreground", "font-semibold")}></h2>
+          <p className={clsx("text-muted-foreground", "text-xs")}></p>
         </div>
       </div>
 
@@ -75,11 +50,9 @@ export const ConversationDetailsContent = () => {
         <Button variant="outline" size="icon" aria-label="Leave group">
           <LogOutIcon size={16} strokeWidth={2} />
         </Button>
-        {room.isOneOnOne && (
-          <Button variant="destructive" size="icon" aria-label="Block">
-            <BanIcon size={16} strokeWidth={2} />
-          </Button>
-        )}
+        <Button variant="destructive" size="icon" aria-label="Block">
+          <BanIcon size={16} strokeWidth={2} />
+        </Button>
       </div>
 
       <div className={clsx("membersSection", "flex flex-col gap-2")}>
@@ -102,64 +75,53 @@ export const ConversationDetailsContent = () => {
           <CollapsibleContent>
             <div className={clsx("membersList", "flex flex-col gap-2")}>
               <ul className={clsx("flex flex-col gap-1 pt-1")}>
-                {room.participants.map((participant) => (
-                  <li
-                    key={participant.userId}
+                <li
+                  className={clsx(
+                    "hover:bg-brand/10",
+                    "flex items-center gap-2 rounded-lg p-2",
+                  )}
+                >
+                  <Avatar
                     className={clsx(
-                      "hover:bg-brand/10",
-                      "flex items-center gap-2 rounded-lg p-2",
+                      "ring-brand",
+                      "size-8 rounded-full ring-2",
                     )}
                   >
-                    <Avatar
-                      className={clsx(
-                        "ring-brand",
-                        "size-8 rounded-full ring-2",
-                      )}
-                    >
-                      <AvatarFallback className={clsx("text-xs")}>
-                        {getInitials(
-                          participant.firstName,
-                          participant.lastName,
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className={clsx("text-foreground", "flex-1 text-sm")}>
-                      {participant.firstName} {participant.lastName}
-                    </span>
-                    <Popover>
-                      <PopoverTrigger
-                        render={
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label="Member options"
-                          />
-                        }
-                      >
-                        <MoreVerticalIcon size={16} strokeWidth={2} />
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="end"
-                        className={clsx("w-auto p-1")}
-                      >
+                    <AvatarFallback className={clsx("text-xs")}></AvatarFallback>
+                  </Avatar>
+                  <span className={clsx("text-foreground", "flex-1 text-sm")}></span>
+                  <Popover>
+                    <PopoverTrigger
+                      render={
                         <Button
-                          variant="destructive"
-                          className={clsx(
-                            "blockMemberButton",
-                            "w-full justify-start gap-2",
-                          )}
-                        >
-                          <BanIcon size={16} strokeWidth={2} />
-                          Block
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </li>
-                ))}
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Member options"
+                        />
+                      }
+                    >
+                      <MoreVerticalIcon size={16} strokeWidth={2} />
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      className={clsx("w-auto p-1")}
+                    >
+                      <Button
+                        variant="destructive"
+                        className={clsx(
+                          "blockMemberButton",
+                          "w-full justify-start gap-2",
+                        )}
+                      >
+                        <BanIcon size={16} strokeWidth={2} />
+                        Block
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                </li>
               </ul>
               <Button
                 variant="outline"
-                disabled={isRoomPending}
                 className={clsx(
                   "addMemberButton",
                   "mt-1 w-full justify-start gap-2",

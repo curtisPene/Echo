@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { LoginService } from "../services/LoginService";
 import { RegistrationService } from "../services/RegistrationService";
 import { VerifyRefreshTokenService } from "../services/VerifyRefreshTokenService";
+import { DeleteUserAccountService } from "../services/DeleteUserAccountService";
 import { userLoginSchema, userRegistrationSchema } from "../types/authTypes";
 
 export class AuthControllers {
@@ -10,6 +11,7 @@ export class AuthControllers {
     private readonly loginService: LoginService,
     private readonly registrationService: RegistrationService,
     private readonly verifyRefreshTokenService: VerifyRefreshTokenService,
+    private readonly deleteUserAccountService: DeleteUserAccountService,
   ) {}
 
   userLoginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -118,6 +120,38 @@ export class AuthControllers {
         user: result.data.user,
         accessToken: result.data.accessToken,
       },
+    });
+  };
+
+  deleteAccountController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - No credentials provided",
+        data: null,
+      });
+    }
+
+    const serviceResult = await this.deleteUserAccountService.execute({
+      user: req.user,
+    });
+
+    if (!serviceResult.success) {
+      return res.status(404).json({
+        success: false,
+        message: serviceResult.message,
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
+      data: null,
     });
   };
 }

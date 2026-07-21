@@ -1,14 +1,19 @@
-import type { RoomDTO } from "../entities/room";
+import type { Room } from "../entities/room";
+import type { RoomsRepository } from "../ports/RoomsRepository";
 
 export class GetConversationDetailsService {
+  private readonly roomsRepo: RoomsRepository;
+
+  constructor(roomsRepo: RoomsRepository) {
+    this.roomsRepo = roomsRepo;
+  }
+
   execute({
-    rooms,
     activeRoomId,
   }: {
-    rooms: RoomDTO[];
     activeRoomId: string | null;
-  }): RoomDTO | null {
-    if (!activeRoomId) return null;
-    return rooms.find((room) => room.id === activeRoomId) ?? null;
+  }): () => Promise<Room | undefined> {
+    if (!activeRoomId) return () => Promise.resolve(undefined);
+    return () => this.roomsRepo.findById(activeRoomId);
   }
 }

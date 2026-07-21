@@ -15,13 +15,12 @@ import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
 import { ConversationDetailsContent } from "@/domains/conversations/components/ConversationDetailsContent";
-import { useConversationDetailsViewModel } from "@/domains/conversations/viewModels/useConversationDetailsViewModel";
 
 export const DesktopShell = () => {
   const listHeader = useListHeader();
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const { desktopNavItems } = useLayoutController();
-  const { room } = useConversationDetailsViewModel();
+  const room = null;
 
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
@@ -88,9 +87,7 @@ export const DesktopShell = () => {
               <span className={clsx("size-8")} aria-hidden />
               <h2
                 className={clsx("text-foreground", "text-center font-semibold")}
-              >
-                {room.name}
-              </h2>
+              ></h2>
               <button
                 className={clsx("roomDetailsTrigger", "lg:hidden")}
                 onClick={() => setIsDetailsVisible(!isDetailsVisible)}

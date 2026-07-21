@@ -4,21 +4,21 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { createAuthRouter } from "./domains/authAndAccess/router/authRouter";
 import { createContactsRouter } from "./domains/authAndAccess/router/contactsRouter";
-import { createUserRouter } from "./domains/authAndAccess/router/userRouter";
+import { createSyncRouter } from "./domains/sync/router/syncRouter";
 import { createRoomsRouter } from "./domains/conversations/router/roomsRouter";
 import { createAuthMiddleware } from "./domains/authAndAccess/middleware/authMiddleware";
 import { errorHandler } from "./middleware/errorHandler";
 import type { VerifyAccessTokenService } from "./domains/authAndAccess/services/VerifyAccessTokenService";
 import type { AuthControllers } from "./domains/authAndAccess/controllers/authHttpControllers";
 import type { ContactsControllers } from "./domains/authAndAccess/controllers/contactsHttpControllers";
-import type { UserControllers } from "./domains/authAndAccess/controllers/httpUserControllers";
+import type { SyncControllers } from "./domains/sync/controllers/httpControllers";
 import type { RoomsControllers } from "./domains/conversations/controllers/httpControllers";
 
 export const createApp = (composition: {
   verifyAccessTokenService: VerifyAccessTokenService;
   authControllers: AuthControllers;
   contactsControllers: ContactsControllers;
-  userControllers: UserControllers;
+  syncControllers: SyncControllers;
   roomsControllers: RoomsControllers;
 }) => {
   const app = express();
@@ -30,7 +30,7 @@ export const createApp = (composition: {
   app.use(createAuthMiddleware(composition.verifyAccessTokenService));
 
   app.use("/auth", createAuthRouter(composition.authControllers));
-  app.use("/user", createUserRouter(composition.userControllers));
+  app.use("/sync", createSyncRouter(composition.syncControllers));
   app.use("/contacts", createContactsRouter(composition.contactsControllers));
   app.use("/rooms", createRoomsRouter(composition.roomsControllers));
 

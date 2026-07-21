@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useDevice } from "@/hooks/useDevice";
-import { useRooms } from "@/stores/useRooms";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 
 export const useRoomNavigationSync = () => {
   const deviceTier = useDevice();
   const navigate = useNavigate();
   const pathname = useLocation().pathname;
-  const activeRoom = useRooms((state) => state.activeRoom);
+  const activeRoom = useActiveRoom((state) => state.activeRoom);
 
   useEffect(() => {
     if (deviceTier === "mobile") {

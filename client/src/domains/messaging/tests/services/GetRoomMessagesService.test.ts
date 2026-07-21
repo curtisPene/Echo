@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { GetRoomMessagesService } from "../../services/getRoomMessagesService";
+import { DexieMessagesRepo } from "../../adapters/DexieMessagesRepo";
+import { db } from "@/infrastructure/sync/db";
 import type { MessageDTO } from "../../entities/message";
 
 const ROOM_1_MESSAGE: MessageDTO = {
@@ -24,32 +26,29 @@ const ROOM_2_MESSAGE: MessageDTO = {
   readBy: [],
 };
 
-describe("GetRoomMessagesService", () => {
-  const service = new GetRoomMessagesService();
+const messagesRepo = new DexieMessagesRepo();
+const service = new GetRoomMessagesService(messagesRepo);
 
-  it("returns only messages belonging to the given room", () => {
-    const result = service.execute({
-      messages: [ROOM_1_MESSAGE, ROOM_2_MESSAGE],
-      roomId: "room-1",
-    });
+beforeEach(async () => {
+  await db.messages.clear();
+  await db.messages.bulkPut([ROOM_1_MESSAGE, ROOM_2_MESSAGE]);
+});
+
+describe("GetRoomMessagesService", () => {
+  it("returns only messages belonging to the given room", async () => {
+    const result = await service.execute({ roomId: "room-1" })();
 
     expect(result).toEqual([ROOM_1_MESSAGE]);
   });
 
-  it("returns an empty array when roomId is null", () => {
-    const result = service.execute({
-      messages: [ROOM_1_MESSAGE, ROOM_2_MESSAGE],
-      roomId: null,
-    });
+  it("returns an empty array when roomId is null", async () => {
+    const result = await service.execute({ roomId: null })();
 
     expect(result).toEqual([]);
   });
 
-  it("returns an empty array when no messages match the room", () => {
-    const result = service.execute({
-      messages: [ROOM_1_MESSAGE],
-      roomId: "room-3",
-    });
+  it("returns an empty array when no messages match the room", async () => {
+    const result = await service.execute({ roomId: "room-3" })();
 
     expect(result).toEqual([]);
   });

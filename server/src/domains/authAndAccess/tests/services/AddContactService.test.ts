@@ -13,7 +13,11 @@ import { RemoveParticipantFromRoomService } from "../../../conversations/service
 import { DeleteRoomService } from "../../../conversations/services/DeleteRoomService";
 import { DeleteRoomMessagesService } from "../../../messaging/services/DeleteRoomMessagesService";
 import { RedactUserMessagesInRoomService } from "../../../messaging/services/RedactUserMessagesInRoomService";
-import { registerAndLogin, createFakeSocket, cleanupUser } from "../testHelpers";
+import {
+  registerAndLogin,
+  createFakeSocket,
+  cleanupUser,
+} from "../testHelpers";
 import { mongooseConnect } from "../../../../server";
 import mongoose from "mongoose";
 
@@ -23,10 +27,6 @@ let addContactService: AddContactService;
 const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
 const messageRepo = new MessageRepo(new FindUserIdentitiesService(userRepo));
 
-// Used as setup in one test ("rejects adding a user that has blocked the
-// adder") - not the subject under test, but still needs a socket that
-// won't throw, so a fake one is used rather than the real composed
-// instance from composition.ts.
 const blockContactService = new BlockContactService(
   userRepo,
   contactsRepo,
@@ -78,7 +78,9 @@ describe("AddContactService", () => {
 
     // One-directional by design: the added contact does not get the
     // adder back in their own contacts list from this call alone.
-    const contactsOfContact = await contactsRepo.findByUserId({ userId: contact.id });
+    const contactsOfContact = await contactsRepo.findByUserId({
+      userId: contact.id,
+    });
     expect(contactsOfContact.hasContact(adder.id)).toBe(false);
 
     await cleanup(adder);
@@ -100,8 +102,12 @@ describe("AddContactService", () => {
     const room = result.data.room;
     expect(room.participants).toHaveLength(2);
 
-    const adderParticipant = room.participants.find((p) => p.userId === adder.id);
-    const contactParticipant = room.participants.find((p) => p.userId === contact.id);
+    const adderParticipant = room.participants.find(
+      (p) => p.userId === adder.id,
+    );
+    const contactParticipant = room.participants.find(
+      (p) => p.userId === contact.id,
+    );
 
     expect(adderParticipant?.status).toBe("accepted");
     expect(contactParticipant?.status).toBe("pending");
@@ -133,7 +139,9 @@ describe("AddContactService", () => {
       args: { userId: contact.id, roomId },
     });
 
-    const notifyCall = fakeSocket.calls.find((call) => call.method === "emitToUser");
+    const notifyCall = fakeSocket.calls.find(
+      (call) => call.method === "emitToUser",
+    );
     expect(notifyCall).toBeDefined();
     expect((notifyCall?.args as { userId: string }).userId).toBe(contact.id);
     expect((notifyCall?.args as { event: string }).event).toBe("room:updated");

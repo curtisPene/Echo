@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { GetConversationDetailsService } from "../../services/getConversationDetailsService";
+import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
+import { db } from "@/infrastructure/sync/db";
 import type { RoomDTO } from "../../entities/room";
-
-const service = new GetConversationDetailsService();
 
 const ROOM: RoomDTO = {
   id: "room-1",
@@ -13,31 +13,31 @@ const ROOM: RoomDTO = {
   ],
 };
 
+const service = new GetConversationDetailsService(new DexieRoomsRepo());
+
+beforeEach(async () => {
+  await db.rooms.clear();
+  await db.rooms.put(ROOM);
+});
+
 describe("GetConversationDetailsService", () => {
-  it("returns the active room's DTO", () => {
-    const result = service.execute({
-      rooms: [ROOM],
-      activeRoomId: ROOM.id,
-    });
+  it("returns the active room, hydrated as a real Room instance", async () => {
+    const result = await service.execute({ activeRoomId: ROOM.id })();
 
-    expect(result).toEqual(ROOM);
+    expect(result).toBeDefined();
+    expect(result?.id).toBe(ROOM.id);
+    expect(result?.isOneOnOne()).toBe(true);
   });
 
-  it("returns null when there is no active room", () => {
-    const result = service.execute({
-      rooms: [ROOM],
-      activeRoomId: null,
-    });
+  it("returns undefined when there is no active room", async () => {
+    const result = await service.execute({ activeRoomId: null })();
 
-    expect(result).toBeNull();
+    expect(result).toBeUndefined();
   });
 
-  it("returns null when the active room id doesn't match any room", () => {
-    const result = service.execute({
-      rooms: [ROOM],
-      activeRoomId: "nonexistent",
-    });
+  it("returns undefined when the active room id doesn't match any room", async () => {
+    const result = await service.execute({ activeRoomId: "nonexistent" })();
 
-    expect(result).toBeNull();
+    expect(result).toBeUndefined();
   });
 });

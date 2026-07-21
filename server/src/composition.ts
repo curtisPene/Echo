@@ -18,7 +18,7 @@ import { GetUsersContactsService } from "./domains/authAndAccess/services/GetUse
 import { DeleteUserAccountService } from "./domains/authAndAccess/services/DeleteUserAccountService";
 import { AddContactService } from "./domains/authAndAccess/services/AddContactService";
 import { BlockContactService } from "./domains/authAndAccess/services/BlockContactService";
-import { SyncUserDataService } from "./domains/authAndAccess/services/SyncUserDataService";
+import { SyncUserDataService } from "./domains/sync/services/SyncUserDataService";
 import { AddUserToRoomsService } from "./domains/authAndAccess/services/AddUserToRoomsService";
 
 import { FindRoomsForUserService } from "./domains/conversations/services/FindRoomsForUserService";
@@ -34,7 +34,7 @@ import { CreateMessageService } from "./domains/messaging/services/createMessage
 
 import { AuthControllers } from "./domains/authAndAccess/controllers/authHttpControllers";
 import { ContactsControllers } from "./domains/authAndAccess/controllers/contactsHttpControllers";
-import { UserControllers } from "./domains/authAndAccess/controllers/httpUserControllers";
+import { SyncControllers } from "./domains/sync/controllers/httpControllers";
 import { RoomsControllers } from "./domains/conversations/controllers/httpControllers";
 import { MessagingControllers } from "./domains/messaging/controllers/socketControllers";
 
@@ -43,25 +43,49 @@ const passwordHasher = new BcryptPasswordHasher();
 const tokenSigner = new JwtTokenSigner();
 const authAndAccessSocket = new SocketIOAuthAndAccessSocket();
 const messagingSocket = new SocketIOMessagingSocket();
-export const findUserIdentitiesService = new FindUserIdentitiesService(userRepo);
+export const findUserIdentitiesService = new FindUserIdentitiesService(
+  userRepo,
+);
 const roomRepo = new RoomRepo(findUserIdentitiesService);
 const messageRepo = new MessageRepo(findUserIdentitiesService);
 
 // 2. Single-domain services.
-export const loginService = new LoginService(userRepo, passwordHasher, tokenSigner);
-export const registrationService = new RegistrationService(userRepo, contactsRepo, passwordHasher);
-export const verifyAccessTokenService = new VerifyAccessTokenService(tokenSigner);
-export const verifyRefreshTokenService = new VerifyRefreshTokenService(userRepo, tokenSigner);
+export const loginService = new LoginService(
+  userRepo,
+  passwordHasher,
+  tokenSigner,
+);
+export const registrationService = new RegistrationService(
+  userRepo,
+  contactsRepo,
+  passwordHasher,
+);
+export const verifyAccessTokenService = new VerifyAccessTokenService(
+  tokenSigner,
+);
+export const verifyRefreshTokenService = new VerifyRefreshTokenService(
+  userRepo,
+  tokenSigner,
+);
 export const searchUserService = new SearchUserService(userRepo, contactsRepo);
 export const verifyUserIdService = new VerifyUserIdService(userRepo);
-export const getUsersContactsService = new GetUsersContactsService(contactsRepo);
+export const getUsersContactsService = new GetUsersContactsService(
+  contactsRepo,
+);
 export const findRoomsForUserService = new FindRoomsForUserService(roomRepo);
-export const removeParticipantFromRoomService = new RemoveParticipantFromRoomService(roomRepo);
+export const removeParticipantFromRoomService =
+  new RemoveParticipantFromRoomService(roomRepo);
 export const deleteRoomService = new DeleteRoomService(roomRepo);
-export const deleteRoomMessagesService = new DeleteRoomMessagesService(messageRepo);
-export const redactUserMessagesInRoomService = new RedactUserMessagesInRoomService(messageRepo);
+export const deleteRoomMessagesService = new DeleteRoomMessagesService(
+  messageRepo,
+);
+export const redactUserMessagesInRoomService =
+  new RedactUserMessagesInRoomService(messageRepo);
 export const findRoomMessagesService = new FindRoomMessagesService(messageRepo);
-export const createMessageService = new CreateMessageService(messageRepo, messagingSocket);
+export const createMessageService = new CreateMessageService(
+  messageRepo,
+  messagingSocket,
+);
 
 // 3. Cross-domain services. Freely reference anything above - all one file,
 // no cycle is possible because nothing here is ever imported by anything
@@ -72,7 +96,10 @@ export const createNewRoomService = new CreateNewRoomService(
   findUserIdentitiesService,
   roomRepo,
 );
-export const acceptRoomInviteService = new AcceptRoomInviteService(roomRepo, authAndAccessSocket);
+export const acceptRoomInviteService = new AcceptRoomInviteService(
+  roomRepo,
+  authAndAccessSocket,
+);
 export const addContactService = new AddContactService(
   userRepo,
   contactsRepo,
@@ -104,25 +131,27 @@ export const syncUserDataService = new SyncUserDataService(
   findRoomsForUserService,
   findRoomMessagesService,
 );
-export const addUserToRoomsService = new AddUserToRoomsService(findRoomsForUserService);
+export const addUserToRoomsService = new AddUserToRoomsService(
+  findRoomsForUserService,
+);
 
 // 4. Controllers - built with exactly the services each one needs.
 export const authControllers = new AuthControllers(
   loginService,
   registrationService,
   verifyRefreshTokenService,
+  deleteUserAccountService,
 );
 export const contactsControllers = new ContactsControllers(
   searchUserService,
   addContactService,
   blockContactService,
 );
-export const userControllers = new UserControllers(
-  syncUserDataService,
-  deleteUserAccountService,
-);
+export const syncControllers = new SyncControllers(syncUserDataService);
 export const roomsControllers = new RoomsControllers(
   createNewRoomService,
   acceptRoomInviteService,
 );
-export const messagingControllers = new MessagingControllers(createMessageService);
+export const messagingControllers = new MessagingControllers(
+  createMessageService,
+);

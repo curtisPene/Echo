@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
+import { VerificationService } from "../../services/VerificationService";
 import type { AuthApi } from "../../ports/AuthApi";
 
 const VALID_PASSWORD = "Password1!";
@@ -25,6 +26,7 @@ function createAuthControllers(authApi: AuthApi) {
   return new AuthControllers(
     new LoginService(authApi),
     new RegistrationService(authApi),
+    new VerificationService(authApi),
   );
 }
 

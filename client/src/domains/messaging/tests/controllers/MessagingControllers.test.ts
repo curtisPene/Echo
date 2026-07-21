@@ -73,8 +73,24 @@ describe("MessagingControllers.onMessageReceive", () => {
   it("persists the received message to Dexie", async () => {
     const controllers = createMessagingControllers(createFakeMessagingSocketApi());
 
-    await controllers.onMessageReceive({ message: SENT_MESSAGE });
+    await controllers.onMessageReceive({
+      success: true,
+      message: "Message received",
+      data: { message: SENT_MESSAGE },
+    });
 
     expect(await db.messages.get(SENT_MESSAGE.id)).toEqual(SENT_MESSAGE);
+  });
+
+  it("does nothing when the server reports failure", async () => {
+    const controllers = createMessagingControllers(createFakeMessagingSocketApi());
+
+    await controllers.onMessageReceive({
+      success: false,
+      message: "Something went wrong",
+      data: null,
+    });
+
+    expect(await db.messages.get(SENT_MESSAGE.id)).toBeUndefined();
   });
 });

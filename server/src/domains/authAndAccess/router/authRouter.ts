@@ -10,5 +10,7 @@ export const createAuthRouter = (controllers: AuthControllers) => {
 
   router.post("/verify", controllers.verifyRefreshTokenController);
 
+  router.post("/delete-account", controllers.deleteAccountController);
+
   return router;
 };

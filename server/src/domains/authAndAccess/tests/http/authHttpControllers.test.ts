@@ -1,11 +1,13 @@
 import "dotenv/config";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import request from "supertest";
+import { createServer } from "node:http";
 import { createApp } from "../../../../app";
 import { mongooseConnect } from "../../../../server";
+import { attachSocket } from "../../../../socket";
 import { userRepo } from "../../repo/UserRepo";
 import * as composition from "../../../../composition";
-import { cleanupUser } from "../testHelpers";
+import { registerAndLogin, cleanupUser, PASSWORD } from "../testHelpers";
 import mongoose from "mongoose";
 import { NewAuthUserInput } from "../../domainModels/authUser";
 
@@ -18,6 +20,18 @@ const app = createApp(composition);
 
 beforeAll(async () => {
   await mongooseConnect();
+
+  // DeleteUserAccountService uses the real SocketIOAuthAndAccessSocket,
+  // which reaches into socket.ts's module-level `io` - never assigned
+  // unless attachSocket() has run. No client needs to actually connect;
+  // io just needs to exist so io.to(...)/io.in(...) don't throw against
+  // undefined.
+  attachSocket(
+    createServer(),
+    composition.verifyAccessTokenService,
+    composition.addUserToRoomsService,
+    composition.messagingControllers,
+  );
 });
 
 afterAll(async () => {
@@ -29,6 +43,12 @@ async function cleanup(email: string) {
   if (!user) return;
 
   await cleanupUser(user);
+}
+
+async function accessTokenFor(email: string) {
+  const login = await composition.loginService.execute({ email, password: PASSWORD });
+  if (!login.success) throw new Error("unreachable");
+  return login.data.accessToken;
 }
 
 describe("POST /auth/register", () => {
@@ -149,5 +169,31 @@ describe("POST /auth/login", () => {
     expect(response.body.success).toBe(false);
 
     await cleanup(email);
+  });
+});
+
+describe("POST /auth/delete-account", () => {
+  it("returns 200 and deletes the account", async () => {
+    const user = await registerAndLogin("ToDelete");
+    const token = await accessTokenFor(user.email);
+
+    const response = await request(app)
+      .post("/auth/delete-account")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+
+    const stillExists = await composition.loginService.execute({
+      email: user.email,
+      password: PASSWORD,
+    });
+    expect(stillExists.success).toBe(false);
+  });
+
+  it("returns 401 with no access token", async () => {
+    const response = await request(app).post("/auth/delete-account");
+
+    expect(response.status).toBe(401);
   });
 });

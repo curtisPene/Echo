@@ -1,6 +1,7 @@
 import { SendMessageService } from "../services/sendMessageService";
 import { MessageReceiveService } from "../services/messageReceiveService";
-import type { MessageDTO } from "../entities/message";
+import { onMessageReceivePayloadSchema } from "../types";
+import { parseOrReportError } from "@/lib/parseOrReportError";
 
 export type SendMessageResult =
   | { success: true }
@@ -34,7 +35,11 @@ export class MessagingControllers {
     return { success: true };
   };
 
-  onMessageReceive = async ({ message }: { message: MessageDTO }) => {
-    await this.messageReceiveService.execute({ message });
+  onMessageReceive = async (payload: unknown) => {
+    const parsed = parseOrReportError(onMessageReceivePayloadSchema, payload);
+
+    if (!parsed.success) return;
+
+    await this.messageReceiveService.execute({ message: parsed.data.message });
   };
 }

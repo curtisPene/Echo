@@ -12,7 +12,13 @@ export const PASSWORD = "Password1!";
 export const uniqueEmail = (label: string) =>
   `test-${label}-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
 
-export async function registerAndLogin(label: string, email = uniqueEmail(label)) {
+/**
+ * Creates a test user logs them in and returns the response data
+ */
+export async function registerAndLogin(
+  label: string,
+  email = uniqueEmail(label),
+) {
   const registered = await registrationService.execute({
     firstName: label,
     lastName: "Demo",

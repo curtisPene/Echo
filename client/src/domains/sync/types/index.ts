@@ -1,16 +1,8 @@
 import z from "zod";
-import { userSchema, contactsSchema } from "@/domains/authAndAccess/types";
+import { contactsSchema } from "@/domains/authAndAccess/types";
 import { apiResponseSchema } from "@/types";
 import { roomSchema } from "@/domains/conversations/types";
 import { messageSchema } from "@/domains/messaging/types";
-
-export const appContextSchema = z.object({
-  id: z.literal("current"),
-  user: userSchema,
-  lastSync: z.string().nullable(),
-});
-
-export type AppContext = z.infer<typeof appContextSchema>;
 
 export const appSyncResponseSchema = apiResponseSchema(
   z.object({

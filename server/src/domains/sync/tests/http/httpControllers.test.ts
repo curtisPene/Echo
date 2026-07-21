@@ -6,7 +6,11 @@ import { createApp } from "../../../../app";
 import { mongooseConnect } from "../../../../server";
 import { attachSocket } from "../../../../socket";
 import * as composition from "../../../../composition";
-import { registerAndLogin, cleanupUser, PASSWORD } from "../testHelpers";
+import {
+  registerAndLogin,
+  cleanupUser,
+  PASSWORD,
+} from "../../../authAndAccess/tests/testHelpers";
 import mongoose from "mongoose";
 
 const app = createApp(composition);
@@ -14,11 +18,6 @@ const app = createApp(composition);
 beforeAll(async () => {
   await mongooseConnect();
 
-  // DeleteUserAccountService uses the real SocketIOAuthAndAccessSocket,
-  // which reaches into socket.ts's module-level `io` - never assigned
-  // unless attachSocket() has run. No client needs to actually connect;
-  // io just needs to exist so io.to(...)/io.in(...) don't throw against
-  // undefined.
   attachSocket(
     createServer(),
     composition.verifyAccessTokenService,
@@ -32,17 +31,22 @@ afterAll(async () => {
 });
 
 async function accessTokenFor(email: string) {
-  const login = await composition.loginService.execute({ email, password: PASSWORD });
+  const login = await composition.loginService.execute({
+    email,
+    password: PASSWORD,
+  });
   if (!login.success) throw new Error("unreachable");
   return login.data.accessToken;
 }
 
-describe("GET /user/sync", () => {
+describe("GET /sync/user", () => {
   it("returns 200 with a full bootstrap payload when 'since' is omitted", async () => {
     const user = await registerAndLogin("Sync");
     const token = await accessTokenFor(user.email);
 
-    const response = await request(app).get("/user/sync").set("Authorization", `Bearer ${token}`);
+    const response = await request(app)
+      .get("/sync/user")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
@@ -57,7 +61,7 @@ describe("GET /user/sync", () => {
     const token = await accessTokenFor(user.email);
 
     const response = await request(app)
-      .get("/user/sync")
+      .get("/sync/user")
       .query({ since: new Date().toISOString() })
       .set("Authorization", `Bearer ${token}`);
 
@@ -72,7 +76,7 @@ describe("GET /user/sync", () => {
     const token = await accessTokenFor(user.email);
 
     const response = await request(app)
-      .get("/user/sync")
+      .get("/sync/user")
       .query({ since: "not-a-date" })
       .set("Authorization", `Bearer ${token}`);
 
@@ -82,33 +86,7 @@ describe("GET /user/sync", () => {
   });
 
   it("returns 401 with no access token", async () => {
-    const response = await request(app).get("/user/sync");
-
-    expect(response.status).toBe(401);
-  });
-});
-
-describe("POST /user/delete-account", () => {
-  it("returns 200 and deletes the account", async () => {
-    const user = await registerAndLogin("ToDelete");
-    const token = await accessTokenFor(user.email);
-
-    const response = await request(app)
-      .post("/user/delete-account")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
-
-    const stillExists = await composition.loginService.execute({
-      email: user.email,
-      password: PASSWORD,
-    });
-    expect(stillExists.success).toBe(false);
-  });
-
-  it("returns 401 with no access token", async () => {
-    const response = await request(app).post("/user/delete-account");
+    const response = await request(app).get("/sync/user");
 
     expect(response.status).toBe(401);
   });

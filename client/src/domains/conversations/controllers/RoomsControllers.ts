@@ -1,4 +1,4 @@
-import { useRooms } from "@/stores/useRooms";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 import type { AcceptRequestService } from "../services/acceptRequestService";
 import type { CreateNewRoomService } from "../services/createNewRoomService";
 import type { User } from "@/domains/authAndAccess/entities/user";
@@ -57,10 +57,10 @@ export class RoomsControllers {
   };
 
   selectRoom = (room: RoomDTO) => {
-    useRooms.getState().setActiveRoom(room);
+    useActiveRoom.getState().setActiveRoom(room);
   };
 
   clearActiveRoom = () => {
-    useRooms.getState().clearActiveRoom();
+    useActiveRoom.getState().clearActiveRoom();
   };
 }

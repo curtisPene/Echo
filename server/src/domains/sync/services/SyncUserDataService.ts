@@ -1,9 +1,9 @@
-import { ContactsRepository } from "../ports/ContactsRepository";
+import { ContactsRepository } from "../../authAndAccess/ports/ContactsRepository";
 import { FindRoomsForUserService } from "../../conversations/services/FindRoomsForUserService";
 import { FindRoomMessagesService } from "../../messaging/services/FindRoomMessagesService";
 import { RoomDTO } from "../../conversations/domainModels/room";
 import { MessageDTO } from "../../messaging/domainModels/message";
-import { ContactsDTO } from "../domainModels/contacts";
+import { ContactsDTO } from "../../authAndAccess/domainModels/contacts";
 import { RepoError } from "../../../errors/RepoError";
 import { ServiceResult } from "../../../types";
 
@@ -14,13 +14,7 @@ export class SyncUserDataService {
     private readonly findRoomMessagesService: FindRoomMessagesService,
   ) {}
 
-  async execute({
-    userId,
-    since,
-  }: {
-    userId: string;
-    since?: string;
-  }): Promise<
+  async execute({ userId, since }: { userId: string; since?: string }): Promise<
     ServiceResult<{
       rooms: { room: RoomDTO; unread: number }[];
       messages: MessageDTO[];
@@ -36,14 +30,18 @@ export class SyncUserDataService {
        * to search for all messages belonging to those rooms since the last sync
        */
 
-      const rooms = await this.findRoomsForUserService.execute({ userId, since: sinceDate });
+      const rooms = await this.findRoomsForUserService.execute({
+        userId,
+        since: sinceDate,
+      });
       const findMessagesResult = await Promise.all(
         rooms.map(async (room) => {
-          const { messages, unread } = await this.findRoomMessagesService.execute({
-            roomId: room.id,
-            userId,
-            since: sinceDate,
-          });
+          const { messages, unread } =
+            await this.findRoomMessagesService.execute({
+              roomId: room.id,
+              userId,
+              since: sinceDate,
+            });
 
           return { room, messages, unread };
         }),

@@ -15,12 +15,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useLoginViewModel } from "../viewModels/useLoginViewModel";
 
 export const LoginPage = () => {
-  const { email, setEmail, password, setPassword, error, onSubmit } =
-    useLoginViewModel();
-
   return (
     <div className="from-brand/15 via-background to-background flex min-h-svh w-full items-center justify-center bg-linear-to-br p-6 md:p-10">
       <div className="w-full max-w-sm">
@@ -32,7 +28,7 @@ export const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={onSubmit}>
+            <form onSubmit={() => {}}>
               <FieldGroup>
                 <Field>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -40,23 +36,14 @@ export const LoginPage = () => {
                     id="email"
                     type="email"
                     placeholder="m@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="password" type="password" required />
                 </Field>
                 <Field>
-                  {error && <FieldError>{error}</FieldError>}
                   <Button
                     type="submit"
                     className="bg-brand text-brand-foreground hover:bg-brand/90"

@@ -14,4 +14,8 @@ export class DexieMessagesRepo implements MessagesRepository {
   async getMessages() {
     return await db.messages.toArray();
   }
+
+  queryForRoom(roomId: string) {
+    return () => db.messages.where("roomId").equals(roomId).toArray();
+  }
 }

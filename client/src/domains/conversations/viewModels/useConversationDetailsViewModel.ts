@@ -1,17 +1,24 @@
-import { useAuth } from "@/stores/useAuth";
-import { useRooms } from "@/stores/useRooms";
+import { useEffect, useState } from "react";
+import { liveQuery } from "dexie";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 import { getConversationDetailsService } from "@/composition";
+import type { RoomDTO } from "../entities/room";
 
 export const useConversationDetailsViewModel = () => {
-  const activeRoom = useRooms((state) => state.activeRoom);
-  const rooms = useRooms((state) => state.rooms);
-  const currentUserId = useAuth((state) => state.user?.id);
+  const activeRoom = useActiveRoom((state) => state.activeRoom);
+  const [room, setRoom] = useState<RoomDTO | null>(null);
 
-  const room = getConversationDetailsService.execute({
-    rooms,
-    activeRoomId: activeRoom?.id ?? null,
-    currentUserId: currentUserId ?? "",
-  });
+  useEffect(() => {
+    const query = getConversationDetailsService.execute({
+      activeRoomId: activeRoom?.id ?? null,
+    });
+
+    const subscription = liveQuery(query).subscribe({
+      next: (fetchedRoom) => setRoom(fetchedRoom ? fetchedRoom.toDTO() : null),
+    });
+
+    return () => subscription.unsubscribe();
+  }, [activeRoom?.id]);
 
   return { room };
 };

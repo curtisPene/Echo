@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
-import { useRooms } from "@/stores/useRooms";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 import { roomsControllers } from "@/composition";
 
 export const useAcceptRequestViewModel = () => {
-  const activeRoom = useRooms((state) => state.activeRoom);
+  const activeRoom = useActiveRoom((state) => state.activeRoom);
   const [error, setError] = useState<string | null>(null);
 
   const onAcceptRequest = useCallback(async () => {

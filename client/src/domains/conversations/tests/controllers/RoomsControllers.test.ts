@@ -4,7 +4,7 @@ import { AcceptRequestService } from "../../services/acceptRequestService";
 import { CreateNewRoomService } from "../../services/createNewRoomService";
 import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
-import { useRooms } from "@/stores/useRooms";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 import { User } from "@/domains/authAndAccess/entities/user";
 import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import type { RoomsApi } from "../../ports/RoomsApi";
@@ -91,7 +91,7 @@ function createRoomsControllers(roomsApi: RoomsApi) {
 beforeEach(async () => {
   await db.rooms.clear();
   await db.roomUnreadCounts.clear();
-  useRooms.setState({ activeRoom: null, rooms: [] });
+  useActiveRoom.setState({ activeRoom: null });
 });
 
 describe("RoomsControllers.acceptRequest", () => {
@@ -134,7 +134,7 @@ describe("RoomsControllers.createRoom", () => {
       roomId: "room-2",
       name: "New Room",
     });
-    expect(useRooms.getState().activeRoom).toEqual({
+    expect(useActiveRoom.getState().activeRoom).toEqual({
       id: "room-2",
       name: "New Room",
       participants: [
