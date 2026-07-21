@@ -1,4 +1,3 @@
-import { ConversationListItem } from "./ConversationListItem";
 import clsx from "clsx";
 
 export const ConversationsList = () => {

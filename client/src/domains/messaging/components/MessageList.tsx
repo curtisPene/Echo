@@ -5,7 +5,6 @@ import {
   MessageScrollerViewport,
   MessageScrollerButton,
 } from "@/components/ui/message-scroller";
-import { MessageListItem } from "./MessageListItem";
 import clsx from "clsx";
 
 export const MessageList = () => {

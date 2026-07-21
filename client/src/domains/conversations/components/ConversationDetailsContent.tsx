@@ -17,7 +17,6 @@ import {
   ChevronDownIcon,
   MoreVerticalIcon,
 } from "lucide-react";
-import { getInitials } from "@/lib/utils";
 import clsx from "clsx";
 
 export const ConversationDetailsContent = () => {
