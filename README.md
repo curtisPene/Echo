@@ -317,10 +317,11 @@ This is intentionally separate from `npm test` (which runs the fast, mocked unit
 - **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
 - **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event. Sync is now its own domain on both sides (`sync`), with a real `SyncContext` client-side cursor replacing what used to be an ad hoc, untyped bootstrap object.
 - **Group chats** — in progress. The domain layer already supports N-participant rooms with no schema or service changes; remaining work is client UI.
-- **Headless end-to-end testing** — a real, self-cleaning suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server, no React involved. First workflow proven: register → login → delete account → re-login fails. More workflows (messaging, rooms) to follow — see [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless) above.
+- **Headless end-to-end testing** — a real, self-cleaning suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server, no React involved. First workflow proven: register → login → delete account → re-login fails — see [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless) above.
 
 ## In progress
 
+- **More headless e2e workflows** — messaging (send/receive) and room/contact flows are next, following the same pattern as the register/login/delete-account suite already in place.
 - **Client view layer rebuild** — the observer-hook pattern that used to mirror entire IndexedDB tables into global stores has been removed. Reads now flow through scoped repository queries wrapped in `liveQuery`, subscribed to directly by ViewModels. Components have been stripped down to markup-only pending a rebuild against the new ViewModel contracts.
 
 ## Deferred
