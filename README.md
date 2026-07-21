@@ -2,11 +2,9 @@
 
 > What if the application, not the framework, was the thing you actually designed?
 
-Echo is a full-stack real-time messaging system built to test that question under real constraints: authentication, offline sync, real-time delivery, and cross-cutting access rules like blocking — not a toy CRUD app, but small enough to model completely.
+This project is about architecture. I wanted one application core, expressed the same way on the client and the server, decoupled from React and Express to the point that either could be deleted and the core would still work correctly. Chat is what I used to build that around, since it needs two transports at the same time (a message send is a live event, auth and sync are ordinary requests) and enough cross-cutting rules — membership, blocking, offline sync — that the modeling actually gets hard. That's why chat is here. It's not really what the project is about.
 
-Domain-Driven Design and Hexagonal Architecture are applied end to end on both sides — MVVM + DDD + Hex on the client, DDD + Hex on the server — so that application behavior is defined independently of the technologies used to deliver it. React, Express, Socket.IO, MongoDB, and IndexedDB are still doing real work, but none of them own the application. Each is a *driving* or *driven* adapter plugged into a core that would keep working if any one of them were swapped out.
-
-Chat is the vehicle, not the point. It's the simplest product that genuinely needs two transports at once — a message send is a live event, auth and sync are ordinary requests — which is exactly the kind of tension that forces real architectural decisions instead of toy-app ones.
+Domain-Driven Design and Hexagonal Architecture are applied end to end on both sides — MVVM + DDD + Hex on the client, DDD + Hex on the server. React, Express, Socket.IO, MongoDB, and IndexedDB all do real work, but none of them own the application. Each one is an adapter plugged into a core that exists whether or not it's running.
 
 ---
 
@@ -19,33 +17,37 @@ Most web apps get designed through the framework's vocabulary. A feature starts 
 - Which Express route should this live in?
 - Which Socket.IO event should send this?
 
-The framework becomes the language the application gets designed in — which means the application's shape ends up wherever the framework's conventions happen to put it, not where the domain actually needs it.
+The framework becomes the language the application gets designed in. So the application's shape ends up wherever the framework's conventions put it, instead of where the domain actually needs it.
 
-Echo starts from the opposite question. Not *how should this work in React*, but:
+I designed Echo from the opposite starting point:
 
 - What business capability is being introduced?
 - Which domain owns it?
 - Which application service coordinates it?
 - What state changes as a result?
-- Which delivery mechanism(s) expose that behavior?
+- Which delivery mechanism exposes that behavior?
 
-Frameworks get introduced *after* that's answered, purely to deliver an application that already has a shape.
+Frameworks get introduced after that's already answered, to deliver an application that already has a shape.
 
-### Why this actually matters
+### Why this matters
 
-The usual pitch for Hexagonal Architecture is that you can swap out infrastructure — a repository implementation, the socket transport, an auth adapter — without touching the application underneath. That's true and it does happen. But the code still looks like a React app and an Express app on the surface — components, routes, hooks, all doing their normal jobs. The boundary isn't erasing the framework; it's making sure the framework isn't where the application's logic actually lives.
+The usual pitch for Hexagonal Architecture is that you can swap out infrastructure — a repository implementation, the socket transport, an auth adapter — without touching the application underneath. That's true, and it happens here too. But the code still looks like a normal React app and a normal Express app on the surface. The point isn't hiding the framework. It's making sure the framework isn't where the application's logic lives.
 
-The actual payoff shows up long before anyone swaps anything:
+The payoff shows up before anyone ever swaps anything out:
 
-- **Testable** — every controller, service, and domain model can be exercised with zero React, zero Express, and no test harness pretending to be a browser. A controller can be called from a plain Node script and it will do exactly what the UI does, because the UI calls the same function.
-- **Maintainable** — a business rule lives in exactly one place (the aggregate that owns it), so it can't quietly drift between three call sites that each re-derived it slightly differently.
-- **Extensible** — a new delivery mechanism (a new UI, a new transport) is built by writing a new adapter against an application that already exists, not by re-threading business logic through a new framework's conventions.
+- Every controller, service, and domain model can be exercised with zero React and zero Express running. A controller can be called from a plain Node script and it does exactly what the UI does, because the UI calls the same function.
+- A business rule lives in exactly one place — the aggregate that owns it — so it can't drift between three call sites that each re-derived it slightly differently.
+- A new delivery mechanism (a new UI, a new transport) gets built as a new adapter against an application that already exists, instead of business logic getting rewritten into a new framework's conventions.
 
-Being able to swap infrastructure is a side effect of designing this way, not the reason to do it.
+Being able to swap infrastructure out is a side effect of building it this way. It wasn't the goal.
 
-### The proof, not just the claim: a real cross-boundary end-to-end suite
+### The proof: the whole system runs headless
 
-Anyone can claim an architecture is "framework-independent." Echo has a test suite that actually demonstrates it: `client/src/tests/e2e/` runs the client's real controllers — no mocks, no stubs — against a genuinely running server, over real HTTP, hitting a real database, and back again.
+I can test both sides without ever starting the framework each one normally needs.
+
+The server's entire API surface is exercised through `createApp()` in-process — `supertest` calls the Express app object directly. There's no `server.listen()`, no open port, no network socket involved in the test run.
+
+The client side goes further. `client/src/tests/e2e/` calls the client's real controllers — `authControllers.register`, `authControllers.login`, `authControllers.deleteAccount` — against a server that's actually running, over real HTTP, with a real database. No browser, no DOM, no React renderer anywhere in the process:
 
 ```text
 register (real POST /auth/register)
@@ -54,11 +56,9 @@ register (real POST /auth/register)
   → login again with the same credentials → fails, proving the account is actually gone
 ```
 
-Every layer already has its own independent test coverage — the client's controllers/services/repos are unit-tested with fakes, the server's are integration-tested against a real database. Neither of those suites can catch the one thing that actually breaks integrations in practice: a request shape the server doesn't expect, a response shape the client's schema won't parse, a cookie that doesn't survive the real wire. That's exactly the gap this suite closes, and only this suite closes it — it doesn't re-prove logic either side already proves on its own; it proves the seam between them holds.
+That test can only exist because the application core genuinely doesn't need React to exist. If the client's business logic secretly depended on a mounted component tree, proving this would require browser automation instead — Playwright or Cypress, clicking through a UI. A plain Vitest file driving the whole system, front to back, is what makes the decoupling claim checkable instead of asserted.
 
-Building it surfaced a real gap in the app itself: there was no way for the client to delete its own account, despite the server route existing — the full port → adapter → service → controller chain didn't exist yet. It was built to make the test possible, not the other way around; the test forced the gap into the open instead of it sitting there unnoticed.
-
-This is deliberately kept small and expensive-by-design, not a broad end-to-end regression suite — see [Running locally](#running-locally) for how to run it.
+The client and server each have their own unit and integration coverage underneath this too — the client's controllers/services/repos unit-tested with fakes, the server's integration-tested against a real database. Both are real and necessary, but neither is the headline. See [Running locally](#running-locally) for how to run the e2e suite.
 
 ---
 
@@ -317,7 +317,7 @@ This is intentionally separate from `npm test` (which runs the fast, mocked unit
 - **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
 - **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event. Sync is now its own domain on both sides (`sync`), with a real `SyncContext` client-side cursor replacing what used to be an ad hoc, untyped bootstrap object.
 - **Group chats** — in progress. The domain layer already supports N-participant rooms with no schema or service changes; remaining work is client UI.
-- **Cross-boundary e2e testing** — a real, self-cleaning end-to-end suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server. First workflow proven: register → login → delete account → re-login fails. More workflows (messaging, rooms) to follow — see [The proof, not just the claim](#the-proof-not-just-the-claim-a-real-cross-boundary-end-to-end-suite) above.
+- **Headless end-to-end testing** — a real, self-cleaning suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server, no React involved. First workflow proven: register → login → delete account → re-login fails. More workflows (messaging, rooms) to follow — see [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless) above.
 
 ## In progress
 
