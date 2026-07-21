@@ -1,8 +1,141 @@
 # Echo
 
-A real-time messaging application built as a deliberate exercise in applying **Hexagonal Architecture (Ports & Adapters) + Domain-Driven Design end to end** — MVVM + DDD + Hex on the client, DDD + Hex on the server. Chat is the vehicle, not the point: it's a small enough domain to fully model, but rich enough (live delivery, membership/access rules, offline sync) to force real architectural decisions instead of toy-app ones.
+> What if the application, not the framework, was the thing you actually designed?
 
-Chat was chosen as the domain because it's the simplest product that genuinely needs both a live transport and a request/response transport at once — a message send is a live event, but auth, sync, and room creation are ordinary requests. Any product needing live bidirectional state (ride-sharing, delivery tracking, collaborative editing) needs the same underlying pattern; chat just makes it easy to build and demo.
+Echo is a full-stack real-time messaging system built to test that question under real constraints: authentication, offline sync, real-time delivery, and cross-cutting access rules like blocking — not a toy CRUD app, but small enough to model completely.
+
+Domain-Driven Design and Hexagonal Architecture are applied end to end on both sides — MVVM + DDD + Hex on the client, DDD + Hex on the server — so that application behavior is defined independently of the technologies used to deliver it. React, Express, Socket.IO, MongoDB, and IndexedDB are still doing real work, but none of them own the application. Each is a *driving* or *driven* adapter plugged into a core that would keep working if any one of them were swapped out.
+
+Chat is the vehicle, not the point. It's the simplest product that genuinely needs two transports at once — a message send is a live event, auth and sync are ordinary requests — which is exactly the kind of tension that forces real architectural decisions instead of toy-app ones.
+
+---
+
+## The idea
+
+Most web apps get designed through the framework's vocabulary. A feature starts as:
+
+- Which React component should own this?
+- Which hook should manage this state?
+- Which Express route should this live in?
+- Which Socket.IO event should send this?
+
+The framework becomes the language the application gets designed in — which means the application's shape ends up wherever the framework's conventions happen to put it, not where the domain actually needs it.
+
+Echo starts from the opposite question. Not *how should this work in React*, but:
+
+- What business capability is being introduced?
+- Which domain owns it?
+- Which application service coordinates it?
+- What state changes as a result?
+- Which delivery mechanism(s) expose that behavior?
+
+Frameworks get introduced *after* that's answered, purely to deliver an application that already has a shape.
+
+### Why this actually matters
+
+The usual pitch for Hexagonal Architecture is that you can swap out infrastructure — a repository implementation, the socket transport, an auth adapter — without touching the application underneath. That's true and it does happen. But the code still looks like a React app and an Express app on the surface — components, routes, hooks, all doing their normal jobs. The boundary isn't erasing the framework; it's making sure the framework isn't where the application's logic actually lives.
+
+The actual payoff shows up long before anyone swaps anything:
+
+- **Testable** — every controller, service, and domain model can be exercised with zero React, zero Express, and no test harness pretending to be a browser. A controller can be called from a plain Node script and it will do exactly what the UI does, because the UI calls the same function.
+- **Maintainable** — a business rule lives in exactly one place (the aggregate that owns it), so it can't quietly drift between three call sites that each re-derived it slightly differently.
+- **Extensible** — a new delivery mechanism (a new UI, a new transport) is built by writing a new adapter against an application that already exists, not by re-threading business logic through a new framework's conventions.
+
+Being able to swap infrastructure is a side effect of designing this way, not the reason to do it.
+
+---
+
+## One application, two environments
+
+Echo isn't a frontend and a backend bolted together — it's one application, delivered through two different runtimes that both point back at the same architectural core.
+
+```mermaid
+flowchart LR
+    subgraph Client["Client Runtime"]
+        direction TB
+        RA["React (driving adapter)"]
+    end
+
+    subgraph Server["Server Runtime"]
+        direction TB
+        EA["Express / Socket.IO (driving + driven adapters)"]
+    end
+
+    RA <-->|"HTTP + Socket.IO"| EA
+```
+
+Both sides are built on the same layered shape — a driving adapter (something that *calls into* the application) at the edge, the application core in the middle, and driven adapters (things the application *calls out to*, like a database) on the other side.
+
+```mermaid
+flowchart TB
+    SPort["Port / Repository — driven adapter"]
+    SDom["Domain Model"]
+    SSvc["Application Service"]
+    SCtrl["SERVER Controller — driving adapter boundary"]
+    SAdapter["Express / Socket.IO — driving adapter"]
+
+    Wire(["HTTP / Socket.IO"])
+
+    CCtrl["CLIENT Controller — driving adapter boundary"]
+    CSvc["Application Service"]
+    CDom["Domain Model"]
+    CPort["Port / Repository — driven adapter"]
+    CVM["ViewModel"]
+    CView["React (View)"]
+
+    SPort --> SDom --> SSvc --> SCtrl
+    SCtrl <-->|calls into| SAdapter
+    SAdapter <-->|calls out to| Wire
+
+    Wire <-->|calls into| CCtrl
+    CCtrl --> CSvc --> CDom --> CPort
+    CPort --> CVM --> CView
+```
+
+Nothing at the center of that diagram is React, Express, or Socket.IO. It's the application.
+
+---
+
+## How a request actually flows
+
+Concretely, on the client: a `View` never touches a service, a store setter, or a repository directly. It calls whatever a `ViewModel` exposes. The `ViewModel` either subscribes to state (a Zustand store, or a `liveQuery` over IndexedDB) or forwards an intent to a `Controller`. Controllers are the *only* thing allowed to mutate application state — services below them never touch a store, the same way a service never imports Express; state is a UI-framework detail the domain has no business knowing about.
+
+```mermaid
+sequenceDiagram
+    participant View
+    participant ViewModel
+    participant Controller
+    participant Service
+    participant Repo as Repository (Dexie / HTTP)
+
+    View->>ViewModel: user action (e.g. submit message)
+    ViewModel->>Controller: forward intent, untouched
+    Controller->>Service: execute()
+    Service->>Repo: read/write
+    Repo-->>Service: result
+    Service-->>Controller: ServiceResult
+    Controller->>Controller: update app state (Zustand)
+    Note over ViewModel,View: ViewModel is already subscribed —<br/>re-renders automatically on state change
+```
+
+For read paths sourced from the local IndexedDB cache, the ViewModel skips the controller entirely and subscribes straight to a service-backed `liveQuery` — there's nothing to *decide* in a read, only data to relay, so routing it through a controller would just be needless indirection:
+
+```mermaid
+sequenceDiagram
+    participant View
+    participant ViewModel
+    participant Service
+    participant Dexie
+
+    ViewModel->>Service: execute() → query fn
+    Service->>Dexie: (traced by liveQuery)
+    Dexie-->>ViewModel: emits on every relevant write
+    ViewModel-->>View: re-render with fresh data
+```
+
+The result: the application core — controllers, services, domain models, persistence — has zero dependency on React existing at all, and the view layer has zero dependency on *how* application state is produced. Each side can be built, and tested, without the other one running.
+
+---
 
 ## Domains
 
@@ -11,14 +144,14 @@ Chat was chosen as the domain because it's the simplest product that genuinely n
 | `authAndAccess` | ✅ | ✅ | Authentication (`AuthUser`), public identity (`Identity`), and the social/access graph (`Contacts`) — one bounded context, sharing the purpose "who is this person, who can they reach," each concept scoped to exactly the callers that need it. |
 | `conversations` | ✅ | ✅ | `Room` aggregate root; `Participant` is an entity it alone controls. Owns membership, not messages. |
 | `messaging` | ✅ | ✅ | `Message` aggregate root, references `roomId` by id — a separate aggregate from `Room` because no operation on either needs to atomically touch the other. |
+| `sync` | ✅ | ✅ | Owns the cross-domain read-model that composes rooms + messages + contacts into one bootstrap/delta payload, and (client-side) the local `SyncContext` cursor that tracks when the device last synced. |
 | `presence` | 🚧 | 🚧 | Reserved for online/offline + typing indicators (design in `project_architectural_insights`; Redis TTL/heartbeat approach chosen and researched, not yet built). |
-| `sync` | 🚧 | 🚧 | Reserved for the cross-domain read-model that composes rooms + messages + contacts into one bootstrap/delta payload for the client — currently that orchestration lives inline in `authAndAccess` and needs to move once the shape settles. |
 
 ## Architecture
 
-Echo is built on **Hexagonal Architecture (Ports & Adapters)**, applied consistently across both client and server, with **Domain-Driven Design** structuring what sits inside that hexagon: the server is organized into bounded contexts, each with its own aggregate roots, domain models, and repositories. Nothing outside a domain ever imports another domain's repository or ORM types directly — only its exposed services. Business logic (use cases) never imports a framework directly either; it depends on a *port* (an interface), and a concrete *adapter* (Express route, Mongoose repo, Dexie table, Socket.IO handler) implements that port. Swap Mongo for Postgres, or REST for gRPC, and the use cases underneath don't change.
+Echo is built on **Hexagonal Architecture (Ports & Adapters)**, applied consistently across both client and server, with **Domain-Driven Design** structuring what sits inside that hexagon: the server is organized into bounded contexts, each with its own aggregate roots, domain models, and repositories. Nothing outside a domain ever imports another domain's repository or ORM types directly — only its exposed services. Business logic (use cases) never imports a framework directly either; it depends on a *port* (an interface), and a concrete *adapter* (Express route, Mongoose repo, Dexie table, Socket.IO handler) implements that port.
 
-**On the client, MVVM sits on top of the same hexagonal core, and React is treated as just another driving adapter.** Code is organized by domain rather than by technical layer, and each domain follows Model → Service → Controller → ViewModel → View. Controllers are plain functions — no React import, no hook, nothing that assumes a render cycle exists — and they're the single entry point into a domain's behavior: every decision ("is there an active room to send to," "what does a failed result mean for this operation") lives there, not scattered across whichever ViewModel happens to trigger it. Controllers are also the *only* code allowed to read or write global app state (the Zustand stores) — services below them never touch a store, because app state is a UI-framework detail the domain/application logic has no business knowing about; a service that wrote to Zustand would tie business logic to React the same way a service that imported Express would tie it to HTTP. A ViewModel's job is narrower than either: subscribe to whatever React/Zustand state a View needs (only a hook can do that part), forward it into a controller untouched, and expose the controller's output in whatever shape the View binds to — it never itself decides what a piece of state *means*, and it never writes to a store directly either. The practical result: the entire application core — controllers, services, domain models, persistence — has zero dependency on React existing at all. It's provable, not just claimed: a controller can be called directly from a plain Node script, with no renderer, no DOM, no test harness, and it'll do exactly what the web UI does, because the web UI calls the same function. Every user-triggered action in the app — login, register, add a contact, accept a room invite, select a room, create a room, send a message — now has exactly one controller as its entry point (`LoginController`, `AcceptRequestController`, `SendMessageController`, and so on), each named for the action it performs, so the `controllers/` folder in any domain is a literal table of contents of what that domain lets a user do.
+**On the client, MVVM sits on top of the same hexagonal core, and React is treated as just another driving adapter.** Code is organized by domain rather than by technical layer, and each domain follows Model → Service → Controller → ViewModel → View. Controllers are plain functions — no React import, no hook, nothing that assumes a render cycle exists — and they're the single entry point into a domain's behavior: every decision ("is there an active room to send to," "what does a failed result mean for this operation") lives there, not scattered across whichever ViewModel happens to trigger it. A ViewModel's job is narrower than either: subscribe to whatever state a View needs, forward intents into a controller untouched, and expose real domain data in whatever shape *the concern itself* needs — never the shape a specific component's current markup happens to want, which would make the ViewModel depend on the View instead of the other way around. Every user-triggered action in the app — login, register, add a contact, accept a room invite, select a room, create a room, send a message — has exactly one controller as its entry point, each named for the action it performs, so the `controllers/` folder in any domain is a literal table of contents of what that domain lets a user do.
 
 **Domain models are hydrated from persistence, never from each other.** There's no canonical "User" that other domains' models are derived from — `authAndAccess`'s `Identity`, `conversations`' `Participant`, and `messaging`'s `Sender` are independent representations of "a person," each shaped by what its own bounded context's language actually needs (a `Participant` doesn't need a password; a `Contact` doesn't need room-membership status), each hydrated straight from the database by its owning domain's repository. Every aggregate exposes its presentable shape through one method, `toDTO()`, defined once on the aggregate itself — never re-derived ad hoc by whichever controller happens to need a view of it.
 
@@ -84,10 +217,21 @@ Supporting 1:1 chat, group chat, contact requests, and blocking together is not 
 
 Echo resolves all five by reducing every one of them to a single question, answered in one place: *does this user's `Room` aggregate say they're a participant, right now?* `Room` (in the `conversations` domain) is the aggregate root; each member is a `Participant` entity it alone controls — nothing outside `Room`'s own methods (`acceptParticipant`, `removeParticipant`) can change membership state. Blocking removes a participant (the whole room, for 1:1; just that participant, for group) via `Room.removeParticipant`. A pending invite is a participant that already exists, just in `pending` status — labeled differently on the client, never gated. None of this logic lives anywhere near message delivery; it lives entirely in the `Room` aggregate, which only has to stay correct in the database.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/access-boundary-dark.svg">
-  <img src="docs/access-boundary-light.svg" alt="Diagram: feature logic (group participation, blocking, contact requests) all mutate a Room aggregate's Participant entities in the database. On socket connect, a user's socket joins exactly the rooms that data says they're in, read once per session. On every message send, the only check is whether the socket already joined that room — no per-message database read.">
-</picture>
+```mermaid
+flowchart TD
+    subgraph Features["Feature-level actions (mutate)"]
+        F1["Accept invite"]
+        F2["Block contact"]
+        F3["Create room"]
+    end
+
+    Features -->|"Room.acceptParticipant() / removeParticipant()"| Aggregate["Room aggregate\n(Participant entities)"]
+    Aggregate -->|"persisted"| DB[(MongoDB)]
+
+    DB -->|"read once, on socket connect"| Join["Socket joins every room\nthe DB says this user is in"]
+    Join --> Send["message:send"]
+    Send -->|"in-memory membership check only\n— no per-message DB read"| Deliver["Delivered to joined sockets"]
+```
 
 The send path is deliberately unremarkable — one in-memory membership check, no query, no per-feature branch — and that's the payoff of getting the modeling right upstream, not a shortcut taken instead of it. A new feature that changes who can talk to whom is built by changing what a socket joins at connect time; the code every message runs through never has to grow to accommodate it.
 
@@ -103,9 +247,11 @@ Every message, room, and contact is persisted locally in IndexedDB (via Dexie) a
 
 Not yet built, but the dependency is now cleared — the client controller layer described above is in place. The plan is a third driving adapter alongside desktop and mobile: a terminal-styled interface, rendered in-browser (so it stays reachable with one link and keeps the existing cookie/session auth flow — a real installable CLI would need a separate distribution story and isn't worth the friction for a demo). It would call the exact same controllers the normal UI calls — no duplicated business logic, only new input/output plumbing, the same relationship the server's HTTP and Socket.IO adapters already have to *its* controllers. The point isn't the aesthetic; it's a live, checkable demonstration that the hexagonal boundary is real rather than asserted — the same core driving a second, structurally unrelated interface.
 
+---
+
 ## Stack
 
-**Client**: React 19, Vite, TypeScript, React Router 7, Zustand (auth state), Axios (HTTP client with auto access-token refresh on 401), Dexie (offline cache/IndexedDB), Zod (schema validation at every API/socket boundary), Tailwind, shadcn/base-ui primitives, Lucide icons.
+**Client**: React 19, Vite, TypeScript, React Router 7, Zustand (auth + UI-selection state), Axios (HTTP client with auto access-token refresh on 401), Dexie (offline cache/IndexedDB, driving reactive reads via `liveQuery`), Zod (schema validation at every API/socket boundary), Tailwind, shadcn/base-ui primitives, Lucide icons.
 
 **Server**: Express 5, TypeScript, MongoDB/Mongoose, Socket.IO, Zod (request/payload validation), JWT auth, Redis (connected, reserved for presence work below — not yet driving any feature).
 
@@ -144,8 +290,12 @@ VITE_API_URL=http://localhost:3000
 - **Contacts** — search by email, add, block (with mutual removal, shared-room cleanup, and live notification to affected users).
 - **Real-time messaging** — send/receive over Socket.IO, delivered to every device joined to a room.
 - **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
-- **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event.
+- **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event. Sync is now its own domain on both sides (`sync`), with a real `SyncContext` client-side cursor replacing what used to be an ad hoc, untyped bootstrap object.
 - **Group chats** — in progress. The domain layer already supports N-participant rooms with no schema or service changes; remaining work is client UI.
+
+## In progress
+
+- **Client view layer rebuild** — the observer-hook pattern that used to mirror entire IndexedDB tables into global stores has been removed. Reads now flow through scoped repository queries wrapped in `liveQuery`, subscribed to directly by ViewModels. Components have been stripped down to markup-only pending a rebuild against the new ViewModel contracts.
 
 ## Deferred
 
@@ -155,18 +305,18 @@ VITE_API_URL=http://localhost:3000
 
 ## Current API surface
 
-| Method | Path                   | Purpose                          |
-|--------|------------------------|-----------------------------------|
-| POST   | /auth/register         | Create account                    |
-| POST   | /auth/login            | Authenticate, issue JWT           |
-| POST   | /auth/verify           | Refresh session                   |
-| GET    | /user/sync             | Delta/cold sync of user's data    |
-| POST   | /user/delete-account   | Delete account (cascades contacts, rooms, messages) |
-| POST   | /contacts/search       | Search users by email             |
-| POST   | /contacts/add          | Add a contact                     |
-| POST   | /contacts/block        | Block a contact                   |
-| POST   | /rooms                 | Create a room                     |
-| POST   | /rooms/accept-invite   | Accept a pending room invite      |
-| GET    | /health                | Health check                      |
+| Method | Path                 | Purpose                                              |
+|--------|----------------------|-------------------------------------------------------|
+| POST   | /auth/register       | Create account                                       |
+| POST   | /auth/login          | Authenticate, issue JWT                              |
+| POST   | /auth/verify         | Refresh session                                      |
+| POST   | /auth/delete-account | Delete account (cascades contacts, rooms, messages)  |
+| GET    | /sync/user           | Delta/cold sync of user's data                       |
+| POST   | /contacts/search     | Search users by email                                |
+| POST   | /contacts/add        | Add a contact                                        |
+| POST   | /contacts/block      | Block a contact                                      |
+| POST   | /rooms               | Create a room                                        |
+| POST   | /rooms/accept-invite | Accept a pending room invite                         |
+| GET    | /health              | Health check                                         |
 
 Socket events: `message:send` / `message:receive`, `room:updated`.
