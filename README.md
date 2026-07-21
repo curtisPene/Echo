@@ -43,6 +43,23 @@ The actual payoff shows up long before anyone swaps anything:
 
 Being able to swap infrastructure is a side effect of designing this way, not the reason to do it.
 
+### The proof, not just the claim: a real cross-boundary end-to-end suite
+
+Anyone can claim an architecture is "framework-independent." Echo has a test suite that actually demonstrates it: `client/src/tests/e2e/` runs the client's real controllers — no mocks, no stubs — against a genuinely running server, over real HTTP, hitting a real database, and back again.
+
+```text
+register (real POST /auth/register)
+  → login (real POST /auth/login, real JWT issued)
+  → delete account (real POST /auth/delete-account, real Bearer auth, real cookie cleared)
+  → login again with the same credentials → fails, proving the account is actually gone
+```
+
+Every layer already has its own independent test coverage — the client's controllers/services/repos are unit-tested with fakes, the server's are integration-tested against a real database. Neither of those suites can catch the one thing that actually breaks integrations in practice: a request shape the server doesn't expect, a response shape the client's schema won't parse, a cookie that doesn't survive the real wire. That's exactly the gap this suite closes, and only this suite closes it — it doesn't re-prove logic either side already proves on its own; it proves the seam between them holds.
+
+Building it surfaced a real gap in the app itself: there was no way for the client to delete its own account, despite the server route existing — the full port → adapter → service → controller chain didn't exist yet. It was built to make the test possible, not the other way around; the test forced the gap into the open instead of it sitting there unnoticed.
+
+This is deliberately kept small and expensive-by-design, not a broad end-to-end regression suite — see [Running locally](#running-locally) for how to run it.
+
 ---
 
 ## One application, two environments
@@ -283,6 +300,14 @@ Client `.env`:
 VITE_API_URL=http://localhost:3000
 ```
 
+With both servers running, the cross-boundary e2e suite can be run against them:
+
+```
+cd client && npm run test:e2e
+```
+
+This is intentionally separate from `npm test` (which runs the fast, mocked unit/integration suites and never needs a live server) — e2e tests hit a real running server and a real database, so they're run deliberately, one workflow at a time, never in parallel with each other.
+
 ## What's built
 
 - **Auth** — registration, login, JWT-based sessions (separate access/refresh secrets).
@@ -292,6 +317,7 @@ VITE_API_URL=http://localhost:3000
 - **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
 - **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event. Sync is now its own domain on both sides (`sync`), with a real `SyncContext` client-side cursor replacing what used to be an ad hoc, untyped bootstrap object.
 - **Group chats** — in progress. The domain layer already supports N-participant rooms with no schema or service changes; remaining work is client UI.
+- **Cross-boundary e2e testing** — a real, self-cleaning end-to-end suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server. First workflow proven: register → login → delete account → re-login fails. More workflows (messaging, rooms) to follow — see [The proof, not just the claim](#the-proof-not-just-the-claim-a-real-cross-boundary-end-to-end-suite) above.
 
 ## In progress
 

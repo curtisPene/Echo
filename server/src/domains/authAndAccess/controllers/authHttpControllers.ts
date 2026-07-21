@@ -148,10 +148,17 @@ export class AuthControllers {
       });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Account deleted successfully",
-      data: null,
-    });
+    res
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: "Account deleted successfully",
+        data: null,
+      });
   };
 }

@@ -16,4 +16,6 @@ export interface AuthApi {
   >;
 
   verifyRefreshToken(): Promise<LoginAPIResult>;
+
+  deleteAccount(): Promise<ServiceResult<null>>;
 }

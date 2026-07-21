@@ -1,11 +1,7 @@
 import path from "node:path";
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -14,6 +10,8 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["./src/test/setupFakeIndexedDb.ts"],
-    exclude: ["**/node_modules/**", "**/dist/**", "src/tests/e2e/**"],
+    include: ["src/tests/e2e/**/*.e2e.test.ts"],
+    fileParallelism: false,
+    testTimeout: 20000,
   },
 });

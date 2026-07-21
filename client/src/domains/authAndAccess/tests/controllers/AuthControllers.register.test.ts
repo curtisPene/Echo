@@ -3,9 +3,21 @@ import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
 import { VerificationService } from "../../services/VerificationService";
+import { DeleteAccountService } from "../../services/DeleteAccountService";
 import type { AuthApi } from "../../ports/AuthApi";
+import type { SyncRepository } from "@/domains/sync/ports/SyncRepository";
 
 const VALID_PASSWORD = "Password1!";
+
+function createFakeSyncRepo(): SyncRepository {
+  return {
+    async getSyncContext() {
+      return undefined;
+    },
+    async saveSyncContext() {},
+    async dropDatabase() {},
+  };
+}
 
 function createFakeAuthApi(overrides: Partial<AuthApi> = {}): AuthApi {
   return {
@@ -18,6 +30,9 @@ function createFakeAuthApi(overrides: Partial<AuthApi> = {}): AuthApi {
     async verifyRefreshToken() {
       throw new Error("not used in this test");
     },
+    async deleteAccount() {
+      throw new Error("not used in this test");
+    },
     ...overrides,
   };
 }
@@ -27,6 +42,7 @@ function createAuthControllers(authApi: AuthApi) {
     new LoginService(authApi),
     new RegistrationService(authApi),
     new VerificationService(authApi),
+    new DeleteAccountService(authApi, createFakeSyncRepo()),
   );
 }
 

@@ -11,6 +11,7 @@ import { DexieSyncRepo } from "./domains/sync/adapters/DexieSyncRepo";
 import { LoginService } from "./domains/authAndAccess/services/LoginService";
 import { RegistrationService } from "./domains/authAndAccess/services/RegistrationService";
 import { VerificationService } from "./domains/authAndAccess/services/VerificationService";
+import { DeleteAccountService } from "./domains/authAndAccess/services/DeleteAccountService";
 import { GetContactsService } from "./domains/authAndAccess/services/GetContactsService";
 import { AddContactService } from "./domains/authAndAccess/services/AddContactService";
 import { AcceptRequestService } from "./domains/conversations/services/acceptRequestService";
@@ -44,6 +45,7 @@ export const syncRepo = new DexieSyncRepo();
 export const loginService = new LoginService(authApi);
 export const registrationService = new RegistrationService(authApi);
 export const verificationService = new VerificationService(authApi);
+export const deleteAccountService = new DeleteAccountService(authApi, syncRepo);
 export const getContactsService = new GetContactsService(contactsRepo);
 export const addContactService = new AddContactService(
   contactsApi,
@@ -81,6 +83,7 @@ export const authControllers = new AuthControllers(
   loginService,
   registrationService,
   verificationService,
+  deleteAccountService,
 );
 export const contactsControllers = new ContactsControllers(addContactService);
 export const roomsControllers = new RoomsControllers(

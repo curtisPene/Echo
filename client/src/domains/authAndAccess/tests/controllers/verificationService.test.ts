@@ -14,6 +14,9 @@ function createFakeAuthApi(overrides: Partial<AuthApi> = {}): AuthApi {
     async verifyRefreshToken() {
       throw new Error("not used in this test");
     },
+    async deleteAccount() {
+      throw new Error("not used in this test");
+    },
     ...overrides,
   };
 }

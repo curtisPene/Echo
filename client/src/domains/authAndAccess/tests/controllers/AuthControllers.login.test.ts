@@ -3,10 +3,22 @@ import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
 import { VerificationService } from "../../services/VerificationService";
+import { DeleteAccountService } from "../../services/DeleteAccountService";
 import { User } from "../../entities/user";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
 import type { AuthApi } from "../../ports/AuthApi";
+import type { SyncRepository } from "@/domains/sync/ports/SyncRepository";
+
+function createFakeSyncRepo(): SyncRepository {
+  return {
+    async getSyncContext() {
+      return undefined;
+    },
+    async saveSyncContext() {},
+    async dropDatabase() {},
+  };
+}
 
 const DEV_USER = { email: "alan@example.com", password: "password123" };
 
@@ -37,6 +49,9 @@ function createFakeAuthApi(): AuthApi {
     async verifyRefreshToken() {
       throw new Error("not used in this test");
     },
+    async deleteAccount() {
+      throw new Error("not used in this test");
+    },
   };
 }
 
@@ -51,6 +66,7 @@ beforeEach(() => {
     new LoginService(fakeAuthApi),
     new RegistrationService(fakeAuthApi),
     new VerificationService(fakeAuthApi),
+    new DeleteAccountService(fakeAuthApi, createFakeSyncRepo()),
   );
 });
 

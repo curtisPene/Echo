@@ -4,8 +4,10 @@ import type {
   RegistrationServiceArgs,
 } from "../services/RegistrationService";
 import type { VerificationService } from "../services/VerificationService";
+import type { DeleteAccountService } from "../services/DeleteAccountService";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
+import type { ServiceResult } from "@/types";
 
 export type LoginControllerResult =
   { success: true } | { success: false; message: string };
@@ -17,15 +19,18 @@ export class AuthControllers {
   private readonly loginService: LoginService;
   private readonly registrationService: RegistrationService;
   private readonly verificationService: VerificationService;
+  private readonly deleteAccountService: DeleteAccountService;
 
   constructor(
     loginService: LoginService,
     registrationService: RegistrationService,
     verificationService: VerificationService,
+    deleteAccountService: DeleteAccountService,
   ) {
     this.loginService = loginService;
     this.registrationService = registrationService;
     this.verificationService = verificationService;
+    this.deleteAccountService = deleteAccountService;
   }
 
   login = async ({
@@ -84,5 +89,16 @@ export class AuthControllers {
       accessToken: result.data.accessToken,
     });
     useAppStatus.getState().setAppStatus("syncing");
+  };
+
+  deleteAccount = async (): Promise<ServiceResult<null>> => {
+    const result = await this.deleteAccountService.execute();
+
+    if (result.success) {
+      useAuth.getState().setAuth({ authStatus: "unauthenticated", user: null });
+      useAppStatus.getState().setAppStatus("idle");
+    }
+
+    return result;
   };
 }

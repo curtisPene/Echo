@@ -1,7 +1,11 @@
 import { ZodError } from "zod";
 import { httpClient } from "@/lib/httpClient";
 import { parseOrReportError } from "@/lib/parseOrReportError";
-import { loginResponseSchema, registrationResponseSchema } from "../types";
+import {
+  loginResponseSchema,
+  registrationResponseSchema,
+  deleteAccountResponseSchema,
+} from "../types";
 import type { LoginArgs } from "../services/LoginService";
 import type { RegistrationServiceArgs } from "../services/RegistrationService";
 import { User } from "../entities/user";
@@ -70,5 +74,10 @@ export class HttpAuthApi implements AuthApi {
         data: null,
       };
     }
+  }
+
+  async deleteAccount(): Promise<ServiceResult<null>> {
+    const response = await httpClient.post("/auth/delete-account");
+    return parseOrReportError(deleteAccountResponseSchema, response.data);
   }
 }
