@@ -58,6 +58,8 @@ register (real POST /auth/register)
 
 That test can only exist because the application core genuinely doesn't need React to exist. If the client's business logic secretly depended on a mounted component tree, proving this would require browser automation instead — Playwright or Cypress, clicking through a UI. A plain Vitest file driving the whole system, front to back, is what makes the decoupling claim checkable instead of asserted.
 
+This isn't just how the app gets tested. It's how it got built. Every use case on the client — register, login, delete account, send a message — was written, wired, and verified through controllers and services before any component existed to call them. The UI is currently stripped down to markup with no ViewModel wiring at all (see [In progress](#in-progress)), and none of the work above depended on that changing. Building headless and testing headless are the same discipline applied at two different points in time.
+
 The client and server each have their own unit and integration coverage underneath this too — the client's controllers/services/repos unit-tested with fakes, the server's integration-tested against a real database. Both are real and necessary, but neither is the headline. See [Running locally](#running-locally) for how to run the e2e suite.
 
 ---
@@ -322,7 +324,7 @@ This is intentionally separate from `npm test` (which runs the fast, mocked unit
 ## In progress
 
 - **More headless e2e workflows** — messaging (send/receive) and room/contact flows are next, following the same pattern as the register/login/delete-account suite already in place.
-- **Client view layer rebuild** — the observer-hook pattern that used to mirror entire IndexedDB tables into global stores has been removed. Reads now flow through scoped repository queries wrapped in `liveQuery`, subscribed to directly by ViewModels. Components have been stripped down to markup-only pending a rebuild against the new ViewModel contracts.
+- **Client view layer rebuild** — components are currently stripped down to markup only, with no ViewModel wiring at all. This was done on purpose. The observer-hook pattern that used to mirror entire IndexedDB tables into global stores has been removed; reads now flow through scoped repository queries wrapped in `liveQuery`, subscribed to directly by ViewModels. Every use case in the app is already proven to work through controllers, services, and the e2e suite above — none of that depended on a single component existing. Rebuilding the UI on top of that is the last, mechanical step: read what a ViewModel exposes, bind it to markup. If the live demo currently shows an unstyled shell, that's this step not being done yet, not the application underneath being unfinished.
 
 ## Deferred
 
