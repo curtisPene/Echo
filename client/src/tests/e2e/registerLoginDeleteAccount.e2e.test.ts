@@ -1,7 +1,8 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeAll, beforeEach } from "vitest";
 import { authControllers } from "@/composition";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
+import { assertServerIsRunning } from "./assertServerIsRunning";
 
 // Requires the real server running locally (see README "Running locally") at
 // the URL in client/.env's VITE_API_URL. Not run as part of the default
@@ -15,6 +16,10 @@ const uniqueEmail = () =>
   `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
 
 const PASSWORD = "Password1!";
+
+beforeAll(async () => {
+  await assertServerIsRunning();
+});
 
 beforeEach(() => {
   useAuth.setState({ authStatus: "unverified", user: null });

@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:name": "vitest run",
-    "test:e2e": "vitest run --config vite.e2e.config.ts"
+    "test:e2e": "vitest run --config vite.e2e.config.ts",
+    "test:e2e:only": "vitest run --config vite.e2e.config.ts -t"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
