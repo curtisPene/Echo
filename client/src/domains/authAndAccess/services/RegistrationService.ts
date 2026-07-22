@@ -1,5 +1,8 @@
 import type { ServiceResult } from "@/types";
 import type { AuthApi } from "../ports/AuthApi";
+import { DomainError } from "@/errors/DomainError";
+import { RepoError } from "@/errors/RepoError";
+import { HttpError } from "@/errors/HttpError";
 
 export type RegistrationServiceArgs = {
   firstName: string;
@@ -48,30 +51,46 @@ export class RegistrationService {
   }: RegistrationServiceArgs): Promise<
     ServiceResult<null, { reason: "unknown" | "duplicate_email" | "validation" }>
   > {
-    const validation = validate({
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-    });
+    try {
+      const validation = validate({
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+      });
 
-    if (!validation.valid) {
+      if (!validation.valid) {
+        return {
+          success: false,
+          message: validation.message,
+          data: { reason: "validation" },
+        };
+      }
+
+      const response = await this.authApi.register({
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+      });
+
+      return response;
+    } catch (error) {
+      if (
+        error instanceof DomainError ||
+        error instanceof RepoError ||
+        error instanceof HttpError
+      ) {
+        return { success: false, message: error.message, data: { reason: "unknown" } };
+      }
+
       return {
         success: false,
-        message: validation.message,
-        data: { reason: "validation" },
+        message: "An unexpected error occurred",
+        data: { reason: "unknown" },
       };
     }
-
-    const response = await this.authApi.register({
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-    });
-
-    return response;
   }
 }

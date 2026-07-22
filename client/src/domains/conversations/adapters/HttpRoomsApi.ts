@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
-import { parseOrReportError } from "@/lib/parseOrReportError";
+import { parseOrThrow } from "@/lib/parseOrThrow";
 import {
   createNewRoomAPIResponseSchema,
   acceptRoomInviteResponseSchema,
@@ -15,13 +15,13 @@ export class HttpRoomsApi implements RoomsApi {
     name: string;
   }) {
     const response = await httpClient.post("/rooms/", { participants, name });
-    return parseOrReportError(createNewRoomAPIResponseSchema, response.data);
+    return parseOrThrow(createNewRoomAPIResponseSchema, response.data);
   }
 
   async acceptInvite({ roomId }: { roomId: string }) {
     const response = await httpClient.post("/rooms/accept-invite", {
       roomId,
     });
-    return parseOrReportError(acceptRoomInviteResponseSchema, response.data);
+    return parseOrThrow(acceptRoomInviteResponseSchema, response.data);
   }
 }

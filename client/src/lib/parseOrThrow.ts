@@ -1,7 +1,7 @@
 import { ZodError, type z } from "zod";
-import { useGlobalError } from "@/stores/useGlobalError";
+import { HttpError } from "@/errors/HttpError";
 
-export function parseOrReportError<T extends z.ZodTypeAny>(
+export function parseOrThrow<T extends z.ZodTypeAny>(
   schema: T,
   data: unknown,
 ): z.infer<T> {
@@ -9,7 +9,7 @@ export function parseOrReportError<T extends z.ZodTypeAny>(
     return schema.parse(data);
   } catch (error) {
     if (error instanceof ZodError) {
-      useGlobalError.getState().setError(error);
+      throw new HttpError(error.message);
     }
     throw error;
   }

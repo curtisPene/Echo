@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
-import { parseOrReportError } from "@/lib/parseOrReportError";
+import { parseOrThrow } from "@/lib/parseOrThrow";
 import { appSyncResponseSchema } from "../types";
 import type { SyncApi } from "../ports/SyncApi";
 
@@ -9,6 +9,6 @@ export class HttpSyncApi implements SyncApi {
       `/sync/user?${since ? `since=${since}` : ""}`,
     );
 
-    return parseOrReportError(appSyncResponseSchema, response.data);
+    return parseOrThrow(appSyncResponseSchema, response.data);
   }
 }

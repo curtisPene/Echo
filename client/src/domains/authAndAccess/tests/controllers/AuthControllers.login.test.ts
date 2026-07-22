@@ -9,6 +9,11 @@ import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
 import type { AuthApi } from "../../ports/AuthApi";
 import type { SyncRepository } from "@/domains/sync/ports/SyncRepository";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
+
+function createFakeNotificationsPort(): NotificationsPort {
+  return { notify: () => {} };
+}
 
 function createFakeSyncRepo(): SyncRepository {
   return {
@@ -67,6 +72,7 @@ beforeEach(() => {
     new RegistrationService(fakeAuthApi),
     new VerificationService(fakeAuthApi),
     new DeleteAccountService(fakeAuthApi, createFakeSyncRepo()),
+    createFakeNotificationsPort(),
   );
 });
 

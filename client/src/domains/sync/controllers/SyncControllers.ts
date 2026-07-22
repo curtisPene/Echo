@@ -1,6 +1,6 @@
 import type { SyncService } from "../services/SyncService";
 import { useAppStatus } from "@/stores/useAppStatus";
-import type { Auth } from "@/stores/useAuth";
+import { useAuth, type Auth } from "@/stores/useAuth";
 
 export class SyncControllers {
   private readonly syncService: SyncService;
@@ -16,6 +16,12 @@ export class SyncControllers {
   }) => {
     const result = await this.syncService.execute({ auth });
 
-    useAppStatus.getState().setAppStatus(result.success ? "synced" : "syncFail");
+    if (!result.success) {
+      useAuth.getState().setAuth({ authStatus: "unauthenticated", user: null });
+      useAppStatus.getState().setAppStatus("syncFail");
+      return;
+    }
+
+    useAppStatus.getState().setAppStatus("synced");
   };
 }

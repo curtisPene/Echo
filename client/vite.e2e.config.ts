@@ -9,7 +9,10 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    setupFiles: ["./src/test/setupFakeIndexedDb.ts"],
+    setupFiles: [
+      "./src/test/setupFakeIndexedDb.ts",
+      "./src/tests/e2e/setupCookieJar.ts",
+    ],
     include: ["src/tests/e2e/**/*.e2e.test.ts"],
     fileParallelism: false,
     testTimeout: 20000,

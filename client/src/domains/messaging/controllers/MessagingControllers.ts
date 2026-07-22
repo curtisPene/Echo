@@ -1,7 +1,9 @@
 import { SendMessageService } from "../services/sendMessageService";
 import { MessageReceiveService } from "../services/messageReceiveService";
 import { onMessageReceivePayloadSchema } from "../types";
-import { parseOrReportError } from "@/lib/parseOrReportError";
+import { parseOrThrow } from "@/lib/parseOrThrow";
+import { HttpError } from "@/errors/HttpError";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 export type SendMessageResult =
   | { success: true }
@@ -10,13 +12,16 @@ export type SendMessageResult =
 export class MessagingControllers {
   private readonly sendMessageService: SendMessageService;
   private readonly messageReceiveService: MessageReceiveService;
+  private readonly notificationsPort: NotificationsPort;
 
   constructor(
     sendMessageService: SendMessageService,
     messageReceiveService: MessageReceiveService,
+    notificationsPort: NotificationsPort,
   ) {
     this.sendMessageService = sendMessageService;
     this.messageReceiveService = messageReceiveService;
+    this.notificationsPort = notificationsPort;
   }
 
   sendMessage = async ({
@@ -29,6 +34,7 @@ export class MessagingControllers {
     const result = await this.sendMessageService.execute({ text, roomId });
 
     if (!result.success) {
+      this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
     }
 
@@ -36,7 +42,16 @@ export class MessagingControllers {
   };
 
   onMessageReceive = async (payload: unknown) => {
-    const parsed = parseOrReportError(onMessageReceivePayloadSchema, payload);
+    let parsed;
+    try {
+      parsed = parseOrThrow(onMessageReceivePayloadSchema, payload);
+    } catch (error) {
+      if (error instanceof HttpError) {
+        console.error("Ignoring malformed message:receive payload", error);
+        return;
+      }
+      throw error;
+    }
 
     if (!parsed.success) return;
 

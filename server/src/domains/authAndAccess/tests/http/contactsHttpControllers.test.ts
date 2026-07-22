@@ -7,7 +7,11 @@ import { mongooseConnect } from "../../../../server";
 import { attachSocket } from "../../../../socket";
 import * as composition from "../../../../composition";
 import { registerAndLogin, cleanupUser, PASSWORD } from "../testHelpers";
-import type { SearchContactsRequest, AddContactRequest, BlockContactRequest } from "../../types/contactsTypes";
+import type {
+  SearchContactsRequest,
+  AddContactRequest,
+  BlockContactRequest,
+} from "../../types/contactsTypes";
 import mongoose from "mongoose";
 
 const app = createApp(composition);
@@ -33,7 +37,10 @@ afterAll(async () => {
 });
 
 async function accessTokenFor(email: string) {
-  const login = await composition.loginService.execute({ email, password: PASSWORD });
+  const login = await composition.loginService.execute({
+    email,
+    password: PASSWORD,
+  });
   if (!login.success) throw new Error("unreachable");
   return login.data.accessToken;
 }
@@ -94,6 +101,9 @@ describe("POST /contacts/add", () => {
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
     expect(response.body.data.userId).toBe(added.id);
+    expect(response.body.data.room).toBeDefined();
+    // This is a gap, I need to make zod schemas for dtos to use for
+    // assetions in testing
 
     await cleanupUser(adder);
     await cleanupUser(added);
@@ -116,7 +126,9 @@ describe("POST /contacts/add", () => {
   it("returns 401 with no access token", async () => {
     const response = await request(app)
       .post("/contacts/add")
-      .send({ userId: new mongoose.Types.ObjectId().toString() } as AddContactRequest);
+      .send({
+        userId: new mongoose.Types.ObjectId().toString(),
+      } as AddContactRequest);
 
     expect(response.status).toBe(401);
   });
@@ -158,7 +170,9 @@ describe("POST /contacts/block", () => {
   it("returns 401 with no access token", async () => {
     const response = await request(app)
       .post("/contacts/block")
-      .send({ userId: new mongoose.Types.ObjectId().toString() } as BlockContactRequest);
+      .send({
+        userId: new mongoose.Types.ObjectId().toString(),
+      } as BlockContactRequest);
 
     expect(response.status).toBe(401);
   });

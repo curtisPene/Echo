@@ -4,6 +4,9 @@ import type { ServiceResult } from "@/types";
 import type { RoomDTO } from "../entities/room";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 import type { RoomsApi } from "../ports/RoomsApi";
+import { DomainError } from "@/errors/DomainError";
+import { RepoError } from "@/errors/RepoError";
+import { HttpError } from "@/errors/HttpError";
 
 export class CreateNewRoomService {
   private readonly roomsApi: RoomsApi;
@@ -21,51 +24,67 @@ export class CreateNewRoomService {
     user: User;
     contacts: ContactDTO[];
   }): Promise<ServiceResult<RoomDTO>> {
-    if (contacts.length === 1) {
-      const rooms = await this.roomsRepo.getRooms();
-      const contact = contacts[0];
+    try {
+      if (contacts.length === 1) {
+        const rooms = await this.roomsRepo.getRooms();
+        const contact = contacts[0];
 
-      const existingOneOnOneRoom = rooms.find(
-        (room) => room.isOneOnOne() && room.hasParticipant(contact.userId),
-      );
+        const existingOneOnOneRoom = rooms.find(
+          (room) => room.isOneOnOne() && room.hasParticipant(contact.userId),
+        );
 
-      if (existingOneOnOneRoom) {
+        if (existingOneOnOneRoom) {
+          return {
+            success: true,
+            message: "Room already exists",
+            data: existingOneOnOneRoom.toDTO(),
+          };
+        }
+      }
+
+      const name =
+        contacts.length === 1
+          ? `${user.firstName} & ${contacts[0].firstName}`
+          : [user.firstName, ...contacts.map((c) => c.firstName)].join(", ");
+
+      const result = await this.roomsApi.create({
+        participants: contacts.map((contact) => ({ user: contact.userId })),
+        name,
+      });
+
+      if (!result.success || !result.data) {
         return {
-          success: true,
-          message: "Room already exists",
-          data: existingOneOnOneRoom.toDTO(),
+          success: false,
+          message: result.message,
+          data: null,
         };
       }
-    }
 
-    const name =
-      contacts.length === 1
-        ? `${user.firstName} & ${contacts[0].firstName}`
-        : [user.firstName, ...contacts.map((c) => c.firstName)].join(", ");
+      await this.roomsRepo.create({
+        roomId: result.data.id,
+        participants: result.data.participants,
+        name: result.data.name,
+      });
 
-    const result = await this.roomsApi.create({
-      participants: contacts.map((contact) => ({ user: contact.userId })),
-      name,
-    });
+      return {
+        success: true,
+        message: "Room created successfully",
+        data: result.data,
+      };
+    } catch (error) {
+      if (
+        error instanceof DomainError ||
+        error instanceof RepoError ||
+        error instanceof HttpError
+      ) {
+        return { success: false, message: error.message, data: null };
+      }
 
-    if (!result.success || !result.data) {
       return {
         success: false,
-        message: result.message,
+        message: "An unexpected error occurred",
         data: null,
       };
     }
-
-    await this.roomsRepo.create({
-      roomId: result.data.id,
-      participants: result.data.participants,
-      name: result.data.name,
-    });
-
-    return {
-      success: true,
-      message: "Room created successfully",
-      data: result.data,
-    };
   }
 }

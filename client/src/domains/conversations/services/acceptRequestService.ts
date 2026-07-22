@@ -2,6 +2,9 @@ import { Room, type RoomDTO } from "../entities/room";
 import type { ServiceResult } from "@/types";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 import type { RoomsApi } from "../ports/RoomsApi";
+import { DomainError } from "@/errors/DomainError";
+import { RepoError } from "@/errors/RepoError";
+import { HttpError } from "@/errors/HttpError";
 
 export class AcceptRequestService {
   private readonly roomsApi: RoomsApi;
@@ -12,7 +15,11 @@ export class AcceptRequestService {
     this.roomsRepo = roomsRepo;
   }
 
-  async execute({ roomId }: { roomId: string }): Promise<ServiceResult<RoomDTO>> {
+  async execute({
+    roomId,
+  }: {
+    roomId: string;
+  }): Promise<ServiceResult<RoomDTO>> {
     // TODO: this should do a client-side pre-flight check via
     // Room.acceptParticipant(currentUserId) before calling the API, so the
     // client can only ever attempt to accept its own pending status - needs
@@ -21,22 +28,38 @@ export class AcceptRequestService {
     // own participant-status-mutating service currently trusts whatever
     // userId it's given without verifying it matches the acting/authed
     // user - that needs the equivalent fix server-side too.
-    const response = await this.roomsApi.acceptInvite({ roomId });
+    try {
+      const response = await this.roomsApi.acceptInvite({ roomId });
 
-    if (!response.success) {
+      if (!response.success) {
+        return {
+          success: false,
+          message: response.message,
+          data: null,
+        };
+      }
+
+      await this.roomsRepo.update(Room.hydrate(response.data));
+
+      return {
+        success: true,
+        message: "Request accepted successfully",
+        data: response.data,
+      };
+    } catch (error) {
+      if (
+        error instanceof DomainError ||
+        error instanceof RepoError ||
+        error instanceof HttpError
+      ) {
+        return { success: false, message: error.message, data: null };
+      }
+
       return {
         success: false,
-        message: response.message,
+        message: "An unexpected error occurred",
         data: null,
       };
     }
-
-    await this.roomsRepo.update(Room.hydrate(response.data));
-
-    return {
-      success: true,
-      message: "Request accepted successfully",
-      data: response.data,
-    };
   }
 }

@@ -9,6 +9,11 @@ import { User } from "../../entities/user";
 import type { ContactsApi } from "../../ports/ContactsApi";
 import type { ContactDTO } from "../../entities/contacts";
 import type { RoomDTO } from "@/domains/conversations/entities/room";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
+
+function createFakeNotificationsPort(): NotificationsPort {
+  return { notify: () => {} };
+}
 
 const CURRENT_USER = User.hydrate({
   id: "user-1",
@@ -71,6 +76,7 @@ function createContactsControllers(contactsApi: ContactsApi) {
       new DexieContactsRepo(),
       new DexieRoomsRepo(),
     ),
+    createFakeNotificationsPort(),
   );
 }
 

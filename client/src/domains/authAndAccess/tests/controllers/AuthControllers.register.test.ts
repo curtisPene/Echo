@@ -6,6 +6,11 @@ import { VerificationService } from "../../services/VerificationService";
 import { DeleteAccountService } from "../../services/DeleteAccountService";
 import type { AuthApi } from "../../ports/AuthApi";
 import type { SyncRepository } from "@/domains/sync/ports/SyncRepository";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
+
+function createFakeNotificationsPort(): NotificationsPort {
+  return { notify: () => {} };
+}
 
 const VALID_PASSWORD = "Password1!";
 
@@ -43,6 +48,7 @@ function createAuthControllers(authApi: AuthApi) {
     new RegistrationService(authApi),
     new VerificationService(authApi),
     new DeleteAccountService(authApi, createFakeSyncRepo()),
+    createFakeNotificationsPort(),
   );
 }
 

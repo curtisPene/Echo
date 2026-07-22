@@ -15,7 +15,11 @@ export class ContactsControllers {
     private readonly blockContactService: BlockContactService,
   ) {}
 
-  searchContactController = async (req: Request, res: Response, next: NextFunction) => {
+  searchContactController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { email } = req.body;
 
     if (!email || !req.user) {
@@ -56,7 +60,11 @@ export class ContactsControllers {
     });
   };
 
-  addContactController = async (req: Request, res: Response, next: NextFunction) => {
+  addContactController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     if (!req.user) {
       return res.status(400).json({
         success: false,
@@ -91,11 +99,15 @@ export class ContactsControllers {
     res.status(201).json({
       success: true,
       message: "Contact added successfully",
-      data: serviceResult.data.addedUser,
+      data: serviceResult.data,
     });
   };
 
-  blockContactController = async (req: Request, res: Response, next: NextFunction) => {
+  blockContactController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const userId = req.user?.id;
 
     if (!userId) {

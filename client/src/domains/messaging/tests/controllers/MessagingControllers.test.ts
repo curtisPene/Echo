@@ -6,6 +6,11 @@ import { DexieMessagesRepo } from "../../adapters/DexieMessagesRepo";
 import { db } from "@/infrastructure/sync/db";
 import type { MessagingSocketApi } from "../../ports/MessagingSocketApi";
 import type { MessageDTO } from "../../entities/message";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
+
+function createFakeNotificationsPort(): NotificationsPort {
+  return { notify: () => {} };
+}
 
 const SENT_MESSAGE: MessageDTO = {
   id: "message-1",
@@ -38,6 +43,7 @@ function createMessagingControllers(messagingSocketApi: MessagingSocketApi) {
   return new MessagingControllers(
     new SendMessageService(messagingSocketApi, messagesRepo),
     new MessageReceiveService(messagesRepo),
+    createFakeNotificationsPort(),
   );
 }
 

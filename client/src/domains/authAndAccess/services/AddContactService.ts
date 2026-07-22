@@ -4,6 +4,9 @@ import type { RoomsRepository } from "@/domains/conversations/ports/RoomsReposit
 import type { ContactDTO } from "../entities/contacts";
 import { Room, type RoomDTO } from "@/domains/conversations/entities/room";
 import type { ServiceResult } from "@/types";
+import { DomainError } from "@/errors/DomainError";
+import { RepoError } from "@/errors/RepoError";
+import { HttpError } from "@/errors/HttpError";
 
 export class AddContactService {
   private readonly contactsApi: ContactsApi;
@@ -27,41 +30,57 @@ export class AddContactService {
     userId: string;
     contactId: string;
   }): Promise<ServiceResult<{ addedUser: ContactDTO; room: RoomDTO }>> {
-    const contacts = await this.contactsRepo.getContactsAggregate(userId);
+    try {
+      const contacts = await this.contactsRepo.getContactsAggregate(userId);
 
-    if (contacts.hasBlocked(contactId)) {
+      if (contacts.hasBlocked(contactId)) {
+        return {
+          success: false,
+          message: "Contact already blocked",
+          data: null,
+        };
+      }
+
+      if (contacts.hasContact(contactId)) {
+        return {
+          success: false,
+          message: "Contact already added",
+          data: null,
+        };
+      }
+
+      const response = await this.contactsApi.add({ contactId });
+
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          message: response.message,
+          data: null,
+        };
+      }
+
+      await this.contactsRepo.add(response.data.addedUser);
+      await this.roomsRepo.update(Room.hydrate(response.data.room));
+
+      return {
+        success: true,
+        message: "Contact added successfully",
+        data: response.data,
+      };
+    } catch (error) {
+      if (
+        error instanceof DomainError ||
+        error instanceof RepoError ||
+        error instanceof HttpError
+      ) {
+        return { success: false, message: error.message, data: null };
+      }
+
       return {
         success: false,
-        message: "Contact already blocked",
+        message: "An unexpected error occurred",
         data: null,
       };
     }
-
-    if (contacts.hasContact(contactId)) {
-      return {
-        success: false,
-        message: "Contact already added",
-        data: null,
-      };
-    }
-
-    const response = await this.contactsApi.add({ contactId });
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        message: response.message,
-        data: null,
-      };
-    }
-
-    await this.contactsRepo.add(response.data.addedUser);
-    await this.roomsRepo.update(Room.hydrate(response.data.room));
-
-    return {
-      success: true,
-      message: "Contact added successfully",
-      data: response.data,
-    };
   }
 }

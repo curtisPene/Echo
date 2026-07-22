@@ -8,6 +8,7 @@ import type { DeleteAccountService } from "../services/DeleteAccountService";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
 import type { ServiceResult } from "@/types";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 export type LoginControllerResult =
   { success: true } | { success: false; message: string };
@@ -20,17 +21,20 @@ export class AuthControllers {
   private readonly registrationService: RegistrationService;
   private readonly verificationService: VerificationService;
   private readonly deleteAccountService: DeleteAccountService;
+  private readonly notificationsPort: NotificationsPort;
 
   constructor(
     loginService: LoginService,
     registrationService: RegistrationService,
     verificationService: VerificationService,
     deleteAccountService: DeleteAccountService,
+    notificationsPort: NotificationsPort,
   ) {
     this.loginService = loginService;
     this.registrationService = registrationService;
     this.verificationService = verificationService;
     this.deleteAccountService = deleteAccountService;
+    this.notificationsPort = notificationsPort;
   }
 
   login = async ({
@@ -40,6 +44,7 @@ export class AuthControllers {
     const result = await this.loginService.execute({ email, password });
 
     if (!result.success || !result.data) {
+      this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
     }
 
@@ -69,6 +74,7 @@ export class AuthControllers {
     });
 
     if (!result.success) {
+      this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
     }
 
@@ -97,6 +103,8 @@ export class AuthControllers {
     if (result.success) {
       useAuth.getState().setAuth({ authStatus: "unauthenticated", user: null });
       useAppStatus.getState().setAppStatus("idle");
+    } else {
+      this.notificationsPort.notify(result.message, "error");
     }
 
     return result;

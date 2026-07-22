@@ -6,6 +6,9 @@ import type { ContactsRepository } from "@/domains/authAndAccess/ports/ContactsR
 import type { MessagesRepository } from "@/domains/messaging/ports/MessagesRepository";
 import type { Auth } from "@/stores/useAuth";
 import type { ServiceResult } from "@/types";
+import { DomainError } from "@/errors/DomainError";
+import { RepoError } from "@/errors/RepoError";
+import { HttpError } from "@/errors/HttpError";
 
 export class SyncService {
   private readonly syncApi: SyncApi;
@@ -33,42 +36,58 @@ export class SyncService {
   }: {
     auth: Extract<Auth, { authStatus: "authenticated" }>;
   }): Promise<ServiceResult<null>> {
-    let context = await this.syncRepo.getSyncContext();
+    try {
+      let context = await this.syncRepo.getSyncContext();
 
-    if (!context || context.userId !== auth.user.id) {
-      if (context) await this.syncRepo.dropDatabase();
-      context = SyncContext.hydrate({
-        userId: auth.user.id,
-        lastSyncedAt: null,
+      if (!context || context.userId !== auth.user.id) {
+        if (context) await this.syncRepo.dropDatabase();
+        context = SyncContext.hydrate({
+          userId: auth.user.id,
+          lastSyncedAt: null,
+        });
+      }
+
+      const syncResponse = await this.syncApi.fetchSyncData({
+        since: context.lastSyncedAt ?? undefined,
       });
-    }
 
-    const syncResponse = await this.syncApi.fetchSyncData({
-      since: context.lastSyncedAt ?? undefined,
-    });
+      if (!syncResponse.success) {
+        return {
+          success: false,
+          message: "Sync failed",
+          data: null,
+        };
+      }
 
-    if (!syncResponse.success) {
+      await this.roomsRepo.sync({ rooms: syncResponse.data.rooms });
+      await this.contactsRepo.sync(syncResponse.data.contacts);
+      await this.messagesRepo.sync(syncResponse.data.messages);
+      await this.syncRepo.saveSyncContext(
+        SyncContext.hydrate({
+          userId: auth.user.id,
+          lastSyncedAt: syncResponse.data.lastSync,
+        }),
+      );
+
+      return {
+        success: true,
+        message: "Sync successful",
+        data: null,
+      };
+    } catch (error) {
+      if (
+        error instanceof DomainError ||
+        error instanceof RepoError ||
+        error instanceof HttpError
+      ) {
+        return { success: false, message: error.message, data: null };
+      }
+
       return {
         success: false,
-        message: "Sync failed",
+        message: "An unexpected error occurred",
         data: null,
       };
     }
-
-    await this.roomsRepo.sync({ rooms: syncResponse.data.rooms });
-    await this.contactsRepo.sync(syncResponse.data.contacts);
-    await this.messagesRepo.sync(syncResponse.data.messages);
-    await this.syncRepo.saveSyncContext(
-      SyncContext.hydrate({
-        userId: auth.user.id,
-        lastSyncedAt: syncResponse.data.lastSync,
-      }),
-    );
-
-    return {
-      success: true,
-      message: "Sync successful",
-      data: null,
-    };
   }
 }

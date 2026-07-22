@@ -2,6 +2,7 @@ import type { AddContactService } from "../services/AddContactService";
 import { useAuth } from "@/stores/useAuth";
 import type { ContactDTO } from "../entities/contacts";
 import type { RoomDTO } from "@/domains/conversations/entities/room";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 export type AddContactControllerResult =
   | { success: true; contact: ContactDTO; room: RoomDTO }
@@ -9,9 +10,14 @@ export type AddContactControllerResult =
 
 export class ContactsControllers {
   private readonly addContactService: AddContactService;
+  private readonly notificationsPort: NotificationsPort;
 
-  constructor(addContactService: AddContactService) {
+  constructor(
+    addContactService: AddContactService,
+    notificationsPort: NotificationsPort,
+  ) {
     this.addContactService = addContactService;
+    this.notificationsPort = notificationsPort;
   }
 
   addContact = async ({
@@ -22,6 +28,7 @@ export class ContactsControllers {
     const auth = useAuth.getState();
 
     if (auth.authStatus !== "authenticated") {
+      this.notificationsPort.notify("Not authenticated", "error");
       return { success: false, message: "Not authenticated" };
     }
 
@@ -31,6 +38,7 @@ export class ContactsControllers {
     });
 
     if (!result.success || !result.data) {
+      this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
     }
 

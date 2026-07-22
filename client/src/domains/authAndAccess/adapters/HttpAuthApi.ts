@@ -1,6 +1,6 @@
-import { ZodError } from "zod";
 import { httpClient } from "@/lib/httpClient";
-import { parseOrReportError } from "@/lib/parseOrReportError";
+import { parseOrThrow } from "@/lib/parseOrThrow";
+import { HttpError } from "@/errors/HttpError";
 import {
   loginResponseSchema,
   registrationResponseSchema,
@@ -18,7 +18,7 @@ export type LoginAPIResult = ServiceResult<{
 }>;
 
 function toLoginResult(data: unknown): LoginAPIResult {
-  const parsed = parseOrReportError(loginResponseSchema, data);
+  const parsed = parseOrThrow(loginResponseSchema, data);
 
   if (!parsed.success || !parsed.data) {
     return { success: false, message: parsed.message, data: null };
@@ -45,10 +45,7 @@ export class HttpAuthApi implements AuthApi {
       "/auth/register",
       registrationData,
     );
-    return parseOrReportError(
-      registrationResponseSchema,
-      registrationResponse.data,
-    );
+    return parseOrThrow(registrationResponseSchema, registrationResponse.data);
   }
 
   async verifyRefreshToken(): Promise<LoginAPIResult> {
@@ -57,15 +54,14 @@ export class HttpAuthApi implements AuthApi {
       return toLoginResult(tokenVerificationResponse.data);
     } catch (error) {
       // A 401 here never throws - httpClient resolves it as a normal response
-      // (well-formed body) and parseOrReportError parses it successfully. This
+      // (well-formed body) and parseOrThrow parses it successfully. This
       // catch only exists for a genuine transport-level failure (network down,
       // unparseable/non-JSON body), which axios throws as a raw AxiosError -
-      // that gets treated as "logged out" too rather than crashing. A ZodError
-      // means the server sent a shape we don't recognize at all;
-      // parseOrReportError already reported it to the global error store, so
-      // let it propagate there instead of masking it as a normal logged-out
-      // state.
-      if (error instanceof ZodError) throw error;
+      // that gets treated as "logged out" too rather than crashing. An
+      // HttpError means the server sent a shape we don't recognize at all;
+      // let it propagate to the caller's service instead of masking it as a
+      // normal logged-out state.
+      if (error instanceof HttpError) throw error;
 
       console.error(error);
       return {
@@ -78,6 +74,6 @@ export class HttpAuthApi implements AuthApi {
 
   async deleteAccount(): Promise<ServiceResult<null>> {
     const response = await httpClient.post("/auth/delete-account");
-    return parseOrReportError(deleteAccountResponseSchema, response.data);
+    return parseOrThrow(deleteAccountResponseSchema, response.data);
   }
 }

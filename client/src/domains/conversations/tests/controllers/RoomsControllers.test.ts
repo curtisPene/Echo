@@ -9,6 +9,11 @@ import { User } from "@/domains/authAndAccess/entities/user";
 import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import type { RoomsApi } from "../../ports/RoomsApi";
 import type { RoomDTO } from "../../entities/room";
+import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
+
+function createFakeNotificationsPort(): NotificationsPort {
+  return { notify: () => {} };
+}
 
 const CURRENT_USER = User.hydrate({
   id: "user-1",
@@ -85,6 +90,7 @@ function createRoomsControllers(roomsApi: RoomsApi) {
   return new RoomsControllers(
     new AcceptRequestService(roomsApi, roomsRepo),
     new CreateNewRoomService(roomsApi, roomsRepo),
+    createFakeNotificationsPort(),
   );
 }
 

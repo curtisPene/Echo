@@ -29,6 +29,7 @@ import { ContactsControllers } from "./domains/authAndAccess/controllers/Contact
 import { RoomsControllers } from "./domains/conversations/controllers/RoomsControllers";
 import { MessagingControllers } from "./domains/messaging/controllers/MessagingControllers";
 import { SyncControllers } from "./domains/sync/controllers/SyncControllers";
+import { ShadSonnerAdapter } from "./infrastructure/notifications/ShadSonnerAdapter";
 
 // 1. Adapters - the leaves, no dependencies on any service.
 const authApi = new HttpAuthApi();
@@ -40,6 +41,7 @@ export const messagesRepo = new DexieMessagesRepo();
 export const messagingSocketApi = new SocketIOMessagingSocketApi();
 export const syncApi = new HttpSyncApi();
 export const syncRepo = new DexieSyncRepo();
+export const notifications = new ShadSonnerAdapter();
 
 // 2. Services - built with exactly the adapters/services each one needs.
 export const loginService = new LoginService(authApi);
@@ -61,8 +63,9 @@ export const createNewRoomService = new CreateNewRoomService(
   roomsRepo,
 );
 export const getRoomsService = new GetRoomsService(roomsRepo);
-export const getConversationDetailsService =
-  new GetConversationDetailsService(roomsRepo);
+export const getConversationDetailsService = new GetConversationDetailsService(
+  roomsRepo,
+);
 export const getMessagesService = new GetMessagesService(messagesRepo);
 export const getRoomMessagesService = new GetRoomMessagesService(messagesRepo);
 export const messageReceiveService = new MessageReceiveService(messagesRepo);
@@ -84,14 +87,20 @@ export const authControllers = new AuthControllers(
   registrationService,
   verificationService,
   deleteAccountService,
+  notifications,
 );
-export const contactsControllers = new ContactsControllers(addContactService);
+export const contactsControllers = new ContactsControllers(
+  addContactService,
+  notifications,
+);
 export const roomsControllers = new RoomsControllers(
   acceptRequestService,
   createNewRoomService,
+  notifications,
 );
 export const messagingControllers = new MessagingControllers(
   sendMessageService,
   messageReceiveService,
+  notifications,
 );
 export const syncControllers = new SyncControllers(syncService);
