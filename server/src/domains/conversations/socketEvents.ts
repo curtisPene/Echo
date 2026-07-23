@@ -1,4 +1,4 @@
-import type { RoomDTO } from "./domainModels/room";
+import type { RoomDTO } from "./entities/room";
 
 export const RoomEvents = {
   UPDATED: "room:updated",

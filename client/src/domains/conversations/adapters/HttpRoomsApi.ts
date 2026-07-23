@@ -11,7 +11,7 @@ export class HttpRoomsApi implements RoomsApi {
     participants,
     name,
   }: {
-    participants: { user: string }[];
+    participants: { id: string }[];
     name: string;
   }) {
     const response = await httpClient.post("/rooms/", { participants, name });

@@ -1,7 +1,7 @@
 import { ServiceResult } from "../../../types";
 import { RepoError } from "../../../errors/RepoError";
 import { DomainError } from "../../../errors/DomainError";
-import { RoomDTO } from "../domainModels/room";
+import { RoomDTO } from "../entities/room";
 import { RoomRepository } from "../ports/RoomRepository";
 
 export class RemoveParticipantFromRoomService {
@@ -24,7 +24,11 @@ export class RemoveParticipantFromRoomService {
       const updated = room.removeParticipant(userId);
       const saved = await this.roomRepo.update(updated);
 
-      return { success: true, message: "Participant removed successfully", data: saved.toDTO() };
+      return {
+        success: true,
+        message: "Participant removed successfully",
+        data: saved.toDTO(),
+      };
     } catch (error) {
       if (error instanceof DomainError) {
         return { success: false, message: error.message, data: null };

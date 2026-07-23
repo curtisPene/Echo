@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { ServiceResult } from "../../../types";
-import { MessageDTO, NewMessage, SenderEntity } from "../domainModels/message";
+import { MessageDTO, NewMessage, SenderEntity } from "../entities/message";
 import { MessageRepo } from "../repo/mongooseMessageRepo";
 import { MessagingSocket } from "../ports/MessagingSocket";
 

@@ -1,5 +1,5 @@
 import z from "zod";
-import type { NewMessage } from "../domainModels/message";
+import type { NewMessage } from "../entities/message";
 
 export const onMessageSendPayloadSchema = z.object({
   roomId: z.string(),

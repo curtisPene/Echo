@@ -1,5 +1,5 @@
 import type { OnMessageSendPayload } from "./types";
-import type { MessageDTO } from "./domainModels/message";
+import type { MessageDTO } from "./entities/message";
 import type { ServiceResult } from "../../types";
 
 export const MessageEvents = {

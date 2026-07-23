@@ -1,6 +1,6 @@
 import { Room as RoomDoc, RoomParticipant } from "../models/roomModel";
 import { RepoError } from "../../../errors/RepoError";
-import { Room, NewRoom } from "../domainModels/room";
+import { Room, NewRoom } from "../entities/room";
 import { RoomRepository } from "../ports/RoomRepository";
 import { FindUserIdentitiesService } from "../../authAndAccess/services/FindUserIdentitiesService";
 
@@ -14,14 +14,18 @@ function toPersistedParticipants(
 }
 
 export class RoomRepo implements RoomRepository {
-  constructor(private readonly findUserIdentitiesService: FindUserIdentitiesService) {}
+  constructor(
+    private readonly findUserIdentitiesService: FindUserIdentitiesService,
+  ) {}
 
   private async toRoomParams(doc: {
     _id: { toString(): string };
     name: string;
     participants: RoomParticipant[];
   }) {
-    const userIds = doc.participants.map((participant) => participant.user.toString());
+    const userIds = doc.participants.map((participant) =>
+      participant.user.toString(),
+    );
     const entities = await this.findUserIdentitiesService.execute({ userIds });
     const entitiesById = new Map(entities.map((entity) => [entity.id, entity]));
 
@@ -60,14 +64,19 @@ export class RoomRepo implements RoomRepository {
       ...(since ? { updatedAt: { $gt: since } } : {}),
     });
 
-    return Promise.all(docs.map(async (doc) => Room.hydrate(await this.toRoomParams(doc))));
+    return Promise.all(
+      docs.map(async (doc) => Room.hydrate(await this.toRoomParams(doc))),
+    );
   }
 
   async create(room: NewRoom): Promise<Room> {
     const doc = await RoomDoc.create({
       name: room.name,
       participants: toPersistedParticipants(
-        room.participants.map((p) => ({ userId: p.entity.id, status: p.status })),
+        room.participants.map((p) => ({
+          userId: p.entity.id,
+          status: p.status,
+        })),
       ),
     });
 

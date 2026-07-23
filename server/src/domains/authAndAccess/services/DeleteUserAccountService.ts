@@ -4,7 +4,7 @@ import { ContactsRepository } from "../ports/ContactsRepository";
 import { UserRepository } from "../ports/UserRepository";
 import type { AuthAndAccessSocket } from "../ports/AuthAndAccessSocket";
 import { IdentityDTO } from "../domainModels/identity";
-import { RoomDTO } from "../../conversations/domainModels/room";
+import { RoomDTO } from "../../conversations/entities/room";
 import { FindRoomsForUserService } from "../../conversations/services/FindRoomsForUserService";
 import { RemoveParticipantFromRoomService } from "../../conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../conversations/services/DeleteRoomService";
@@ -12,8 +12,7 @@ import { DeleteRoomMessagesService } from "../../messaging/services/DeleteRoomMe
 import { RedactUserMessagesInRoomService } from "../../messaging/services/RedactUserMessagesInRoomService";
 
 export type DeletedRoomResult =
-  | { roomId: string }
-  | { roomId: string; room: RoomDTO };
+  { roomId: string } | { roomId: string; room: RoomDTO };
 
 export class DeleteUserAccountService {
   constructor(
@@ -61,18 +60,25 @@ export class DeleteUserAccountService {
             return { deletedRoom, remainingParticipantIds: [] };
           }
 
-          const removeResult = await this.removeParticipantFromRoomService.execute({
-            roomId,
+          const removeResult =
+            await this.removeParticipantFromRoomService.execute({
+              roomId,
+              userId,
+            });
+          await this.redactUserMessagesInRoomService.execute({
             userId,
+            roomId,
           });
-          await this.redactUserMessagesInRoomService.execute({ userId, roomId });
 
           if (!removeResult.success || !removeResult.data) {
             const deletedRoom: DeletedRoomResult = { roomId };
             return { deletedRoom, remainingParticipantIds: [] };
           }
 
-          const deletedRoom: DeletedRoomResult = { roomId, room: removeResult.data };
+          const deletedRoom: DeletedRoomResult = {
+            roomId,
+            room: removeResult.data,
+          };
 
           return {
             deletedRoom,

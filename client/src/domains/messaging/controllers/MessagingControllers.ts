@@ -3,6 +3,8 @@ import { MessageReceiveService } from "../services/messageReceiveService";
 import { onMessageReceivePayloadSchema } from "../types";
 import { parseOrThrow } from "@/lib/parseOrThrow";
 import { HttpError } from "@/errors/HttpError";
+import { useAuth } from "@/stores/useAuth";
+import { useSocketState } from "@/stores/useSocket";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 export type SendMessageResult =
@@ -31,6 +33,15 @@ export class MessagingControllers {
     text: string;
     roomId: string;
   }): Promise<SendMessageResult> => {
+    if (
+      useAuth.getState().authStatus !== "authenticated" ||
+      useSocketState.getState().onlineStatus !== "online"
+    ) {
+      const message = "Unable to send message right now";
+      this.notificationsPort.notify(message, "error");
+      return { success: false, message };
+    }
+
     const result = await this.sendMessageService.execute({ text, roomId });
 
     if (!result.success) {

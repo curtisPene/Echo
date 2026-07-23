@@ -82,12 +82,27 @@ export class Room {
    * Constructs a brand-new Room. The creator is auto-accepted; every other
    * participant starts pending until they accept. The caller must resolve
    * every participant's entity first.
+   *
+   * Self-chat (params.participants is just [creator] again, by id) is its
+   * own single-participant shape rather than creator+participants - a real
+   * chat-with-yourself room, not the creator appearing twice.
    */
   static create(params: {
     name: string;
     creator: ParticipantEntity;
     participants: ParticipantEntity[];
   }): NewRoom {
+    const isSelfChat =
+      params.participants.length === 1 &&
+      params.participants[0].id === params.creator.id;
+
+    if (isSelfChat) {
+      return {
+        name: params.name,
+        participants: [{ entity: params.creator, status: "accepted" }],
+      };
+    }
+
     return {
       name: params.name,
       participants: [
@@ -98,6 +113,10 @@ export class Room {
         })),
       ],
     };
+  }
+
+  isSelfChat(): boolean {
+    return this.participants.length === 1;
   }
 
   /**

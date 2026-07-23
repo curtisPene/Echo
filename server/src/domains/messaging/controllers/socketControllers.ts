@@ -1,7 +1,7 @@
 import { onMessageSendPayloadSchema } from "../types";
 import type { AuthSocket } from "../../../socket";
 import { CreateMessageService } from "../services/createMessageService";
-import { MessageDTO, SenderEntity } from "../domainModels/message";
+import { MessageDTO, SenderEntity } from "../entities/message";
 import { ServiceResult } from "../../../types";
 
 export class MessagingControllers {

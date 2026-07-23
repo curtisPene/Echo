@@ -20,9 +20,7 @@ export class ContactsControllers {
     res: Response,
     next: NextFunction,
   ) => {
-    const { email } = req.body;
-
-    if (!email || !req.user) {
+    if (!req.user) {
       return res.status(400).json({
         success: false,
         message: "Invalid input",

@@ -68,6 +68,134 @@ describe("CreateNewRoomService", () => {
     await cleanupUser(participant);
   });
 
+  it("reuses an existing 1:1 room instead of creating a duplicate when the same creator calls again", async () => {
+    const creator = await registerAndLogin("Creator");
+    const participant = await registerAndLogin("Participant");
+
+    const firstResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: participant.id }],
+      name: "Creator, Participant",
+    });
+    expect(firstResult.success).toBe(true);
+    if (!firstResult.success || !firstResult.data) throw new Error("unreachable");
+
+    const secondResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: participant.id }],
+      name: "Creator, Participant",
+    });
+    expect(secondResult.success).toBe(true);
+    if (!secondResult.success || !secondResult.data) throw new Error("unreachable");
+
+    expect(secondResult.data.id).toBe(firstResult.data.id);
+    expect(secondResult.message).toBe("Room already exists");
+
+    await cleanupUser(creator);
+    await cleanupUser(participant);
+  });
+
+  it("reuses the existing 1:1 room when the OTHER participant is the one calling create", async () => {
+    const creator = await registerAndLogin("Creator");
+    const participant = await registerAndLogin("Participant");
+
+    const firstResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: participant.id }],
+      name: "Creator, Participant",
+    });
+    expect(firstResult.success).toBe(true);
+    if (!firstResult.success || !firstResult.data) throw new Error("unreachable");
+
+    const secondResult = await createNewRoomService.execute({
+      user: participant,
+      participants: [{ id: creator.id }],
+      name: "Participant, Creator",
+    });
+    expect(secondResult.success).toBe(true);
+    if (!secondResult.success || !secondResult.data) throw new Error("unreachable");
+
+    expect(secondResult.data.id).toBe(firstResult.data.id);
+    expect(secondResult.message).toBe("Room already exists");
+
+    await cleanupUser(creator);
+    await cleanupUser(participant);
+  });
+
+  it("does NOT dedupe group rooms - creating a second identical-participant group room makes a new one", async () => {
+    const creator = await registerAndLogin("Creator");
+    const b = await registerAndLogin("B");
+    const c = await registerAndLogin("C");
+
+    const firstResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: b.id }, { id: c.id }],
+      name: "Group chat",
+    });
+    expect(firstResult.success).toBe(true);
+    if (!firstResult.success || !firstResult.data) throw new Error("unreachable");
+
+    const secondResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: b.id }, { id: c.id }],
+      name: "Group chat",
+    });
+    expect(secondResult.success).toBe(true);
+    if (!secondResult.success || !secondResult.data) throw new Error("unreachable");
+
+    expect(secondResult.data.id).not.toBe(firstResult.data.id);
+
+    await cleanupUser(creator);
+    await cleanupUser(b);
+    await cleanupUser(c);
+  });
+
+  it("creates a real self-chat room (single participant, auto-accepted, no duplicate entry) when the creator names themself", async () => {
+    const creator = await registerAndLogin("Creator");
+
+    const result = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: creator.id }],
+      name: "Just Me",
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success || !result.data) throw new Error("unreachable");
+
+    expect(result.data.participants).toHaveLength(1);
+    expect(result.data.participants[0]).toMatchObject({
+      userId: creator.id,
+      status: "accepted",
+    });
+
+    await cleanupUser(creator);
+  });
+
+  it("reuses the existing self-chat room instead of creating a duplicate", async () => {
+    const creator = await registerAndLogin("Creator");
+
+    const firstResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: creator.id }],
+      name: "Just Me",
+    });
+    expect(firstResult.success).toBe(true);
+    if (!firstResult.success || !firstResult.data) throw new Error("unreachable");
+
+    const secondResult = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: creator.id }],
+      name: "Just Me",
+    });
+    expect(secondResult.success).toBe(true);
+    if (!secondResult.success || !secondResult.data) throw new Error("unreachable");
+
+    expect(secondResult.data.id).toBe(firstResult.data.id);
+    expect(secondResult.message).toBe("Room already exists");
+
+    await cleanupUser(creator);
+  });
+
   it("creates a group room with every non-creator participant pending", async () => {
     const creator = await registerAndLogin("Creator");
     const b = await registerAndLogin("B");

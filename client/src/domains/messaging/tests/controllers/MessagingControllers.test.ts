@@ -4,6 +4,9 @@ import { SendMessageService } from "../../services/sendMessageService";
 import { MessageReceiveService } from "../../services/messageReceiveService";
 import { DexieMessagesRepo } from "../../adapters/DexieMessagesRepo";
 import { db } from "@/infrastructure/sync/db";
+import { useAuth } from "@/stores/useAuth";
+import { useSocketState } from "@/stores/useSocket";
+import { User } from "@/domains/authAndAccess/entities/user";
 import type { MessagingSocketApi } from "../../ports/MessagingSocketApi";
 import type { MessageDTO } from "../../entities/message";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
@@ -47,15 +50,70 @@ function createMessagingControllers(messagingSocketApi: MessagingSocketApi) {
   );
 }
 
+const AUTHENTICATED_USER = User.hydrate({
+  id: "user-1",
+  firstName: "Ada",
+  lastName: "Lovelace",
+  email: "ada@example.com",
+});
+
 beforeEach(async () => {
   await db.messages.clear();
 });
 
 describe("MessagingControllers.sendMessage", () => {
-  it("returns success when the message sends", async () => {
-    const controllers = createMessagingControllers(createFakeMessagingSocketApi());
+  beforeEach(() => {
+    useAuth.setState({
+      authStatus: "authenticated",
+      user: AUTHENTICATED_USER,
+      accessToken: "fake-access-token",
+    });
+    useSocketState.setState({ onlineStatus: "online" });
+  });
 
-    const result = await controllers.sendMessage({ text: "hello", roomId: "room-1" });
+  it("rejects sending when not authenticated", async () => {
+    useAuth.setState({ authStatus: "unauthenticated", user: null });
+    const controllers = createMessagingControllers(
+      createFakeMessagingSocketApi(),
+    );
+
+    const result = await controllers.sendMessage({
+      text: "hello",
+      roomId: "room-1",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      message: "Unable to send message right now",
+    });
+  });
+
+  it("rejects sending when not online", async () => {
+    useSocketState.setState({ onlineStatus: "offline" });
+    const controllers = createMessagingControllers(
+      createFakeMessagingSocketApi(),
+    );
+
+    const result = await controllers.sendMessage({
+      text: "hello",
+      roomId: "room-1",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      message: "Unable to send message right now",
+    });
+  });
+
+  it("returns success when the message sends", async () => {
+    const controllers = createMessagingControllers(
+      createFakeMessagingSocketApi(),
+    );
+
+    const result = await controllers.sendMessage({
+      text: "hello",
+      roomId: "room-1",
+    });
 
     expect(result).toEqual({ success: true });
     expect(await db.messages.get(SENT_MESSAGE.id)).toEqual(SENT_MESSAGE);
@@ -64,20 +122,32 @@ describe("MessagingControllers.sendMessage", () => {
   it("surfaces the api's failure message", async () => {
     const messagingSocketApi = createFakeMessagingSocketApi({
       async sendMessage() {
-        return { success: false, message: "Unauthorized room access", data: null };
+        return {
+          success: false,
+          message: "Unauthorized room access",
+          data: null,
+        };
       },
     });
     const controllers = createMessagingControllers(messagingSocketApi);
 
-    const result = await controllers.sendMessage({ text: "hello", roomId: "room-1" });
+    const result = await controllers.sendMessage({
+      text: "hello",
+      roomId: "room-1",
+    });
 
-    expect(result).toEqual({ success: false, message: "Unauthorized room access" });
+    expect(result).toEqual({
+      success: false,
+      message: "Unauthorized room access",
+    });
   });
 });
 
 describe("MessagingControllers.onMessageReceive", () => {
   it("persists the received message to Dexie", async () => {
-    const controllers = createMessagingControllers(createFakeMessagingSocketApi());
+    const controllers = createMessagingControllers(
+      createFakeMessagingSocketApi(),
+    );
 
     await controllers.onMessageReceive({
       success: true,
@@ -89,7 +159,9 @@ describe("MessagingControllers.onMessageReceive", () => {
   });
 
   it("does nothing when the server reports failure", async () => {
-    const controllers = createMessagingControllers(createFakeMessagingSocketApi());
+    const controllers = createMessagingControllers(
+      createFakeMessagingSocketApi(),
+    );
 
     await controllers.onMessageReceive({
       success: false,

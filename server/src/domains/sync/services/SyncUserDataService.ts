@@ -1,8 +1,8 @@
 import { ContactsRepository } from "../../authAndAccess/ports/ContactsRepository";
 import { FindRoomsForUserService } from "../../conversations/services/FindRoomsForUserService";
 import { FindRoomMessagesService } from "../../messaging/services/FindRoomMessagesService";
-import { RoomDTO } from "../../conversations/domainModels/room";
-import { MessageDTO } from "../../messaging/domainModels/message";
+import { RoomDTO } from "../../conversations/entities/room";
+import { MessageDTO } from "../../messaging/entities/message";
 import { ContactsDTO } from "../../authAndAccess/domainModels/contacts";
 import { RepoError } from "../../../errors/RepoError";
 import { ServiceResult } from "../../../types";

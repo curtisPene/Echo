@@ -4,7 +4,7 @@ import type { ContactsRepository } from "../ports/ContactsRepository";
 import type { UserRepository } from "../ports/UserRepository";
 import type { AuthAndAccessSocket } from "../ports/AuthAndAccessSocket";
 import { CreateNewRoomService } from "../../conversations/services/createNewRoomService";
-import { RoomDTO } from "../../conversations/domainModels/room";
+import { RoomDTO } from "../../conversations/entities/room";
 import { Identity } from "../domainModels/identity";
 
 export class AddContactService {
@@ -23,7 +23,12 @@ export class AddContactService {
     contactId: string;
   }): Promise<
     ServiceResult<{
-      addedUser: { userId: string; firstName: string; lastName: string; email: string };
+      addedUser: {
+        userId: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+      };
       room: RoomDTO;
     }>
   > {
@@ -32,7 +37,11 @@ export class AddContactService {
 
       // If the user has already blocked this contact return success false
       if (userContacts.hasBlocked(contactId))
-        return { success: false, message: "Contact already blocked", data: null };
+        return {
+          success: false,
+          message: "Contact already blocked",
+          data: null,
+        };
 
       // If the user has already added this contact return success false
       if (userContacts.hasContact(contactId))
@@ -94,7 +103,10 @@ export class AddContactService {
       // If the added contact is currently online, push the new pending
       // room to their client live too, and join their sockets so they can
       // read (though not yet send/accept) without needing to reconnect.
-      await this.socket.joinRoom({ userId: contactId, roomId: roomResult.data.id });
+      await this.socket.joinRoom({
+        userId: contactId,
+        roomId: roomResult.data.id,
+      });
       await this.socket.emitToUser({
         userId: contactId,
         event: "room:updated",

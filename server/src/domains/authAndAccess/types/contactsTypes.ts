@@ -3,7 +3,7 @@ import type { ContactDTO } from "../domainModels/contacts";
 
 export const searchContactsRequestSchema = z.object({
   email: z.string(),
-});
+}) satisfies z.ZodType<Pick<ContactDTO, "email">>;
 
 export type SearchContactsRequest = z.infer<typeof searchContactsRequestSchema>;
 

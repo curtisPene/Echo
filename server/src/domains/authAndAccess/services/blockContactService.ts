@@ -4,7 +4,7 @@ import { ContactsRepository } from "../ports/ContactsRepository";
 import { UserRepository } from "../ports/UserRepository";
 import type { AuthAndAccessSocket } from "../ports/AuthAndAccessSocket";
 import { ContactsDTO } from "../domainModels/contacts";
-import { RoomDTO } from "../../conversations/domainModels/room";
+import { RoomDTO } from "../../conversations/entities/room";
 import { FindRoomsForUserService } from "../../conversations/services/FindRoomsForUserService";
 import { RemoveParticipantFromRoomService } from "../../conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../conversations/services/DeleteRoomService";
@@ -12,8 +12,7 @@ import { DeleteRoomMessagesService } from "../../messaging/services/DeleteRoomMe
 import { RedactUserMessagesInRoomService } from "../../messaging/services/RedactUserMessagesInRoomService";
 
 export type BlockedRoomResult =
-  | { roomId: string }
-  | { roomId: string; room: RoomDTO };
+  { roomId: string } | { roomId: string; room: RoomDTO };
 
 export class BlockContactService {
   constructor(
@@ -42,7 +41,9 @@ export class BlockContactService {
     }>
   > {
     try {
-      const blockedUserEntity = await this.userRepo.findById({ id: blockedUser });
+      const blockedUserEntity = await this.userRepo.findById({
+        id: blockedUser,
+      });
 
       if (!blockedUserEntity)
         return { success: false, message: "User not found", data: null };
@@ -54,8 +55,12 @@ export class BlockContactService {
 
       // Mutually delete the two users from their contacts lists, add the
       // blocked user to the blocker's blocked list
-      const blockerContacts = await this.contactsRepo.findByUserId({ userId: user });
-      const blockedContacts = await this.contactsRepo.findByUserId({ userId: blockedUser });
+      const blockerContacts = await this.contactsRepo.findByUserId({
+        userId: user,
+      });
+      const blockedContacts = await this.contactsRepo.findByUserId({
+        userId: blockedUser,
+      });
 
       const updatedDocs = await this.contactsRepo.saveBlockPair({
         blocker: blockerContacts.block(blockedUserEntity),
@@ -64,7 +69,9 @@ export class BlockContactService {
 
       // Find all the rooms the user shares with the blocked user and remove the
       // user from that room or delete if its a one on one chat
-      const rooms = await this.findRoomsForUserService.execute({ userId: user });
+      const rooms = await this.findRoomsForUserService.execute({
+        userId: user,
+      });
 
       const updatedRoomData = await Promise.all(
         rooms.map(async (room) => {
@@ -87,11 +94,15 @@ export class BlockContactService {
             return { blockedRoom, remainingParticipantIds: null };
           }
 
-          const removeResult = await this.removeParticipantFromRoomService.execute({
-            roomId,
+          const removeResult =
+            await this.removeParticipantFromRoomService.execute({
+              roomId,
+              userId: user,
+            });
+          await this.redactUserMessagesInRoomService.execute({
             userId: user,
+            roomId,
           });
-          await this.redactUserMessagesInRoomService.execute({ userId: user, roomId });
 
           if (!removeResult.success || !removeResult.data) return null;
 
@@ -102,7 +113,9 @@ export class BlockContactService {
 
           return {
             blockedRoom,
-            remainingParticipantIds: removeResult.data.participants.map((p) => p.userId),
+            remainingParticipantIds: removeResult.data.participants.map(
+              (p) => p.userId,
+            ),
           };
         }),
       );
@@ -131,7 +144,10 @@ export class BlockContactService {
           await this.socket.leaveRoom({ userId: user, roomId: room.roomId });
 
           if (!("room" in room)) {
-            await this.socket.leaveRoom({ userId: blockedUser, roomId: room.roomId });
+            await this.socket.leaveRoom({
+              userId: blockedUser,
+              roomId: room.roomId,
+            });
           }
         }),
       );

@@ -6,42 +6,42 @@ import { ContactsRepository } from "../ports/ContactsRepository";
 import { userRepo } from "./UserRepo";
 import { AuthUser } from "../domainModels/authUser";
 
-async function hydrateContacts(doc: {
-  id: string;
-  user: mongoose.Types.ObjectId;
-  contacts: mongoose.Types.ObjectId[];
-  blocked: mongoose.Types.ObjectId[];
-}): Promise<Contacts> {
-  const contactIds = doc.contacts.map((id) => id.toString());
-  const blockedIds = doc.blocked.map((id) => id.toString());
-
-  const users = await userRepo.findByIds([...contactIds, ...blockedIds]);
-  const usersById = new Map(users.map((user) => [user.id, user]));
-
-  const resolve = (ids: string[]): AuthUser[] =>
-    ids.map((id) => usersById.get(id)).filter((user): user is AuthUser => user !== undefined);
-
-  return Contacts.hydrate({
-    id: doc.id,
-    userId: doc.user.toString(),
-    contacts: resolve(contactIds),
-    blocked: resolve(blockedIds),
-  });
-}
-
 export class ContactsRepo implements ContactsRepository {
+  private async hydrateContacts(doc: {
+    id: string;
+    user: mongoose.Types.ObjectId;
+    contacts: mongoose.Types.ObjectId[];
+    blocked: mongoose.Types.ObjectId[];
+  }): Promise<Contacts> {
+    const contactIds = doc.contacts.map((id) => id.toString());
+    const blockedIds = doc.blocked.map((id) => id.toString());
+
+    const users = await userRepo.findByIds([...contactIds, ...blockedIds]);
+    const usersById = new Map(users.map((user) => [user.id, user]));
+
+    const resolve = (ids: string[]): AuthUser[] =>
+      ids.map((id) => usersById.get(id)).filter((user): user is AuthUser => user !== undefined);
+
+    return Contacts.hydrate({
+      id: doc.id,
+      userId: doc.user.toString(),
+      contacts: resolve(contactIds),
+      blocked: resolve(blockedIds),
+    });
+  }
+
   async findByUserId({ userId }: { userId: string }): Promise<Contacts> {
     const doc = await ContactsDoc.findOne({ user: userId });
 
     if (!doc) throw new RepoError("Contacts list for user not found");
 
-    return hydrateContacts(doc.toJSON());
+    return this.hydrateContacts(doc.toJSON());
   }
 
   async create(newContacts: NewContacts): Promise<Contacts> {
     const doc = await ContactsDoc.create({ user: newContacts.userId });
 
-    return hydrateContacts(doc.toJSON());
+    return this.hydrateContacts(doc.toJSON());
   }
 
   /**
@@ -64,7 +64,7 @@ export class ContactsRepo implements ContactsRepository {
 
     if (!doc) throw new RepoError("Contacts list for user not found");
 
-    return hydrateContacts(doc.toJSON());
+    return this.hydrateContacts(doc.toJSON());
   }
 
   /**
@@ -109,8 +109,8 @@ export class ContactsRepo implements ContactsRepository {
           throw new RepoError("Contacts list for user not found");
 
         return {
-          blocker: await hydrateContacts(blockerDoc.toJSON()),
-          blocked: await hydrateContacts(blockedDoc.toJSON()),
+          blocker: await this.hydrateContacts(blockerDoc.toJSON()),
+          blocked: await this.hydrateContacts(blockedDoc.toJSON()),
         };
       });
     } finally {

@@ -48,7 +48,7 @@ export class CreateNewRoomService {
           : [user.firstName, ...contacts.map((c) => c.firstName)].join(", ");
 
       const result = await this.roomsApi.create({
-        participants: contacts.map((contact) => ({ user: contact.userId })),
+        participants: contacts.map((contact) => ({ id: contact.userId })),
         name,
       });
 

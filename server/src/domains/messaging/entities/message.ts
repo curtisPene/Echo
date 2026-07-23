@@ -1,3 +1,5 @@
+export type DeliveryStatus = "sending" | "sent" | "delivered" | "failed";
+
 export interface SenderEntity {
   id: string;
   firstName: string;
@@ -67,6 +69,7 @@ export interface MessageDTO {
   createdAt: Date;
   reactions: ReactionDTO[];
   readBy: ReadDTO[];
+  deliveryStatus: DeliveryStatus;
 }
 
 export interface NewMessage {
@@ -85,6 +88,7 @@ export class Message {
     readonly createdAt: Date,
     private readonly reactions: readonly Reaction[],
     private readonly readBy: readonly Read[],
+    readonly deliveryStatus: DeliveryStatus,
   ) {}
 
   static hydrate(params: {
@@ -96,6 +100,7 @@ export class Message {
     createdAt: Date;
     reactions: { entity: ReactorEntity; emoji: string }[];
     readBy: { userId: string; readAt: Date }[];
+    deliveryStatus: DeliveryStatus;
   }): Message {
     return new Message(
       params.id,
@@ -106,6 +111,7 @@ export class Message {
       params.createdAt,
       params.reactions.map((r) => Reaction.hydrate(r.entity, r.emoji)),
       params.readBy,
+      params.deliveryStatus,
     );
   }
 
@@ -143,6 +149,7 @@ export class Message {
         emoji: r.emoji,
       })),
       readBy: this.readBy.map((r) => ({ userId: r.userId, readAt: r.readAt })),
+      deliveryStatus: this.deliveryStatus,
     };
   }
 }

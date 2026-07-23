@@ -100,7 +100,7 @@ describe("POST /contacts/add", () => {
 
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
-    expect(response.body.data.userId).toBe(added.id);
+    expect(response.body.data.addedUser.userId).toBe(added.id);
     expect(response.body.data.room).toBeDefined();
     // This is a gap, I need to make zod schemas for dtos to use for
     // assetions in testing

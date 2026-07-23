@@ -2,7 +2,7 @@ import type { CreateNewRoomAPIResponse, AcceptRoomInviteResponse } from "../type
 
 export interface RoomsApi {
   create(params: {
-    participants: { user: string }[];
+    participants: { id: string }[];
     name: string;
   }): Promise<CreateNewRoomAPIResponse>;
 

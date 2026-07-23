@@ -1,4 +1,4 @@
-import { MessageDTO } from "../domainModels/message";
+import { MessageDTO } from "../entities/message";
 import { MessageRepo } from "../repo/mongooseMessageRepo";
 
 export class FindRoomMessagesService {

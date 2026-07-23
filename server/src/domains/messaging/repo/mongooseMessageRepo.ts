@@ -1,9 +1,11 @@
 import { Message as MessageDoc } from "../models/messageModel";
-import { Message, NewMessage } from "../domainModels/message";
+import { Message, NewMessage, DeliveryStatus } from "../entities/message";
 import { FindUserIdentitiesService } from "../../authAndAccess/services/FindUserIdentitiesService";
 
 export class MessageRepo {
-  constructor(private readonly findUserIdentitiesService: FindUserIdentitiesService) {}
+  constructor(
+    private readonly findUserIdentitiesService: FindUserIdentitiesService,
+  ) {}
 
   private async toMessageParams(doc: {
     _id: { toString(): string };
@@ -14,6 +16,7 @@ export class MessageRepo {
     createdAt: Date;
     reactions: { user: { toString(): string }; emoji: string }[];
     readBy: { user: { toString(): string }; readAt: Date }[];
+    deliveryStatus: DeliveryStatus;
   }) {
     const userIds = [
       doc.sender.toString(),
@@ -48,6 +51,7 @@ export class MessageRepo {
         userId: read.user.toString(),
         readAt: read.readAt,
       })),
+      deliveryStatus: doc.deliveryStatus,
     };
   }
 
@@ -63,7 +67,9 @@ export class MessageRepo {
       ...(since ? { createdAt: { $gt: since } } : {}),
     }).sort({ createdAt: -1 });
 
-    return Promise.all(docs.map(async (doc) => Message.hydrate(await this.toMessageParams(doc))));
+    return Promise.all(
+      docs.map(async (doc) => Message.hydrate(await this.toMessageParams(doc))),
+    );
   }
 
   async countUnreadMessages({

@@ -1,7 +1,7 @@
 import { ServiceResult } from "../../../types";
 import { RepoError } from "../../../errors/RepoError";
 import { DomainError } from "../../../errors/DomainError";
-import { RoomDTO } from "../domainModels/room";
+import { RoomDTO } from "../entities/room";
 import { RoomRepository } from "../ports/RoomRepository";
 import { AuthAndAccessSocket } from "../../authAndAccess/ports/AuthAndAccessSocket";
 import { IdentityDTO } from "../../authAndAccess/domainModels/identity";

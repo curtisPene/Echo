@@ -5,9 +5,12 @@ import { io as ioClient, type Socket as ClientSocket } from "socket.io-client";
 import { attachSocket } from "../../../../socket";
 import * as composition from "../../../../composition";
 import { mongooseConnect } from "../../../../server";
-import { registerAndLogin, cleanupUser } from "../../../authAndAccess/tests/testHelpers";
+import {
+  registerAndLogin,
+  cleanupUser,
+} from "../../../authAndAccess/tests/testHelpers";
 import { loginService, createNewRoomService } from "../../../../composition";
-import type { MessageDTO } from "../../domainModels/message";
+import type { MessageDTO } from "../../entities/message";
 import type { ServiceResult } from "../../../../types";
 import mongoose from "mongoose";
 
@@ -84,17 +87,21 @@ describe("MessagingControllers (socket entry point)", () => {
     const senderSocket = await connectAuthedSocket(senderEmail);
     const recipientSocket = await connectAuthedSocket(recipientEmail);
 
-    const receivedOnRecipient = new Promise<ServiceResult<{ message: MessageDTO }>>((resolve) => {
+    const receivedOnRecipient = new Promise<
+      ServiceResult<{ message: MessageDTO }>
+    >((resolve) => {
       recipientSocket.on("message:receive", resolve);
     });
 
-    const ack = await new Promise<ServiceResult<{ message: MessageDTO }>>((resolve) => {
-      senderSocket.emit(
-        "message:send",
-        { roomId: room.data!.id, text: "hello from the socket controller" },
-        resolve,
-      );
-    });
+    const ack = await new Promise<ServiceResult<{ message: MessageDTO }>>(
+      (resolve) => {
+        senderSocket.emit(
+          "message:send",
+          { roomId: room.data!.id, text: "hello from the socket controller" },
+          resolve,
+        );
+      },
+    );
 
     expect(ack.success).toBe(true);
     if (!ack.success || !ack.data) throw new Error("unreachable");
@@ -132,8 +139,14 @@ describe("MessagingControllers (socket entry point)", () => {
 
   it("rejects a send into a room the sender hasn't joined", async () => {
     const senderEmail = `outsider-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
-    const a = await registerAndLogin("RoomOwnerA", `owner-a-${Date.now()}@example.com`);
-    const b = await registerAndLogin("RoomOwnerB", `owner-b-${Date.now()}@example.com`);
+    const a = await registerAndLogin(
+      "RoomOwnerA",
+      `owner-a-${Date.now()}@example.com`,
+    );
+    const b = await registerAndLogin(
+      "RoomOwnerB",
+      `owner-b-${Date.now()}@example.com`,
+    );
     const outsider = await registerAndLogin("Outsider", senderEmail);
 
     const room = await createNewRoomService.execute({
@@ -147,7 +160,11 @@ describe("MessagingControllers (socket entry point)", () => {
     const outsiderSocket = await connectAuthedSocket(senderEmail);
 
     const ack = await new Promise<ServiceResult<unknown>>((resolve) => {
-      outsiderSocket.emit("message:send", { roomId: room.data!.id, text: "sneaky" }, resolve);
+      outsiderSocket.emit(
+        "message:send",
+        { roomId: room.data!.id, text: "sneaky" },
+        resolve,
+      );
     });
 
     expect(ack.success).toBe(false);

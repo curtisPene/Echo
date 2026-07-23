@@ -4,7 +4,7 @@ import { RepoError } from "../../../errors/RepoError";
 import { VerifyUserIdService } from "../../authAndAccess/services/VerifyUserIdService";
 import { GetUsersContactsService } from "../../authAndAccess/services/GetUsersContactsService";
 import { FindUserIdentitiesService } from "../../authAndAccess/services/FindUserIdentitiesService";
-import { Room, RoomDTO } from "../domainModels/room";
+import { Room, RoomDTO } from "../entities/room";
 import { RoomRepository } from "../ports/RoomRepository";
 import { IdentityDTO } from "../../authAndAccess/domainModels/identity";
 
@@ -30,7 +30,9 @@ export class CreateNewRoomService {
 
       // Ensure all participants exist, return success false if not
       const existenceChecks = await Promise.all(
-        participantIds.map((id) => this.verifyUserIdService.execute({ userId: id })),
+        participantIds.map((id) =>
+          this.verifyUserIdService.execute({ userId: id }),
+        ),
       );
 
       if (existenceChecks.some((exists) => !exists))
@@ -40,16 +42,47 @@ export class CreateNewRoomService {
           data: null,
         };
 
+      // If this is a one-on-one room (or a self-chat), does it already
+      // exist? We can create multiple group chats with the same
+      // participants but 1:1s/self-chats need to stay unique.
+      if (participants.length === 1) {
+        const [participantId] = participantIds;
+        const isSelfChat = participantId === user.id;
+        const userRooms = await this.roomRepo.findRoomsWithUserId({
+          userId: user.id,
+        });
+        const existingRoom = userRooms.find((room) =>
+          isSelfChat
+            ? room.isSelfChat()
+            : room.isOneOnOne() && room.hasParticipant(participantId),
+        );
+
+        if (existingRoom) {
+          return {
+            success: true,
+            message: "Room already exists",
+            data: existingRoom.toDTO(),
+          };
+        }
+      }
+
       // Fetch each side's blocked-id lists so the domain model can decide
       // whether this room is allowed to be created
-      const creatorContacts = await this.getUsersContactsService.execute({ userId: user.id });
+      const creatorContacts = await this.getUsersContactsService.execute({
+        userId: user.id,
+      });
 
       const participantContactsResults = await Promise.all(
-        participantIds.map((id) => this.getUsersContactsService.execute({ userId: id })),
+        participantIds.map((id) =>
+          this.getUsersContactsService.execute({ userId: id }),
+        ),
       );
 
       const participantBlockedIds = new Map(
-        participantIds.map((id, index) => [id, participantContactsResults[index].blockedIds]),
+        participantIds.map((id, index) => [
+          id,
+          participantContactsResults[index].blockedIds,
+        ]),
       );
 
       const canCreateResult = Room.canCreate({
@@ -75,14 +108,18 @@ export class CreateNewRoomService {
       const identities = await this.findUserIdentitiesService.execute({
         userIds: [user.id, ...participantIds],
       });
-      const identitiesById = new Map(identities.map((identity) => [identity.id, identity]));
+      const identitiesById = new Map(
+        identities.map((identity) => [identity.id, identity]),
+      );
 
       const creatorIdentity = identitiesById.get(user.id);
 
       if (!creatorIdentity)
         return { success: false, message: "Internal server error", data: null };
 
-      const participantIdentities = participantIds.map((id) => identitiesById.get(id));
+      const participantIdentities = participantIds.map((id) =>
+        identitiesById.get(id),
+      );
 
       if (participantIdentities.some((identity) => !identity))
         return { success: false, message: "Internal server error", data: null };
@@ -91,7 +128,9 @@ export class CreateNewRoomService {
       const newRoom = Room.create({
         name,
         creator: creatorIdentity,
-        participants: participantIdentities as NonNullable<(typeof participantIdentities)[number]>[],
+        participants: participantIdentities as NonNullable<
+          (typeof participantIdentities)[number]
+        >[],
       });
 
       const roomDoc = await this.roomRepo.create(newRoom);
