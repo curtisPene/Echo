@@ -1,12 +1,98 @@
 # Echo
 
-> What if the application, not the framework, was the thing you actually designed?
+> What if the application, not the framework, was the thing you actually designed — designed well enough that an AI collaborator could extend it correctly too?
 
-This project is about architecture. I wanted one application core, expressed the same way on the client and the server, decoupled from React and Express to the point that either could be deleted and the core would still work correctly. Chat is what I used to build that around, since it needs two transports at the same time (a message send is a live event, auth and sync are ordinary requests) and enough cross-cutting rules — membership, blocking, offline sync — that the modeling actually gets hard. That's why chat is here. It's not really what the project is about.
+This project is about architecture, not chat. I wanted one application core, expressed the same way on the client and the server, decoupled from React and Express to the point that either could be deleted and the core would still work correctly. Chat is the domain I used to force that: it needs two transports at once (a message send is a live event, auth and sync are ordinary requests) and enough cross-cutting rules — membership, blocking, offline sync — that the modeling actually gets hard.
 
-Domain-Driven Design and Hexagonal Architecture are applied end to end on both sides — MVVM + DDD + Hex on the client, DDD + Hex on the server. React, Express, Socket.IO, MongoDB, and IndexedDB all do real work, but none of them own the application. Each one is an adapter plugged into a core that exists whether or not it's running.
+Domain-Driven Design, Hexagonal Architecture, and (on the client) MVVM are applied end to end on both sides. React, Express, Socket.IO, MongoDB, and IndexedDB all do real work, but none of them own the application — each is an adapter plugged into a core that exists whether or not it's running.
+
+Three things follow directly from that, each elaborated further down for anyone who wants the full argument:
+
+- **The whole application can be built and tested headless.** A `ViewModel` is nothing more than an abstraction over some view — a page, a list item, a badge — so until it's written, there's no UI to build against yet. Every domain here, including `presence`, was designed, built, and fully tested through controllers and services first, with no component ever in the loop, before the view layer existed at all. See [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless).
+- **The same rigor made this a better codebase to collaborate with an AI on.** Enforcing one consistent shape across every domain — same ports, same composition root, same test pattern — means a new domain can be extended correctly by someone with zero memory of any prior design conversation, without re-deriving the architecture's own rules first. Constructor injection specifically means real tests were available immediately, not just code that compiled: a fake dependency could be passed in and asserted against from the first line written. That's a payoff of the engineering discipline, not a substitute for it. See [Why this much architecture for a 5-domain app](#why-this-much-architecture-for-a-5-domain-app).
+- **This README also says where I got it wrong.** The project started under a naive assumption about how simple the domain would stay, needed a real mid-project rebuild once that assumption broke, and still has concrete process/tooling gaps I haven't closed. See [Gaps — what I'd do differently](#gaps--what-id-do-differently) right below.
+
+**One thing worth saying plainly up front: as of 2026-07-24, every domain's application core has been built and fully tested with the View and every ViewModel deliberately left out of the loop** — specifically to prove the architecture holds on its own, not as a shortcut or an unfinished corner of the app. The component layer on top of it is currently stripped markup with nothing bound to it. By the time you're reading this, the deployed app should have a real, functional UI built on top of that already-proven core; see [In progress](#in-progress) for exactly what was left and why it was left for last on purpose.
 
 ---
+
+## Domains
+
+| Domain | Server | Client | Status |
+| --- | --- | --- | --- |
+| `authAndAccess` | ✅ | ✅ | Authentication (`AuthUser`), public identity (`Identity`), and the social/access graph (`Contacts`) — one bounded context, sharing the purpose "who is this person, who can they reach," each concept scoped to exactly the callers that need it. |
+| `conversations` | ✅ | ✅ | `Room` aggregate root; `Participant` is an entity it alone controls. Owns membership, not messages. |
+| `messaging` | ✅ | ✅ | `Message` aggregate root, references `roomId` by id — a separate aggregate from `Room` because no operation on either needs to atomically touch the other. |
+| `sync` | ✅ | ✅ | Owns the cross-domain read-model that composes rooms + messages + contacts into one bootstrap/delta payload, and (client-side) the local `SyncContext` cursor that tracks when the device last synced. |
+| `presence` | ✅ | ✅ | Redis-backed online/offline status, fanning out `user:online`/`user:offline` over the same personal socket rooms every other cross-cutting feature reuses. Typing indicators not yet built. |
+
+## What's built
+
+- **Auth** — registration, login, JWT-based sessions (separate access/refresh secrets).
+- **Account deletion** — removes the user doc, their contacts doc, dissolves/updates shared rooms, redacts their messages, and disconnects their sockets.
+- **Contacts** — search by email, add, block (with mutual removal, shared-room cleanup, and live notification to affected users).
+- **Real-time messaging** — send/receive over Socket.IO, delivered to every device joined to a room, plus delivery/read receipts.
+- **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
+- **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event.
+- **Presence** — Redis-backed online/offline status, live over sockets.
+- **Group chats** — in progress. The domain layer already supports N-participant rooms with no schema or service changes; remaining work is client UI.
+- **Headless end-to-end testing** — a real, self-cleaning suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server, no React involved. See [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless).
+
+## In progress
+
+- **More headless e2e workflows**, following the same pattern as the suites already in place.
+- **Client view layer rebuild** — components are currently stripped down to markup only, with no ViewModel wiring at all. This was done on purpose; every use case is already proven to work through controllers, services, and the e2e suite. Rebuilding the UI on top of that is the last, mechanical step: read what a ViewModel exposes, bind it to markup. If the live demo currently shows an unstyled shell, that's this step not being done yet, not the application underneath being unfinished.
+- **UI testing with Playwright**, once the view layer is rebuilt — real rendered components in a real browser, ViewModels mocked to return canned data, proving rendering correctness in isolation from the rest of the system.
+
+## Deferred
+
+- Typing indicators (`presence` domain — online/offline is built, typing is not; design is settled, just not implemented yet)
+- Message edit, delete
+- End-to-end encryption
+
+## Stack
+
+**Client**: React 19, Vite, TypeScript, React Router 7, Zustand (auth + UI-selection state), Axios (HTTP client with auto access-token refresh on 401), Dexie (offline cache/IndexedDB, driving reactive reads via `liveQuery`), Zod (schema validation at every API/socket boundary), Tailwind, shadcn/base-ui primitives, Lucide icons.
+
+**Server**: Express 5, TypeScript, MongoDB/Mongoose, Socket.IO, Zod (request/payload validation), JWT auth, Redis (backs the `presence` domain's online/offline TTL keys).
+
+Zod schemas are the single source of truth for types on both sides — TypeScript types are derived from them (`z.infer`), never hand-duplicated, so a shape only has to be defined once and both validation and typing stay in sync.
+
+## Gaps — what I'd do differently
+
+Written honestly, not to flatter the project: things I should have done from the start.
+
+- **No automated test/dev driver script.** I still boot Mongo/Redis, start both dev servers, and run the three test tiers by hand, across several terminals, in an order I have to remember myself.
+- **Started naively, paid for it mid-build.** I assumed this would mostly be bolting Socket.IO handlers onto an ordinary Express/React app. `messaging` and `conversations` accumulated real invariants instead — membership, blocking, pending-vs-accepted status — until a rewrite became necessary, and there was no design doc up front to have caught it sooner. My first attempt at the fix also undersold what "rigorous" needed to mean: I understood hex, but tried to adapt it functionally to sit more naturally alongside React and Express's own idioms — bare exported functions importing other modules directly, not classes taking a port through a constructor. That watered it down; nothing enforced the seam, and testing meant mocking modules instead of constructing a class with a fake. A second, real rebuild onto class-based services and constructor injection fixed it — see [Why this much architecture](#why-this-much-architecture-for-a-5-domain-app) for the full story.
+- **No value objects at domain boundaries.** Ids and emails cross every boundary as bare `string` — `userId: string` — instead of a branded type (`userId: UserID`). The real DTO-boundary bugs this project hit (a client sending `{ contactId }` where the server expected `{ userId }`) are exactly what a `UserID` type would catch at compile time. A deliberate tradeoff (real wiring cost avoided), not an oversight — but the value-object version is strictly more correct.
+- **Never treated client and server as their own separate bounded contexts.** The clearest evidence is `DeliveryStatus` — same type name, same five states, on both sides, but they don't mean the same thing. The server's version is a pure derived value, never stored. The client's version includes `sending`/`failed`, purely local optimistic UI state with no server equivalent. One name standing in for two different concepts, same failure mode this README calls out for `User` vs. `Identity` within one side — just never applied across the client/server seam itself.
+- **Should have built the native shells in Expo/React Native**, not web React styled to feel native. Given how much of this project is already about proving one core can drive multiple structurally different UIs, Expo would have been a stronger, more literal proof of that than a second web shell. A standing regret from earlier in the project, not a new finding.
+- **Message reactions: a deliberate won't, not a not-yet.** Unlike everything in [Deferred](#deferred), this isn't a scheduling decision — I just don't want to build it.
+- **No hardening — no rate limiting, no consistently-applied atomic transactions — and that's intentional.** Exactly one repo call runs inside a real transaction; there's no rate limiting anywhere. This app has no real users and no traffic to defend against, so that infrastructure would prove nothing. "Production-quality" here means something narrower: if a bug shows up, it's because a test genuinely missed a case, not because the code was written carelessly. Those are different claims, and this project only makes the second one.
+
+## Current API surface
+
+| Method | Path                 | Purpose                                              |
+|--------|----------------------|-------------------------------------------------------|
+| POST   | /auth/register       | Create account                                       |
+| POST   | /auth/login          | Authenticate, issue JWT                              |
+| POST   | /auth/verify         | Refresh session                                      |
+| POST   | /auth/delete-account | Delete account (cascades contacts, rooms, messages)  |
+| GET    | /sync/user           | Delta/cold sync of user's data                       |
+| POST   | /contacts/search     | Search users by email                                |
+| POST   | /contacts/add        | Add a contact                                        |
+| POST   | /contacts/block      | Block a contact                                      |
+| POST   | /rooms               | Create a room                                        |
+| POST   | /rooms/accept-invite | Accept a pending room invite                         |
+| GET    | /health              | Health check                                         |
+
+Socket events: `message:send` / `message:receive`, `message:delivered`, `message:read`, `room:updated`, `user:online`, `user:offline`.
+
+---
+
+## The full argument
+
+Everything above is the whole picture in miniature. Everything below is *why* — the reasoning, the traced bugs, the diagrams — for anyone who wants to go deeper on a specific claim.
 
 ## The idea
 
@@ -31,23 +117,11 @@ Frameworks get introduced after that's already answered, to deliver an applicati
 
 ### Why this matters
 
-The usual pitch for Hexagonal Architecture is that you can swap out infrastructure — a repository implementation, the socket transport, an auth adapter — without touching the application underneath. That's true, and it happens here too. But the code still looks like a normal React app and a normal Express app on the surface. The point isn't hiding the framework. It's making sure the framework isn't where the application's logic lives.
-
-The payoff shows up before anyone ever swaps anything out:
-
-- Every controller, service, and domain model can be exercised with zero React and zero Express running. A controller can be called from a plain Node script and it does exactly what the UI does, because the UI calls the same function.
-- A business rule lives in exactly one place — the aggregate that owns it — so it can't drift between three call sites that each re-derived it slightly differently.
-- A new delivery mechanism (a new UI, a new transport) gets built as a new adapter against an application that already exists, instead of business logic getting rewritten into a new framework's conventions.
-
-Being able to swap infrastructure out is a side effect of building it this way. It wasn't the goal.
+The usual pitch for Hexagonal Architecture is that infrastructure — a repo, the socket transport, an auth adapter — can be swapped without touching the application underneath. True here too, but it's a side effect, not the goal. The actual payoff: every controller, service, and domain model can be exercised with zero React and zero Express running, a business rule lives in exactly one place instead of drifting across call sites that each re-derive it, and a new delivery mechanism gets built as a new adapter against an application that already exists.
 
 ### The proof: the whole system runs headless
 
-I can test both sides without ever starting the framework each one normally needs.
-
-The server's entire API surface is exercised through `createApp()` in-process — `supertest` calls the Express app object directly. There's no `server.listen()`, no open port, no network socket involved in the test run.
-
-The client side goes further. `client/src/tests/e2e/` calls the client's real controllers — `authControllers.register`, `authControllers.login`, `authControllers.deleteAccount` — against a server that's actually running, over real HTTP, with a real database. No browser, no DOM, no React renderer anywhere in the process:
+The server's entire API surface is exercised through `createApp()` in-process — `supertest` calls the Express app object directly, no `server.listen()`, no open port. The client goes further: `client/src/tests/e2e/` calls the client's real controllers (`authControllers.register`, `.login`, `.deleteAccount`, ...) against a genuinely running server, over real HTTP, with a real database — no browser, no DOM, no React renderer anywhere in the process:
 
 ```text
 register (real POST /auth/register)
@@ -56,15 +130,11 @@ register (real POST /auth/register)
   → login again with the same credentials → fails, proving the account is actually gone
 ```
 
-That test can only exist because the application core genuinely doesn't need React to exist. If the client's business logic secretly depended on a mounted component tree, proving this would require browser automation instead — actually clicking through a rendered UI. A plain Vitest file driving the whole system, front to back, is what makes the decoupling claim checkable instead of asserted.
+That test only exists because the application core genuinely doesn't need React. If client logic secretly depended on a mounted component tree, proving this would need browser automation instead — a plain Vitest file driving the whole system front to back is what makes the decoupling claim checkable instead of asserted.
 
-This isn't just how the app gets tested. It's how it got built. Every use case on the client — register, login, delete account, send a message — was written, wired, and verified through controllers and services before any component existed to call them. The UI is currently stripped down to markup with no ViewModel wiring at all (see [In progress](#in-progress)), and none of the work above depended on that changing. Building headless and testing headless are the same discipline applied at two different points in time.
+This is also how the app got built, not just how it's tested: every use case — register, login, delete account, send a message — was written, wired, and verified through controllers and services before any component existed to call them. Every domain in this repo, including `presence`, was built this way. The UI is currently stripped down to markup with no ViewModel wiring at all (see [In progress](#in-progress)) — none of the work above depended on that changing.
 
-Once the UI is rebuilt, there's a third tier planned on top of these two: Playwright driving real rendered components in a real browser, with ViewModels mocked to return canned data instead of hitting a real service or repository. That test only has one job — does the markup correctly reflect whatever shape a ViewModel hands it — with no network latency, no database state, and nothing to make it flaky. Each tier ends up proving something different, with no overlap: the server tier proves the API surface, the client e2e tier proves the whole system holds together against a real backend, and Playwright would prove the rendering is correct given known data. None of them re-test what the others already cover.
-
-The client and server each have their own unit and integration coverage underneath this too — the client's controllers/services/repos unit-tested with fakes, the server's integration-tested against a real database. Both are real and necessary, but neither is the headline. See [Running locally](#running-locally) for how to run the e2e suite.
-
----
+A third test tier is planned once the UI is rebuilt: Playwright driving real rendered components, with ViewModels mocked to return canned data — proving rendering is correct given known data, with no network or database involved. Three tiers, no overlap: server proves the API surface, client e2e proves the whole system holds together against a real backend, Playwright would prove the rendering. The client and server also each have unit/integration coverage underneath all of this (fakes on the client, a real database on the server) — necessary, but not the headline. See [Running locally](#running-locally) to run the e2e suite yourself.
 
 ## One application, two environments
 
@@ -115,8 +185,6 @@ flowchart TB
 
 Nothing at the center of that diagram is React, Express, or Socket.IO. It's the application.
 
----
-
 ## How a request actually flows
 
 Concretely, on the client: a `View` never touches a service, a store setter, or a repository directly. It calls whatever a `ViewModel` exposes. The `ViewModel` either subscribes to state (a Zustand store, or a `liveQuery` over IndexedDB) or forwards an intent to a `Controller`. Controllers are the *only* thing allowed to mutate application state — services below them never touch a store, the same way a service never imports Express; state is a UI-framework detail the domain has no business knowing about.
@@ -155,18 +223,6 @@ sequenceDiagram
 ```
 
 The result: the application core — controllers, services, domain models, persistence — has zero dependency on React existing at all, and the view layer has zero dependency on *how* application state is produced. Each side can be built, and tested, without the other one running.
-
----
-
-## Domains
-
-| Domain | Server | Client | Status |
-| --- | --- | --- | --- |
-| `authAndAccess` | ✅ | ✅ | Authentication (`AuthUser`), public identity (`Identity`), and the social/access graph (`Contacts`) — one bounded context, sharing the purpose "who is this person, who can they reach," each concept scoped to exactly the callers that need it. |
-| `conversations` | ✅ | ✅ | `Room` aggregate root; `Participant` is an entity it alone controls. Owns membership, not messages. |
-| `messaging` | ✅ | ✅ | `Message` aggregate root, references `roomId` by id — a separate aggregate from `Room` because no operation on either needs to atomically touch the other. |
-| `sync` | ✅ | ✅ | Owns the cross-domain read-model that composes rooms + messages + contacts into one bootstrap/delta payload, and (client-side) the local `SyncContext` cursor that tracks when the device last synced. |
-| `presence` | 🚧 | 🚧 | Reserved for online/offline + typing indicators (design in `project_architectural_insights`; Redis TTL/heartbeat approach chosen and researched, not yet built). |
 
 ## Architecture
 
@@ -216,11 +272,13 @@ room.hasParticipant(userId)   // replaces the createNewRoomService.ts .some(...)
 
 ### Why this much architecture for a 5-domain app
 
-A fair first reaction to this repo is "hex + DDD + MVVM for a chat app is a lot of ceremony." It is — measured against the domain's *current* size. It isn't, measured against what actually happened while building it.
+A fair first reaction to this repo is "hex + DDD + MVVM for a chat app is a lot of ceremony." It is. Measured purely against the feature list — auth, contacts, rooms, messaging, presence — this is genuinely more code than the same functionality would take as ordinary route handlers and React components calling `fetch` directly. I'm not going to pretend otherwise; I don't have a large enough sample of my own projects to know exactly how much bigger, only that it's noticeably more. That overhead is a stated cost of this project, not a hidden one — because the question this repo is actually answering isn't "is this the least code that could do the job," it's whether the code that exists only breaks because a test genuinely missed a case, never because it was written carelessly. Everything the size buys is downstream of that second claim, not the first.
 
 Both the client and server went through an unstructured version before this one, and both hit the same wall independently, by the time the project crossed roughly 5000 lines of source across the whole codebase. The failure mode wasn't bugs — it was that the same question got answered slightly differently in multiple places because nothing signaled "this already exists, call it." On the client, several hooks independently re-implemented "is this room still pending for me" with subtly different logic. On the server, services reached into other domains' repositories directly and duplicated Mongo-populate/field-mapping logic per call site, because there was no enforced surface for what a domain exposed versus kept private — so a business rule (like a block check) had to be re-derived, and could drift, everywhere it was needed.
 
 That's the actual justification, and it doesn't show up if you evaluate the architecture by file count or lines of boilerplate for *this* domain size — it shows up in change cost over time: can a new feature be added without re-deriving something that already exists; can you tell what a domain promises the rest of the app without reading every file in it; can persistence internals change without a cross-domain ripple. Those are exactly the properties the unstructured version didn't have, concretely, not hypothetically — both rebuilds exist because of a real wall, not a preference for pattern names.
+
+A second reason I hold this line rigorously: a codebase this consistent is legible to an AI collaborator, not just to me. Every domain up to and including `presence` (added late, in one sitting, by an AI working from this codebase alone) followed the exact same port/adapter shape, the same single composition root, the same fake-adapter test pattern already established by every domain before it — so no elaborate prompting or hand-holding was needed to extend it correctly on the first attempt. Real tests were available immediately, too, not just code that compiled: constructor injection meant a fake `PresenceRepository` and a fake socket could be constructed and asserted against from the very first test written, the same `createFakeSocket()` pattern already used everywhere else — no module-mocking, no live Redis, nothing to stand up first. That's not the architecture doing the engineering instead of me; every one of those conventions is a decision I made and enforced across four prior domains before `presence` ever existed. What it demonstrates is that the decisions were consistent enough to actually be followed by a second party with zero memory of how or why they were made — which is a harder bar than a human reviewer reading the code, and the same claim this whole section is making, just tested against a colder case.
 
 ### Combining HTTP and WebSocket under one core
 
@@ -268,16 +326,6 @@ Every message, room, and contact is persisted locally in IndexedDB (via Dexie) a
 
 Not yet built, but the dependency is now cleared — the client controller layer described above is in place. The plan is a third driving adapter alongside desktop and mobile: a terminal-styled interface, rendered in-browser (so it stays reachable with one link and keeps the existing cookie/session auth flow — a real installable CLI would need a separate distribution story and isn't worth the friction for a demo). It would call the exact same controllers the normal UI calls — no duplicated business logic, only new input/output plumbing, the same relationship the server's HTTP and Socket.IO adapters already have to *its* controllers. The point isn't the aesthetic; it's a live, checkable demonstration that the hexagonal boundary is real rather than asserted — the same core driving a second, structurally unrelated interface.
 
----
-
-## Stack
-
-**Client**: React 19, Vite, TypeScript, React Router 7, Zustand (auth + UI-selection state), Axios (HTTP client with auto access-token refresh on 401), Dexie (offline cache/IndexedDB, driving reactive reads via `liveQuery`), Zod (schema validation at every API/socket boundary), Tailwind, shadcn/base-ui primitives, Lucide icons.
-
-**Server**: Express 5, TypeScript, MongoDB/Mongoose, Socket.IO, Zod (request/payload validation), JWT auth, Redis (connected, reserved for presence work below — not yet driving any feature).
-
-Zod schemas are the single source of truth for types on both sides — TypeScript types are derived from them (`z.infer`), never hand-duplicated, so a shape only has to be defined once and both validation and typing stay in sync.
-
 ## Running locally
 
 No root-level script runner — start client and server independently in separate terminals.
@@ -311,44 +359,3 @@ cd client && npm run test:e2e
 ```
 
 This is intentionally separate from `npm test` (which runs the fast, mocked unit/integration suites and never needs a live server) — e2e tests hit a real running server and a real database, so they're run deliberately, one workflow at a time, never in parallel with each other.
-
-## What's built
-
-- **Auth** — registration, login, JWT-based sessions (separate access/refresh secrets).
-- **Account deletion** — removes the user doc, their contacts doc, dissolves/updates shared rooms, redacts their messages, and disconnects their sockets.
-- **Contacts** — search by email, add, block (with mutual removal, shared-room cleanup, and live notification to affected users).
-- **Real-time messaging** — send/receive over Socket.IO, delivered to every device joined to a room.
-- **Contact requests** — Instagram-style: messaging a non-contact creates a pending room instead of requiring mutual acceptance first. The recipient sees it in a separate requests list and can accept from there or implicitly by replying.
-- **Offline-first sync** — full state cached in IndexedDB, with delta sync on reconnect and live updates via the shared `room:updated` event. Sync is now its own domain on both sides (`sync`), with a real `SyncContext` client-side cursor replacing what used to be an ad hoc, untyped bootstrap object.
-- **Group chats** — in progress. The domain layer already supports N-participant rooms with no schema or service changes; remaining work is client UI.
-- **Headless end-to-end testing** — a real, self-cleaning suite (`client/src/tests/e2e/`) exercising the client's actual controllers against a genuinely running server, no React involved. First workflow proven: register → login → delete account → re-login fails — see [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless) above.
-
-## In progress
-
-- **More headless e2e workflows** — messaging (send/receive) and room/contact flows are next, following the same pattern as the register/login/delete-account suite already in place.
-- **Client view layer rebuild** — components are currently stripped down to markup only, with no ViewModel wiring at all. This was done on purpose. The observer-hook pattern that used to mirror entire IndexedDB tables into global stores has been removed; reads now flow through scoped repository queries wrapped in `liveQuery`, subscribed to directly by ViewModels. Every use case in the app is already proven to work through controllers, services, and the e2e suite above — none of that depended on a single component existing. Rebuilding the UI on top of that is the last, mechanical step: read what a ViewModel exposes, bind it to markup. If the live demo currently shows an unstyled shell, that's this step not being done yet, not the application underneath being unfinished.
-- **UI testing with Playwright** — once the view layer is rebuilt, a third test tier: real rendered components in a real browser, with ViewModels mocked to return canned data. Proves rendering correctness in isolation from the rest of the system, with no network or database involved — see [The proof: the whole system runs headless](#the-proof-the-whole-system-runs-headless) above.
-
-## Deferred
-
-- Presence / typing indicators / delivery & read receipts (`presence` domain — reserved, not yet implemented)
-- Message reactions, edit, delete
-- End-to-end encryption
-
-## Current API surface
-
-| Method | Path                 | Purpose                                              |
-|--------|----------------------|-------------------------------------------------------|
-| POST   | /auth/register       | Create account                                       |
-| POST   | /auth/login          | Authenticate, issue JWT                              |
-| POST   | /auth/verify         | Refresh session                                      |
-| POST   | /auth/delete-account | Delete account (cascades contacts, rooms, messages)  |
-| GET    | /sync/user           | Delta/cold sync of user's data                       |
-| POST   | /contacts/search     | Search users by email                                |
-| POST   | /contacts/add        | Add a contact                                        |
-| POST   | /contacts/block      | Block a contact                                      |
-| POST   | /rooms               | Create a room                                        |
-| POST   | /rooms/accept-invite | Accept a pending room invite                         |
-| GET    | /health              | Health check                                         |
-
-Socket events: `message:send` / `message:receive`, `room:updated`.
