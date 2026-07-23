@@ -6,6 +6,7 @@ import { Room as RoomDoc } from "../../conversations/models/roomModel";
 import { Message as MessageDoc } from "../../messaging/models/messageModel";
 import type { AuthAndAccessSocket } from "../ports/AuthAndAccessSocket";
 import type { MessagingSocket } from "../../messaging/ports/MessagingSocket";
+import type { PresenceRepository } from "../../presence/ports/PresenceRepository";
 
 export const PASSWORD = "Password1!";
 
@@ -94,4 +95,23 @@ export function createFakeMessagingSocket() {
   };
 
   return { socket, calls };
+}
+
+export function createFakePresenceRepo() {
+  const calls: { method: string; args: unknown }[] = [];
+
+  const repo: PresenceRepository = {
+    setOnline: async (params) => {
+      calls.push({ method: "setOnline", args: params });
+    },
+    setOffline: async (params) => {
+      calls.push({ method: "setOffline", args: params });
+    },
+    getOnlineStatuses: async (params) => {
+      calls.push({ method: "getOnlineStatuses", args: params });
+      return Object.fromEntries(params.userIds.map((userId) => [userId, false]));
+    },
+  };
+
+  return { repo, calls };
 }

@@ -6,7 +6,15 @@ import { createApp } from "../../../../app";
 import { mongooseConnect } from "../../../../server";
 import { attachSocket } from "../../../../socket";
 import * as composition from "../../../../composition";
-import { registerAndLogin, cleanupUser, PASSWORD } from "../testHelpers";
+import {
+  registerAndLogin,
+  cleanupUser,
+  PASSWORD,
+  createFakePresenceRepo,
+  createFakeSocket,
+} from "../testHelpers";
+import { UserConnectedService } from "../../../presence/services/UserConnectedService";
+import { UserDisconnectedService } from "../../../presence/services/UserDisconnectedService";
 import type {
   SearchContactsRequest,
   AddContactRequest,
@@ -24,11 +32,23 @@ beforeAll(async () => {
   // module-level `io` - never assigned unless attachSocket() has run. No
   // client needs to actually connect; io just needs to exist so
   // io.to(...)/io.in(...) don't throw against undefined.
+  const { socket: fakeAuthAndAccessSocket } = createFakeSocket();
+  const { repo: fakePresenceRepo } = createFakePresenceRepo();
   attachSocket(
     createServer(),
     composition.verifyAccessTokenService,
     composition.addUserToRoomsService,
     composition.messagingControllers,
+    new UserConnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
+    new UserDisconnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
   );
 });
 

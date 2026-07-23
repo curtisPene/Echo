@@ -14,13 +14,17 @@ import type {
 } from "./domains/messaging/socketEvents";
 import type { ConversationsServerToClientEvents } from "./domains/conversations/socketEvents";
 import type { AuthServerToClientEvents } from "./domains/authAndAccess/socketEvents";
+import type { PresenceServerToClientEvents } from "./domains/presence/socketEvents";
+import type { UserConnectedService } from "./domains/presence/services/UserConnectedService";
+import type { UserDisconnectedService } from "./domains/presence/services/UserDisconnectedService";
 
 interface ClientToServerEvents extends MessagingClientToServerEvents {}
 
 interface ServerToClientEvents
   extends MessagingServerToClientEvents,
     ConversationsServerToClientEvents,
-    AuthServerToClientEvents {}
+    AuthServerToClientEvents,
+    PresenceServerToClientEvents {}
 
 interface InterServerEvents {}
 
@@ -47,6 +51,8 @@ export const attachSocket = (
   verifyAccessTokenService: VerifyAccessTokenService,
   addUserToRoomsService: AddUserToRoomsService,
   messagingControllers: MessagingControllers,
+  userConnectedService: UserConnectedService,
+  userDisconnectedService: UserDisconnectedService,
 ) => {
   io = new Server<
     ClientToServerEvents,
@@ -67,6 +73,18 @@ export const attachSocket = (
     // right after connect/reconnect.
     await registerAuthSocketHandlers(io, socket, addUserToRoomsService);
     registerMessagingSocketHandlers(io, socket, messagingControllers);
+
+    await userConnectedService.execute({ userId: socket.data.identity.id });
+
+    // "disconnecting" (not "disconnect") fires while socket.rooms is still
+    // populated - Socket.IO clears room membership before "disconnect" fires.
+    socket.on("disconnecting", () => {
+      const roomIds = [...socket.rooms].filter((room) => room !== socket.id);
+      userDisconnectedService.execute({
+        userId: socket.data.identity.id,
+        roomIds,
+      });
+    });
   };
 
   io.on("connection", onConnection);

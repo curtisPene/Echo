@@ -6,6 +6,7 @@ import { BcryptPasswordHasher } from "./domains/authAndAccess/adapters/BCryptAda
 import { JwtTokenSigner } from "./domains/authAndAccess/adapters/JWTTokenAdapter";
 import { SocketIOAuthAndAccessSocket } from "./domains/authAndAccess/adapters/SocketIOAuthAndAccessSocket";
 import { SocketIOMessagingSocket } from "./domains/messaging/adapters/SocketIOMessagingSocket";
+import { RedisPresenceRepo } from "./domains/presence/adapters/RedisPresenceRepo";
 
 import { LoginService } from "./domains/authAndAccess/services/LoginService";
 import { RegistrationService } from "./domains/authAndAccess/services/RegistrationService";
@@ -38,12 +39,15 @@ import { ContactsControllers } from "./domains/authAndAccess/controllers/contact
 import { SyncControllers } from "./domains/sync/controllers/httpControllers";
 import { RoomsControllers } from "./domains/conversations/controllers/httpControllers";
 import { MessagingControllers } from "./domains/messaging/controllers/socketControllers";
+import { UserConnectedService } from "./domains/presence/services/UserConnectedService";
+import { UserDisconnectedService } from "./domains/presence/services/UserDisconnectedService";
 
 // 1. Repos and adapters - the leaves, no dependencies on any service.
 const passwordHasher = new BcryptPasswordHasher();
 const tokenSigner = new JwtTokenSigner();
 const authAndAccessSocket = new SocketIOAuthAndAccessSocket();
 const messagingSocket = new SocketIOMessagingSocket();
+const presenceRepo = new RedisPresenceRepo();
 export const findUserIdentitiesService = new FindUserIdentitiesService(
   userRepo,
 );
@@ -91,6 +95,16 @@ export const createMessageService = new CreateMessageService(
 export const messageStatusUpdateService = new MessageStatusUpdateService(
   messageRepo,
   roomRepo,
+);
+export const userConnectedService = new UserConnectedService(
+  presenceRepo,
+  authAndAccessSocket,
+  getUsersContactsService,
+);
+export const userDisconnectedService = new UserDisconnectedService(
+  presenceRepo,
+  authAndAccessSocket,
+  getUsersContactsService,
 );
 
 // 3. Cross-domain services. Freely reference anything above - all one file,

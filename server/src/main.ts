@@ -19,6 +19,8 @@ const run = async () => {
       composition.verifyAccessTokenService,
       composition.addUserToRoomsService,
       composition.messagingControllers,
+      composition.userConnectedService,
+      composition.userDisconnectedService,
     );
     server.listen(port, () => {
       console.log(`Server listening on port ${port}`);

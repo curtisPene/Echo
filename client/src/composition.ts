@@ -32,6 +32,7 @@ import { AuthControllers } from "./domains/authAndAccess/controllers/AuthControl
 import { ContactsControllers } from "./domains/authAndAccess/controllers/ContactsControllers";
 import { RoomsControllers } from "./domains/conversations/controllers/RoomsControllers";
 import { MessagingSocketControllers } from "./domains/messaging/controllers/MessagingSocketControllers";
+import { PresenceSocketControllers } from "./domains/presence/controllers/PresenceSocketControllers";
 import { SyncControllers } from "./domains/sync/controllers/SyncControllers";
 import { ShadSonnerAdapter } from "./infrastructure/notifications/ShadSonnerAdapter";
 
@@ -126,3 +127,4 @@ export const messagingControllers = new MessagingSocketControllers(
   notifications,
 );
 export const syncControllers = new SyncControllers(syncService);
+export const presenceControllers = new PresenceSocketControllers();

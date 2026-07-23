@@ -10,7 +10,11 @@ import {
   registerAndLogin,
   cleanupUser,
   PASSWORD,
+  createFakePresenceRepo,
+  createFakeSocket,
 } from "../../../authAndAccess/tests/testHelpers";
+import { UserConnectedService } from "../../../presence/services/UserConnectedService";
+import { UserDisconnectedService } from "../../../presence/services/UserDisconnectedService";
 import mongoose from "mongoose";
 
 const app = createApp(composition);
@@ -18,11 +22,23 @@ const app = createApp(composition);
 beforeAll(async () => {
   await mongooseConnect();
 
+  const { socket: fakeAuthAndAccessSocket } = createFakeSocket();
+  const { repo: fakePresenceRepo } = createFakePresenceRepo();
   attachSocket(
     createServer(),
     composition.verifyAccessTokenService,
     composition.addUserToRoomsService,
     composition.messagingControllers,
+    new UserConnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
+    new UserDisconnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
   );
 });
 

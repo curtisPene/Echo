@@ -81,14 +81,14 @@ export class CreateNewRoomService {
       const participantBlockedIds = new Map(
         participantIds.map((id, index) => [
           id,
-          participantContactsResults[index].blockedIds,
+          participantContactsResults[index].blocked.map((c) => c.userId),
         ]),
       );
 
       const canCreateResult = Room.canCreate({
         creatorId: user.id,
         participantIds,
-        creatorBlockedIds: creatorContacts.blockedIds,
+        creatorBlockedIds: creatorContacts.blocked.map((c) => c.userId),
         participantBlockedIds,
       });
 

@@ -6,7 +6,15 @@ import { createApp } from "../../../../app";
 import { mongooseConnect } from "../../../../server";
 import { attachSocket } from "../../../../socket";
 import * as composition from "../../../../composition";
-import { registerAndLogin, cleanupUser, PASSWORD } from "../../../authAndAccess/tests/testHelpers";
+import {
+  registerAndLogin,
+  cleanupUser,
+  PASSWORD,
+  createFakePresenceRepo,
+  createFakeSocket,
+} from "../../../authAndAccess/tests/testHelpers";
+import { UserConnectedService } from "../../../presence/services/UserConnectedService";
+import { UserDisconnectedService } from "../../../presence/services/UserDisconnectedService";
 import type { CreateNewRoomRequest, AcceptRoomInviteRequest } from "../../types/roomsTypes";
 import mongoose from "mongoose";
 
@@ -20,11 +28,23 @@ beforeAll(async () => {
   // unless attachSocket() has run. No client needs to actually connect;
   // io just needs to exist so io.to(...)/io.in(...) don't throw against
   // undefined.
+  const { socket: fakeAuthAndAccessSocket } = createFakeSocket();
+  const { repo: fakePresenceRepo } = createFakePresenceRepo();
   attachSocket(
     createServer(),
     composition.verifyAccessTokenService,
     composition.addUserToRoomsService,
     composition.messagingControllers,
+    new UserConnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
+    new UserDisconnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
   );
 });
 

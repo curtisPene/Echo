@@ -14,12 +14,13 @@ afterAll(async () => {
 });
 
 describe("GetUsersContactsService", () => {
-  it("returns an empty blockedIds list for a user who hasn't blocked anyone", async () => {
+  it("returns an empty contacts/blocked list for a user with neither", async () => {
     const a = await registerAndLogin("A");
 
     const result = await getUsersContactsService.execute({ userId: a.id });
 
-    expect(result.blockedIds).toEqual([]);
+    expect(result.contacts).toEqual([]);
+    expect(result.blocked).toEqual([]);
 
     await cleanupUser(a);
   });

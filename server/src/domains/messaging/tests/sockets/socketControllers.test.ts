@@ -8,7 +8,11 @@ import { mongooseConnect } from "../../../../server";
 import {
   registerAndLogin,
   cleanupUser,
+  createFakePresenceRepo,
+  createFakeSocket,
 } from "../../../authAndAccess/tests/testHelpers";
+import { UserConnectedService } from "../../../presence/services/UserConnectedService";
+import { UserDisconnectedService } from "../../../presence/services/UserDisconnectedService";
 import { loginService, createNewRoomService } from "../../../../composition";
 import type { MessageDTO } from "../../entities/message";
 import type { ServiceResult } from "../../../../types";
@@ -47,11 +51,23 @@ beforeAll(async () => {
   await mongooseConnect();
 
   httpServer = createServer();
+  const { repo: fakePresenceRepo } = createFakePresenceRepo();
+  const { socket: fakeAuthAndAccessSocket } = createFakeSocket();
   attachSocket(
     httpServer,
     composition.verifyAccessTokenService,
     composition.addUserToRoomsService,
     composition.messagingControllers,
+    new UserConnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
+    new UserDisconnectedService(
+      fakePresenceRepo,
+      fakeAuthAndAccessSocket,
+      composition.getUsersContactsService,
+    ),
   );
 
   await new Promise<void>((resolve) => {

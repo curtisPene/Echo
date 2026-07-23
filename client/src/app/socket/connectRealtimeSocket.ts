@@ -1,6 +1,7 @@
 import { socket } from "@/lib/socket";
-import { messagingControllers } from "@/composition";
+import { messagingControllers, presenceControllers } from "@/composition";
 import { registerMessagingSocketHandlers } from "@/domains/messaging/socketHandlers/registerMessagingSocketHandlers";
+import { registerPresenceSocketHandlers } from "@/domains/presence/socketHandlers/registerPresenceSocketHandlers";
 import type { Auth } from "@/stores/useAuth";
 import type { OnlineStatus } from "@/stores/useSocket";
 
@@ -23,6 +24,10 @@ export const connectRealtimeSocket = ({
     socket,
     messagingControllers,
   );
+  const presenceSocketCleanup = registerPresenceSocketHandlers(
+    socket,
+    presenceControllers,
+  );
 
   socket.on("auth:unauthorized", () => {
     // Todo: handle unauthorized
@@ -32,6 +37,7 @@ export const connectRealtimeSocket = ({
   return () => {
     socket.off("connect", handleConnect);
     messagingSocketCleanup();
+    presenceSocketCleanup();
     socket.off("disconnect", handleDisconnect);
   };
 };
