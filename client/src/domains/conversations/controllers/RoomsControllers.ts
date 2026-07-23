@@ -30,10 +30,15 @@ export class RoomsControllers {
 
   acceptRequest = async ({
     roomId,
+    isAcceptRequest,
   }: {
     roomId: string;
+    isAcceptRequest: boolean;
   }): Promise<AcceptRequestControllerResult> => {
-    const result = await this.acceptRequestService.execute({ roomId });
+    const result = await this.acceptRequestService.execute({
+      roomId,
+      isAcceptRequest,
+    });
 
     if (!result.success) {
       this.notificationsPort.notify(result.message, "error");

@@ -13,6 +13,8 @@ const MESSAGE: MessageDTO = {
   createdAt: "2026-07-20T00:00:00.000Z",
   reactions: [],
   readBy: [],
+  deliveredTo: [],
+  deliveryStatus: "sent",
 };
 
 beforeEach(async () => {

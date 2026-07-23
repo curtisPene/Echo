@@ -137,6 +137,117 @@ describe("MessagingControllers (socket entry point)", () => {
     await cleanupUser(user);
   });
 
+  it("marks a message delivered when the recipient's socket confirms it", async () => {
+    const senderEmail = `sender-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const recipientEmail = `recipient-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+
+    const sender = await registerAndLogin("Sender", senderEmail);
+    const recipient = await registerAndLogin("Recipient", recipientEmail);
+
+    const room = await createNewRoomService.execute({
+      user: sender,
+      participants: [{ id: recipient.id }],
+      name: "Sender, Recipient",
+    });
+    expect(room.success).toBe(true);
+    if (!room.success || !room.data) throw new Error("unreachable");
+
+    const senderSocket = await connectAuthedSocket(senderEmail);
+    const recipientSocket = await connectAuthedSocket(recipientEmail);
+
+    const sendAck = await new Promise<ServiceResult<{ message: MessageDTO }>>(
+      (resolve) => {
+        senderSocket.emit(
+          "message:send",
+          { roomId: room.data!.id, text: "please confirm receipt" },
+          resolve,
+        );
+      },
+    );
+    expect(sendAck.success).toBe(true);
+    if (!sendAck.success || !sendAck.data) throw new Error("unreachable");
+    expect(sendAck.data.message.deliveryStatus).toBe("sent");
+
+    const deliveredAck = await new Promise<
+      ServiceResult<{ message: MessageDTO }>
+    >((resolve) => {
+      recipientSocket.emit(
+        "message:delivered",
+        { messageId: sendAck.data!.message.id },
+        resolve,
+      );
+    });
+
+    expect(deliveredAck.success).toBe(true);
+    if (!deliveredAck.success || !deliveredAck.data) {
+      throw new Error("unreachable");
+    }
+    expect(deliveredAck.data.message.deliveryStatus).toBe("delivered");
+    expect(deliveredAck.data.message.deliveredTo).toEqual([recipient.id]);
+
+    senderSocket.disconnect();
+    recipientSocket.disconnect();
+
+    await cleanupUser(sender);
+    await cleanupUser(recipient);
+  });
+
+  it("marks a message read when the recipient's socket confirms it", async () => {
+    const senderEmail = `sender-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const recipientEmail = `recipient-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+
+    const sender = await registerAndLogin("Sender", senderEmail);
+    const recipient = await registerAndLogin("Recipient", recipientEmail);
+
+    const room = await createNewRoomService.execute({
+      user: sender,
+      participants: [{ id: recipient.id }],
+      name: "Sender, Recipient",
+    });
+    expect(room.success).toBe(true);
+    if (!room.success || !room.data) throw new Error("unreachable");
+
+    const senderSocket = await connectAuthedSocket(senderEmail);
+    const recipientSocket = await connectAuthedSocket(recipientEmail);
+
+    const sendAck = await new Promise<ServiceResult<{ message: MessageDTO }>>(
+      (resolve) => {
+        senderSocket.emit(
+          "message:send",
+          { roomId: room.data!.id, text: "please confirm read" },
+          resolve,
+        );
+      },
+    );
+    expect(sendAck.success).toBe(true);
+    if (!sendAck.success || !sendAck.data) throw new Error("unreachable");
+
+    const readAck = await new Promise<
+      ServiceResult<{ message: MessageDTO }>
+    >((resolve) => {
+      recipientSocket.emit(
+        "message:read",
+        { messageId: sendAck.data!.message.id },
+        resolve,
+      );
+    });
+
+    expect(readAck.success).toBe(true);
+    if (!readAck.success || !readAck.data) {
+      throw new Error("unreachable");
+    }
+    expect(readAck.data.message.deliveryStatus).toBe("read");
+    expect(readAck.data.message.readBy.map((r) => r.userId)).toEqual([
+      recipient.id,
+    ]);
+
+    senderSocket.disconnect();
+    recipientSocket.disconnect();
+
+    await cleanupUser(sender);
+    await cleanupUser(recipient);
+  });
+
   it("rejects a send into a room the sender hasn't joined", async () => {
     const senderEmail = `outsider-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
     const a = await registerAndLogin(

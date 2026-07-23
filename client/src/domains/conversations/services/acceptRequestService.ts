@@ -1,7 +1,8 @@
-import { Room, type RoomDTO } from "../entities/room";
+import { Room } from "../entities/room";
 import type { ServiceResult } from "@/types";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 import type { RoomsApi } from "../ports/RoomsApi";
+import type { UpdateRoomInviteResult } from "../types";
 import { DomainError } from "@/errors/DomainError";
 import { RepoError } from "@/errors/RepoError";
 import { HttpError } from "@/errors/HttpError";
@@ -17,9 +18,11 @@ export class AcceptRequestService {
 
   async execute({
     roomId,
+    isAcceptRequest,
   }: {
     roomId: string;
-  }): Promise<ServiceResult<RoomDTO>> {
+    isAcceptRequest: boolean;
+  }): Promise<ServiceResult<UpdateRoomInviteResult>> {
     // TODO: this should do a client-side pre-flight check via
     // Room.acceptParticipant(currentUserId) before calling the API, so the
     // client can only ever attempt to accept its own pending status - needs
@@ -29,7 +32,10 @@ export class AcceptRequestService {
     // userId it's given without verifying it matches the acting/authed
     // user - that needs the equivalent fix server-side too.
     try {
-      const response = await this.roomsApi.acceptInvite({ roomId });
+      const response = await this.roomsApi.acceptInvite({
+        roomId,
+        isAcceptRequest,
+      });
 
       if (!response.success) {
         return {
@@ -39,11 +45,17 @@ export class AcceptRequestService {
         };
       }
 
-      await this.roomsRepo.update(Room.hydrate(response.data));
+      if (response.data.roomDeleted) {
+        await this.roomsRepo.deleteById(response.data.roomId);
+      } else {
+        await this.roomsRepo.update(Room.hydrate(response.data.room));
+      }
 
       return {
         success: true,
-        message: "Request accepted successfully",
+        message: isAcceptRequest
+          ? "Request accepted successfully"
+          : "Request declined successfully",
         data: response.data,
       };
     } catch (error) {

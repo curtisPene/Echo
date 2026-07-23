@@ -1,9 +1,9 @@
-import type { MessagingControllers } from "../controllers/MessagingControllers";
+import type { MessagingSocketControllers } from "../controllers/MessagingSocketControllers";
 import type { Socket } from "@/lib/socket";
 
 export const registerMessagingSocketHandlers = (
   socket: Socket,
-  messagingControllers: MessagingControllers,
+  messagingControllers: MessagingSocketControllers,
 ) => {
   socket.on("message:receive", messagingControllers.onMessageReceive);
 

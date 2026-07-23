@@ -1,11 +1,19 @@
-import { onMessageSendPayloadSchema } from "../types";
+import {
+  onMessageSendPayloadSchema,
+  onMessageDeliveredPayloadSchema,
+  onMessageReadPayloadSchema,
+} from "../types";
 import type { AuthSocket } from "../../../socket";
 import { CreateMessageService } from "../services/createMessageService";
+import { MessageStatusUpdateService } from "../services/MessageStatusUpdateService";
 import { MessageDTO, SenderEntity } from "../entities/message";
 import { ServiceResult } from "../../../types";
 
 export class MessagingControllers {
-  constructor(private readonly createMessageService: CreateMessageService) {}
+  constructor(
+    private readonly createMessageService: CreateMessageService,
+    private readonly messageStatusUpdateService: MessageStatusUpdateService,
+  ) {}
 
   onMessageSendController = async ({
     socket,
@@ -41,6 +49,62 @@ export class MessagingControllers {
     const serviceResult = await this.createMessageService.execute({
       sender,
       newMessage: parsed.data,
+    });
+
+    ack(serviceResult);
+  };
+
+  onMessageDeliveredController = async ({
+    socket,
+    payload,
+    ack,
+  }: {
+    socket: AuthSocket;
+    payload: unknown;
+    ack: (response: ServiceResult<{ message: MessageDTO }>) => void;
+  }) => {
+    const parsed = onMessageDeliveredPayloadSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return ack({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
+    const serviceResult = await this.messageStatusUpdateService.execute({
+      messageId: parsed.data.messageId,
+      userId: socket.data.identity.id,
+      kind: "delivered",
+    });
+
+    ack(serviceResult);
+  };
+
+  onMessageReadController = async ({
+    socket,
+    payload,
+    ack,
+  }: {
+    socket: AuthSocket;
+    payload: unknown;
+    ack: (response: ServiceResult<{ message: MessageDTO }>) => void;
+  }) => {
+    const parsed = onMessageReadPayloadSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return ack({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
+    const serviceResult = await this.messageStatusUpdateService.execute({
+      messageId: parsed.data.messageId,
+      userId: socket.data.identity.id,
+      kind: "read",
     });
 
     ack(serviceResult);

@@ -29,7 +29,7 @@ const CONTACT: ContactDTO = {
   email: "grace@example.com",
 };
 
-const ACCEPTED_ROOM: RoomDTO = {
+const UPDATED_ROOM: RoomDTO = {
   id: "room-1",
   name: "Ada, Grace",
   participants: [
@@ -78,7 +78,7 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
       return {
         success: true,
         message: "Request accepted successfully",
-        data: ACCEPTED_ROOM,
+        data: { roomDeleted: false, room: UPDATED_ROOM },
       };
     },
     ...overrides,
@@ -105,11 +105,34 @@ describe("RoomsControllers.acceptRequest", () => {
     const controllers = createRoomsControllers(createFakeRoomsApi());
 
     const result = await controllers.acceptRequest({
-      roomId: ACCEPTED_ROOM.id,
+      roomId: UPDATED_ROOM.id,
+      isAcceptRequest: true,
     });
 
     expect(result).toEqual({ success: true });
-    expect(await db.rooms.get(ACCEPTED_ROOM.id)).toEqual(ACCEPTED_ROOM);
+    expect(await db.rooms.get(UPDATED_ROOM.id)).toEqual(UPDATED_ROOM);
+  });
+
+  it("returns success and removes the room from Dexie when declining dissolves it", async () => {
+    const roomsApi = createFakeRoomsApi({
+      async acceptInvite() {
+        return {
+          success: true,
+          message: "Room deleted successfully",
+          data: { roomDeleted: true, roomId: UPDATED_ROOM.id },
+        };
+      },
+    });
+    const controllers = createRoomsControllers(roomsApi);
+    await db.rooms.put(UPDATED_ROOM);
+
+    const result = await controllers.acceptRequest({
+      roomId: UPDATED_ROOM.id,
+      isAcceptRequest: false,
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(await db.rooms.get(UPDATED_ROOM.id)).toBeUndefined();
   });
 
   it("surfaces the api's failure message", async () => {
@@ -120,7 +143,10 @@ describe("RoomsControllers.acceptRequest", () => {
     });
     const controllers = createRoomsControllers(roomsApi);
 
-    const result = await controllers.acceptRequest({ roomId: "nonexistent" });
+    const result = await controllers.acceptRequest({
+      roomId: "nonexistent",
+      isAcceptRequest: true,
+    });
 
     expect(result).toEqual({ success: false, message: "Room not found" });
   });
@@ -162,7 +188,7 @@ describe("RoomsControllers.createRoom", () => {
   });
 
   it("reuses an existing 1:1 room already in Dexie instead of creating a new one", async () => {
-    await db.rooms.put(ACCEPTED_ROOM);
+    await db.rooms.put(UPDATED_ROOM);
     const roomsApi = createFakeRoomsApi({
       async create() {
         throw new Error(
@@ -179,8 +205,8 @@ describe("RoomsControllers.createRoom", () => {
 
     expect(result).toEqual({
       success: true,
-      roomId: ACCEPTED_ROOM.id,
-      name: ACCEPTED_ROOM.name,
+      roomId: UPDATED_ROOM.id,
+      name: UPDATED_ROOM.name,
     });
   });
 

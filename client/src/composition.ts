@@ -14,6 +14,8 @@ import { VerificationService } from "./domains/authAndAccess/services/Verificati
 import { DeleteAccountService } from "./domains/authAndAccess/services/DeleteAccountService";
 import { GetContactsService } from "./domains/authAndAccess/services/GetContactsService";
 import { AddContactService } from "./domains/authAndAccess/services/AddContactService";
+import { SearchContactService } from "./domains/authAndAccess/services/SearchContactService";
+import { BlockContactService } from "./domains/authAndAccess/services/BlockContactService";
 import { AcceptRequestService } from "./domains/conversations/services/acceptRequestService";
 import { CreateNewRoomService } from "./domains/conversations/services/createNewRoomService";
 import { GetRoomsService } from "./domains/conversations/services/getRoomsService";
@@ -22,12 +24,14 @@ import { GetMessagesService } from "./domains/messaging/services/getMessagesServ
 import { GetRoomMessagesService } from "./domains/messaging/services/getRoomMessagesService";
 import { MessageReceiveService } from "./domains/messaging/services/messageReceiveService";
 import { SendMessageService } from "./domains/messaging/services/sendMessageService";
+import { ConfirmMessageDeliveryService } from "./domains/messaging/services/confirmMessageDeliveryService";
+import { ConfirmMessageReadService } from "./domains/messaging/services/confirmMessageReadService";
 import { SyncService } from "./domains/sync/services/SyncService";
 
 import { AuthControllers } from "./domains/authAndAccess/controllers/AuthControllers";
 import { ContactsControllers } from "./domains/authAndAccess/controllers/ContactsControllers";
 import { RoomsControllers } from "./domains/conversations/controllers/RoomsControllers";
-import { MessagingControllers } from "./domains/messaging/controllers/MessagingControllers";
+import { MessagingSocketControllers } from "./domains/messaging/controllers/MessagingSocketControllers";
 import { SyncControllers } from "./domains/sync/controllers/SyncControllers";
 import { ShadSonnerAdapter } from "./infrastructure/notifications/ShadSonnerAdapter";
 
@@ -54,6 +58,12 @@ export const addContactService = new AddContactService(
   contactsRepo,
   roomsRepo,
 );
+export const searchContactService = new SearchContactService(contactsApi);
+export const blockContactService = new BlockContactService(
+  contactsApi,
+  contactsRepo,
+  roomsRepo,
+);
 export const acceptRequestService = new AcceptRequestService(
   roomsApi,
   roomsRepo,
@@ -70,6 +80,14 @@ export const getMessagesService = new GetMessagesService(messagesRepo);
 export const getRoomMessagesService = new GetRoomMessagesService(messagesRepo);
 export const messageReceiveService = new MessageReceiveService(messagesRepo);
 export const sendMessageService = new SendMessageService(
+  messagingSocketApi,
+  messagesRepo,
+);
+export const confirmMessageDeliveryService = new ConfirmMessageDeliveryService(
+  messagingSocketApi,
+  messagesRepo,
+);
+export const confirmMessageReadService = new ConfirmMessageReadService(
   messagingSocketApi,
   messagesRepo,
 );
@@ -91,6 +109,8 @@ export const authControllers = new AuthControllers(
 );
 export const contactsControllers = new ContactsControllers(
   addContactService,
+  searchContactService,
+  blockContactService,
   notifications,
 );
 export const roomsControllers = new RoomsControllers(
@@ -98,9 +118,11 @@ export const roomsControllers = new RoomsControllers(
   createNewRoomService,
   notifications,
 );
-export const messagingControllers = new MessagingControllers(
+export const messagingControllers = new MessagingSocketControllers(
   sendMessageService,
   messageReceiveService,
+  confirmMessageDeliveryService,
+  confirmMessageReadService,
   notifications,
 );
 export const syncControllers = new SyncControllers(syncService);

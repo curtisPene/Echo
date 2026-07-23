@@ -84,6 +84,7 @@ describe("accept room invite", () => {
 
     const acceptResult = await roomsControllers.acceptRequest({
       roomId: createResult.roomId,
+      isAcceptRequest: true,
     });
 
     expect(acceptResult).toEqual({ success: true });

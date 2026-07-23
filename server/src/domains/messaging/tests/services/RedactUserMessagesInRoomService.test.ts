@@ -50,7 +50,7 @@ describe("RedactUserMessagesInRoomService", () => {
     });
     expect(redactedCount).toBe(1);
 
-    const messages = await findRoomMessagesService.execute({ roomId: room.data.id, userId: a.id });
+    const messages = await findRoomMessagesService.execute({ room: room.data, userId: a.id });
     const fromA = messages.messages.find((m) => m.sender.userId === a.id);
     const fromB = messages.messages.find((m) => m.sender.userId === b.id);
 

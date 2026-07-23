@@ -106,11 +106,14 @@ describe("POST /rooms/accept-invite", () => {
     const response = await request(app)
       .post("/rooms/accept-invite")
       .set("Authorization", `Bearer ${inviteeToken}`)
-      .send({ roomId: createResponse.body.data.id } as AcceptRoomInviteRequest);
+      .send({
+        roomId: createResponse.body.data.id,
+        isAcceptRequest: true,
+      } as AcceptRoomInviteRequest);
 
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
-    const inviteeParticipant = response.body.data.participants.find(
+    const inviteeParticipant = response.body.data.room.participants.find(
       (p: { userId: string }) => p.userId === invitee.id,
     );
     expect(inviteeParticipant.status).toBe("accepted");
@@ -140,7 +143,10 @@ describe("POST /rooms/accept-invite", () => {
     const response = await request(app)
       .post("/rooms/accept-invite")
       .set("Authorization", `Bearer ${token}`)
-      .send({ roomId: new mongoose.Types.ObjectId().toString() } as AcceptRoomInviteRequest);
+      .send({
+        roomId: new mongoose.Types.ObjectId().toString(),
+        isAcceptRequest: true,
+      } as AcceptRoomInviteRequest);
 
     expect(response.status).toBe(404);
 
@@ -150,7 +156,10 @@ describe("POST /rooms/accept-invite", () => {
   it("returns 401 with no access token", async () => {
     const response = await request(app)
       .post("/rooms/accept-invite")
-      .send({ roomId: new mongoose.Types.ObjectId().toString() } as AcceptRoomInviteRequest);
+      .send({
+        roomId: new mongoose.Types.ObjectId().toString(),
+        isAcceptRequest: true,
+      } as AcceptRoomInviteRequest);
 
     expect(response.status).toBe(401);
   });

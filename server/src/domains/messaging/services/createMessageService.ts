@@ -3,11 +3,14 @@ import { ServiceResult } from "../../../types";
 import { MessageDTO, NewMessage, SenderEntity } from "../entities/message";
 import { MessageRepo } from "../repo/mongooseMessageRepo";
 import { MessagingSocket } from "../ports/MessagingSocket";
+import { RoomRepository } from "../../conversations/ports/RoomRepository";
+import { RepoError } from "../../../errors/RepoError";
 
 export class CreateMessageService {
   constructor(
     private readonly messageRepo: MessageRepo,
     private readonly messagingSocket: MessagingSocket,
+    private readonly roomRepo: RoomRepository,
   ) {}
 
   async execute({
@@ -18,6 +21,10 @@ export class CreateMessageService {
     newMessage: Omit<NewMessage, "sender">;
   }): Promise<ServiceResult<{ message: MessageDTO }>> {
     try {
+      const room = await this.roomRepo.findById({ roomId: newMessage.roomId });
+
+      if (!room) throw new RepoError("Room not found");
+
       const createdMessage = await this.messageRepo.create({
         ...newMessage,
         sender,
@@ -27,7 +34,7 @@ export class CreateMessageService {
         success: true,
         message: "Message created successfully",
         data: {
-          message: createdMessage.toDTO(),
+          message: createdMessage.toDTO(room.toDTO()),
         },
       };
 

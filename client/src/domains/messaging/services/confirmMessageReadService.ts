@@ -1,17 +1,12 @@
 import type { ServiceResult } from "@/types";
-import { type MessageDTO } from "../entities/message";
+import type { MessageDTO } from "../entities/message";
 import type { MessagingSocketApi } from "../ports/MessagingSocketApi";
 import type { MessagesRepository } from "../ports/MessagesRepository";
-import type { User } from "@/domains/authAndAccess/entities/user";
 import { DomainError } from "@/errors/DomainError";
 import { RepoError } from "@/errors/RepoError";
 import { HttpError } from "@/errors/HttpError";
 
-function createTempId(): string {
-  return `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-export class SendMessageService {
+export class ConfirmMessageReadService {
   private readonly messagingSocketApi: MessagingSocketApi;
   private readonly messagesRepo: MessagesRepository;
 
@@ -24,46 +19,16 @@ export class SendMessageService {
   }
 
   async execute({
-    text,
-    roomId,
-    sender,
+    messageId,
   }: {
-    text: string;
-    roomId: string;
-    sender: User;
+    messageId: string;
   }): Promise<ServiceResult<MessageDTO>> {
-    const tempId = createTempId();
-    const optimisticMessage: MessageDTO = {
-      id: tempId,
-      roomId,
-      redacted: false,
-      sender: {
-        userId: sender.id,
-        firstName: sender.firstName,
-        lastName: sender.lastName,
-      },
-      text,
-      createdAt: new Date().toISOString(),
-      reactions: [],
-      readBy: [],
-      deliveredTo: [],
-      deliveryStatus: "sending",
-    };
-
-    await this.messagesRepo.saveMessage(optimisticMessage);
-
     try {
-      const response = await this.messagingSocketApi.sendMessage({
-        text,
-        roomId,
+      const response = await this.messagingSocketApi.confirmRead({
+        messageId,
       });
 
       if (!response.success) {
-        await this.messagesRepo.saveMessage({
-          ...optimisticMessage,
-          deliveryStatus: "failed",
-        });
-
         return {
           success: false,
           message: response.message,
@@ -71,20 +36,14 @@ export class SendMessageService {
         };
       }
 
-      await this.messagesRepo.deleteMessage(tempId);
       await this.messagesRepo.saveMessage(response.data.message);
 
       return {
         success: true,
-        message: "Message sent successfully",
+        message: "Read confirmed successfully",
         data: response.data.message,
       };
     } catch (error) {
-      await this.messagesRepo.saveMessage({
-        ...optimisticMessage,
-        deliveryStatus: "failed",
-      });
-
       if (
         error instanceof DomainError ||
         error instanceof RepoError ||

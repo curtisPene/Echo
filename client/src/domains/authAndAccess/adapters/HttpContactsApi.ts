@@ -1,7 +1,9 @@
 import {
   addContactResponseSchema,
+  blockContactResponseSchema,
   contactsSearchResponseSchema,
 } from "../types";
+import type { BlockedRoomResult } from "../types";
 import { httpClient } from "@/lib/httpClient";
 import { parseOrThrow } from "@/lib/parseOrThrow";
 import { User } from "../entities/user";
@@ -35,5 +37,18 @@ export class HttpContactsApi implements ContactsApi {
       userId: contactId,
     });
     return parseOrThrow(addContactResponseSchema, response.data);
+  }
+
+  async block({
+    blockedContactId,
+  }: {
+    blockedContactId: string;
+  }): Promise<
+    ServiceResult<{ blockedContactId: string; updatedRooms: BlockedRoomResult[] }>
+  > {
+    const response = await httpClient.post("/contacts/block", {
+      userId: blockedContactId,
+    });
+    return parseOrThrow(blockContactResponseSchema, response.data);
   }
 }

@@ -28,16 +28,19 @@ export class CreateNewRoomService {
       if (contacts.length === 1) {
         const rooms = await this.roomsRepo.getRooms();
         const contact = contacts[0];
+        const isSelfChat = contact.userId === user.id;
 
-        const existingOneOnOneRoom = rooms.find(
-          (room) => room.isOneOnOne() && room.hasParticipant(contact.userId),
+        const existingRoom = rooms.find((room) =>
+          isSelfChat
+            ? room.isSelfChat()
+            : room.isOneOnOne() && room.hasParticipant(contact.userId),
         );
 
-        if (existingOneOnOneRoom) {
+        if (existingRoom) {
           return {
             success: true,
             message: "Room already exists",
-            data: existingOneOnOneRoom.toDTO(),
+            data: existingRoom.toDTO(),
           };
         }
       }

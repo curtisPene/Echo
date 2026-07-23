@@ -38,7 +38,7 @@ export class SyncUserDataService {
         rooms.map(async (room) => {
           const { messages, unread } =
             await this.findRoomMessagesService.execute({
-              roomId: room.id,
+              room,
               userId,
               since: sinceDate,
             });

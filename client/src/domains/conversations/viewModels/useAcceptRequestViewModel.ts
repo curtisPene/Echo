@@ -10,12 +10,29 @@ export const useAcceptRequestViewModel = () => {
     if (!activeRoom) return;
     setError(null);
 
-    const result = await roomsControllers.acceptRequest({ roomId: activeRoom.id });
+    const result = await roomsControllers.acceptRequest({
+      roomId: activeRoom.id,
+      isAcceptRequest: true,
+    });
 
     if (!result.success) {
       setError(result.message);
     }
   }, [activeRoom]);
 
-  return { onAcceptRequest, error };
+  const onDeclineRequest = useCallback(async () => {
+    if (!activeRoom) return;
+    setError(null);
+
+    const result = await roomsControllers.acceptRequest({
+      roomId: activeRoom.id,
+      isAcceptRequest: false,
+    });
+
+    if (!result.success) {
+      setError(result.message);
+    }
+  }, [activeRoom]);
+
+  return { onAcceptRequest, onDeclineRequest, error };
 };

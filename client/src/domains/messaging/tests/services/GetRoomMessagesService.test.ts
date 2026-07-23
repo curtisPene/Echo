@@ -13,6 +13,8 @@ const ROOM_1_MESSAGE: MessageDTO = {
   createdAt: "2026-07-20T00:00:00.000Z",
   reactions: [],
   readBy: [],
+  deliveredTo: [],
+  deliveryStatus: "sent",
 };
 
 const ROOM_2_MESSAGE: MessageDTO = {
@@ -24,6 +26,8 @@ const ROOM_2_MESSAGE: MessageDTO = {
   createdAt: "2026-07-20T00:01:00.000Z",
   reactions: [],
   readBy: [],
+  deliveredTo: [],
+  deliveryStatus: "sent",
 };
 
 const messagesRepo = new DexieMessagesRepo();

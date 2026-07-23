@@ -6,5 +6,8 @@ export interface RoomsApi {
     name: string;
   }): Promise<CreateNewRoomAPIResponse>;
 
-  acceptInvite(params: { roomId: string }): Promise<AcceptRoomInviteResponse>;
+  acceptInvite(params: {
+    roomId: string;
+    isAcceptRequest: boolean;
+  }): Promise<AcceptRoomInviteResponse>;
 }

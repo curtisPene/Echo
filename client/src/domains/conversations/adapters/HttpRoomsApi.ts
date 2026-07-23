@@ -18,9 +18,16 @@ export class HttpRoomsApi implements RoomsApi {
     return parseOrThrow(createNewRoomAPIResponseSchema, response.data);
   }
 
-  async acceptInvite({ roomId }: { roomId: string }) {
+  async acceptInvite({
+    roomId,
+    isAcceptRequest,
+  }: {
+    roomId: string;
+    isAcceptRequest: boolean;
+  }) {
     const response = await httpClient.post("/rooms/accept-invite", {
       roomId,
+      isAcceptRequest,
     });
     return parseOrThrow(acceptRoomInviteResponseSchema, response.data);
   }

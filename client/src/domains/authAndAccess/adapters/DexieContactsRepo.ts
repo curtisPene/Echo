@@ -11,6 +11,14 @@ export class DexieContactsRepo implements ContactsRepository {
     await db.contacts.add(contact);
   }
 
+  async remove(contactId: string) {
+    await db.contacts.delete(contactId);
+  }
+
+  async addBlocked(contact: ContactDTO) {
+    await db.blockedContacts.add(contact);
+  }
+
   async sync(contactsDTO: ContactsDTO) {
     await db.contacts.bulkPut(contactsDTO.contacts);
     await db.blockedContacts.bulkPut(contactsDTO.blocked);

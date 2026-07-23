@@ -137,7 +137,70 @@ describe("CreateNewRoomService", () => {
     });
   });
 
-  it("does not reuse an existing room when creating a group (more than one contact)", async () => {
+  it("reuses an existing self-chat room instead of calling the api", async () => {
+    const existingSelfChatRoom: RoomDTO = {
+      id: "room-3",
+      name: "Just Me",
+      participants: [
+        {
+          userId: CURRENT_USER.id,
+          firstName: "Ada",
+          lastName: "Lovelace",
+          status: "accepted",
+        },
+      ],
+    };
+    await db.rooms.put(existingSelfChatRoom);
+    const roomsApi = createFakeRoomsApi({
+      async create() {
+        throw new Error(
+          "should not create a new room when a self-chat already exists",
+        );
+      },
+    });
+    const service = new CreateNewRoomService(roomsApi, new DexieRoomsRepo());
+
+    const result = await service.execute({
+      user: CURRENT_USER,
+      contacts: [
+        {
+          userId: CURRENT_USER.id,
+          firstName: CURRENT_USER.firstName,
+          lastName: CURRENT_USER.lastName,
+          email: CURRENT_USER.email,
+        },
+      ],
+    });
+
+    expect(result).toEqual({
+      success: true,
+      message: "Room already exists",
+      data: existingSelfChatRoom,
+    });
+  });
+
+  it("does NOT reuse an existing 1:1 room with someone else when self-chatting", async () => {
+    await db.rooms.put(EXISTING_ONE_ON_ONE_ROOM);
+    const roomsApi = createFakeRoomsApi();
+    const service = new CreateNewRoomService(roomsApi, new DexieRoomsRepo());
+
+    const result = await service.execute({
+      user: CURRENT_USER,
+      contacts: [
+        {
+          userId: CURRENT_USER.id,
+          firstName: CURRENT_USER.firstName,
+          lastName: CURRENT_USER.lastName,
+          email: CURRENT_USER.email,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.id).toBe("room-2");
+  });
+
+  it("does not reuse an existing group (more than one contact)", async () => {
     await db.rooms.put(EXISTING_ONE_ON_ONE_ROOM);
     const roomsApi = createFakeRoomsApi();
     const service = new CreateNewRoomService(roomsApi, new DexieRoomsRepo());

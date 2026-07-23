@@ -11,5 +11,6 @@ export interface RoomsRepository {
     name: string;
   }): Promise<string>;
   update(room: Room): Promise<void>;
+  deleteById(roomId: string): Promise<void>;
   getUnreadCount(roomId: string): Promise<RoomUnreadCount | undefined>;
 }

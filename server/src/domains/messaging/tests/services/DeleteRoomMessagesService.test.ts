@@ -47,7 +47,7 @@ describe("DeleteRoomMessagesService", () => {
     const deletedCount = await deleteRoomMessagesService.execute({ roomId: room.data.id });
     expect(deletedCount).toBe(2);
 
-    const remaining = await findRoomMessagesService.execute({ roomId: room.data.id, userId: a.id });
+    const remaining = await findRoomMessagesService.execute({ room: room.data, userId: a.id });
     expect(remaining.messages).toEqual([]);
 
     await cleanupUser(a);

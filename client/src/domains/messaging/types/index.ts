@@ -5,7 +5,16 @@ import type {
   ReactionDTO,
   ReadDTO,
   MessageDTO,
+  DeliveryStatus,
 } from "../entities/message";
+
+export const deliveryStatusSchema = z.enum([
+  "sending",
+  "sent",
+  "delivered",
+  "read",
+  "failed",
+]) satisfies z.ZodType<DeliveryStatus>;
 
 export const senderSchema = z.object({
   userId: z.string(),
@@ -29,6 +38,8 @@ const messageBaseSchema = z.object({
   id: z.string(),
   roomId: z.string(),
   createdAt: z.iso.datetime(),
+  deliveredTo: z.array(z.string()),
+  deliveryStatus: deliveryStatusSchema,
 });
 
 export const normalMessageSchema = messageBaseSchema.extend({
@@ -68,3 +79,17 @@ export const messageSendPayloadSchema = z.object({
 });
 
 export type MessageSendPayload = z.infer<typeof messageSendPayloadSchema>;
+
+export const messageDeliveredPayloadSchema = z.object({
+  messageId: z.string(),
+});
+
+export type MessageDeliveredPayload = z.infer<
+  typeof messageDeliveredPayloadSchema
+>;
+
+export const messageReadPayloadSchema = z.object({
+  messageId: z.string(),
+});
+
+export type MessageReadPayload = z.infer<typeof messageReadPayloadSchema>;

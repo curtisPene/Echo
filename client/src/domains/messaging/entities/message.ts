@@ -50,6 +50,13 @@ export interface ReadDTO {
   readAt: string;
 }
 
+// "sending"/"failed" only ever exist client-side (optimistic local state
+// before/if the real socket round-trip settles) - the server never sends
+// these. "sent"/"delivered"/"read" come from the server, derived fresh from
+// deliveredTo/readBy vs. the room's live other-participant count - see the
+// server's Message.getDeliveryStatus for the full reasoning.
+export type DeliveryStatus = "sending" | "sent" | "delivered" | "read" | "failed";
+
 export type MessageDTO =
   | {
       id: string;
@@ -60,6 +67,8 @@ export type MessageDTO =
       createdAt: string;
       reactions: ReactionDTO[];
       readBy: ReadDTO[];
+      deliveredTo: string[];
+      deliveryStatus: DeliveryStatus;
     }
   | {
       id: string;
@@ -70,6 +79,8 @@ export type MessageDTO =
       createdAt: string;
       reactions: null;
       readBy: null;
+      deliveredTo: string[];
+      deliveryStatus: DeliveryStatus;
     };
 
 export class Message {
@@ -81,6 +92,8 @@ export class Message {
   readonly createdAt: string;
   private readonly reactions: readonly Reaction[] | null;
   private readonly readBy: readonly ReadDTO[] | null;
+  private readonly deliveredTo: readonly string[];
+  readonly deliveryStatus: DeliveryStatus;
 
   private constructor(
     id: string,
@@ -91,6 +104,8 @@ export class Message {
     createdAt: string,
     reactions: readonly Reaction[] | null,
     readBy: readonly ReadDTO[] | null,
+    deliveredTo: readonly string[],
+    deliveryStatus: DeliveryStatus,
   ) {
     this.id = id;
     this.roomId = roomId;
@@ -100,6 +115,8 @@ export class Message {
     this.createdAt = createdAt;
     this.reactions = reactions;
     this.readBy = readBy;
+    this.deliveredTo = deliveredTo;
+    this.deliveryStatus = deliveryStatus;
   }
 
   static hydrate(dto: MessageDTO): Message {
@@ -112,6 +129,8 @@ export class Message {
       dto.createdAt,
       dto.reactions ? dto.reactions.map((r) => Reaction.hydrate(r)) : null,
       dto.readBy,
+      dto.deliveredTo,
+      dto.deliveryStatus,
     );
   }
 
@@ -121,6 +140,14 @@ export class Message {
 
   isReadBy(userId: string): boolean {
     return this.readBy?.some((r) => r.userId === userId) ?? false;
+  }
+
+  isDeliveredTo(userId: string): boolean {
+    return this.deliveredTo.includes(userId);
+  }
+
+  getDeliveredTo(): string[] {
+    return [...this.deliveredTo];
   }
 
   getSender(): SenderDTO | null {
@@ -165,6 +192,8 @@ export class Message {
         text: null,
         reactions: null,
         readBy: null,
+        deliveredTo: this.getDeliveredTo(),
+        deliveryStatus: this.deliveryStatus,
       };
     }
 
@@ -177,6 +206,8 @@ export class Message {
       text: this.text,
       reactions: this.getReactions(),
       readBy: this.getReadBy(),
+      deliveredTo: this.getDeliveredTo(),
+      deliveryStatus: this.deliveryStatus,
     } as Extract<MessageDTO, { redacted: false }>;
   }
 }

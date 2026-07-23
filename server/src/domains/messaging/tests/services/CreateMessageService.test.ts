@@ -5,18 +5,20 @@ import { CreateMessageService } from "../../services/createMessageService";
 import { userRepo } from "../../../authAndAccess/repo/UserRepo";
 import { FindUserIdentitiesService } from "../../../authAndAccess/services/FindUserIdentitiesService";
 import { MessageRepo } from "../../repo/mongooseMessageRepo";
+import { RoomRepo } from "../../../conversations/repo/mongooseRoomRepo";
 import { registerAndLogin, createFakeMessagingSocket, cleanupUser } from "../../../authAndAccess/tests/testHelpers";
 import { mongooseConnect } from "../../../../server";
 import mongoose from "mongoose";
 
 const messageRepo = new MessageRepo(new FindUserIdentitiesService(userRepo));
+const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
 
 let fakeSocket: ReturnType<typeof createFakeMessagingSocket>;
 let createMessageService: CreateMessageService;
 
 beforeEach(() => {
   fakeSocket = createFakeMessagingSocket();
-  createMessageService = new CreateMessageService(messageRepo, fakeSocket.socket);
+  createMessageService = new CreateMessageService(messageRepo, fakeSocket.socket, roomRepo);
 });
 
 beforeAll(async () => {

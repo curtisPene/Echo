@@ -1,15 +1,22 @@
 import { NextFunction, Request, Response } from "express";
 import { CreateNewRoomService } from "../services/createNewRoomService";
-import { AcceptRoomInviteService } from "../services/AcceptRoomInviteService";
-import { createNewRoomRequestSchema, acceptRoomInviteRequestSchema } from "../types/roomsTypes";
+import { UpdateRoomInviteService } from "../services/UpdateRoomInviteService";
+import {
+  createNewRoomRequestSchema,
+  acceptRoomInviteRequestSchema,
+} from "../types/roomsTypes";
 
 export class RoomsControllers {
   constructor(
     private readonly createNewRoomService: CreateNewRoomService,
-    private readonly acceptRoomInviteService: AcceptRoomInviteService,
+    private readonly updateRoomInviteService: UpdateRoomInviteService,
   ) {}
 
-  createNewRoomController = async (req: Request, res: Response, next: NextFunction) => {
+  createNewRoomController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     if (!req.user) {
       return res.status(400).json({
         success: false,
@@ -49,7 +56,11 @@ export class RoomsControllers {
     });
   };
 
-  acceptRoomInviteController = async (req: Request, res: Response, next: NextFunction) => {
+  acceptRoomInviteController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     if (!req.user) {
       return res.status(400).json({
         success: false,
@@ -68,9 +79,10 @@ export class RoomsControllers {
       });
     }
 
-    const serviceResult = await this.acceptRoomInviteService.execute({
+    const serviceResult = await this.updateRoomInviteService.execute({
       user: req.user,
       roomId: parsed.data.roomId,
+      isAcceptRequest: parsed.data.isAcceptRequest,
     });
 
     if (!serviceResult.success) {
@@ -83,7 +95,7 @@ export class RoomsControllers {
 
     res.status(201).json({
       success: true,
-      message: "Room invite accepted successfully",
+      message: serviceResult.message,
       data: serviceResult.data,
     });
   };

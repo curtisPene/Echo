@@ -13,7 +13,8 @@ export type CreateNewRoomRequest = z.infer<typeof createNewRoomRequestSchema>;
 
 export const acceptRoomInviteRequestSchema = z.object({
   roomId: z.string(),
-}) satisfies z.ZodType<{ roomId: RoomDTO["id"] }>;
+  isAcceptRequest: z.boolean(),
+}) satisfies z.ZodType<{ roomId: RoomDTO["id"]; isAcceptRequest: boolean }>;
 
 export type AcceptRoomInviteRequest = z.infer<
   typeof acceptRoomInviteRequestSchema

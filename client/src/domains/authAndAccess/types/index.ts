@@ -53,3 +53,21 @@ export const addContactResponseSchema = apiResponseSchema(
     room: roomSchema,
   }),
 );
+
+// Order matters: z.union tries branches in order and returns the first
+// match, stripping fields not in that branch's shape. The room-included
+// variant must come first, or a group-room update would silently parse as
+// the no-room (1:1-deleted) variant since it's a subset match too.
+export const blockedRoomResultSchema = z.union([
+  z.object({ roomId: z.string(), room: roomSchema }),
+  z.object({ roomId: z.string() }),
+]);
+
+export type BlockedRoomResult = z.infer<typeof blockedRoomResultSchema>;
+
+export const blockContactResponseSchema = apiResponseSchema(
+  z.object({
+    blockedContactId: z.string(),
+    updatedRooms: z.array(blockedRoomResultSchema),
+  }),
+);

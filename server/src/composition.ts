@@ -25,12 +25,13 @@ import { FindRoomsForUserService } from "./domains/conversations/services/FindRo
 import { RemoveParticipantFromRoomService } from "./domains/conversations/services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "./domains/conversations/services/DeleteRoomService";
 import { CreateNewRoomService } from "./domains/conversations/services/createNewRoomService";
-import { AcceptRoomInviteService } from "./domains/conversations/services/AcceptRoomInviteService";
+import { UpdateRoomInviteService } from "./domains/conversations/services/UpdateRoomInviteService";
 
 import { FindRoomMessagesService } from "./domains/messaging/services/FindRoomMessagesService";
 import { DeleteRoomMessagesService } from "./domains/messaging/services/DeleteRoomMessagesService";
 import { RedactUserMessagesInRoomService } from "./domains/messaging/services/RedactUserMessagesInRoomService";
 import { CreateMessageService } from "./domains/messaging/services/createMessageService";
+import { MessageStatusUpdateService } from "./domains/messaging/services/MessageStatusUpdateService";
 
 import { AuthControllers } from "./domains/authAndAccess/controllers/authHttpControllers";
 import { ContactsControllers } from "./domains/authAndAccess/controllers/contactsHttpControllers";
@@ -85,6 +86,11 @@ export const findRoomMessagesService = new FindRoomMessagesService(messageRepo);
 export const createMessageService = new CreateMessageService(
   messageRepo,
   messagingSocket,
+  roomRepo,
+);
+export const messageStatusUpdateService = new MessageStatusUpdateService(
+  messageRepo,
+  roomRepo,
 );
 
 // 3. Cross-domain services. Freely reference anything above - all one file,
@@ -96,9 +102,12 @@ export const createNewRoomService = new CreateNewRoomService(
   findUserIdentitiesService,
   roomRepo,
 );
-export const acceptRoomInviteService = new AcceptRoomInviteService(
+export const acceptRoomInviteService = new UpdateRoomInviteService(
   roomRepo,
   authAndAccessSocket,
+  deleteRoomService,
+  deleteRoomMessagesService,
+  redactUserMessagesInRoomService,
 );
 export const addContactService = new AddContactService(
   userRepo,
@@ -154,4 +163,5 @@ export const roomsControllers = new RoomsControllers(
 );
 export const messagingControllers = new MessagingControllers(
   createMessageService,
+  messageStatusUpdateService,
 );

@@ -1,6 +1,7 @@
 import { Message as MessageDoc } from "../models/messageModel";
-import { Message, NewMessage, DeliveryStatus } from "../entities/message";
+import { Message, NewMessage } from "../entities/message";
 import { FindUserIdentitiesService } from "../../authAndAccess/services/FindUserIdentitiesService";
+import { RepoError } from "../../../errors/RepoError";
 
 export class MessageRepo {
   constructor(
@@ -16,7 +17,7 @@ export class MessageRepo {
     createdAt: Date;
     reactions: { user: { toString(): string }; emoji: string }[];
     readBy: { user: { toString(): string }; readAt: Date }[];
-    deliveryStatus: DeliveryStatus;
+    deliveredTo: { toString(): string }[];
   }) {
     const userIds = [
       doc.sender.toString(),
@@ -51,8 +52,20 @@ export class MessageRepo {
         userId: read.user.toString(),
         readAt: read.readAt,
       })),
-      deliveryStatus: doc.deliveryStatus,
+      deliveredTo: doc.deliveredTo.map((userId) => userId.toString()),
     };
+  }
+
+  async findById({
+    messageId,
+  }: {
+    messageId: string;
+  }): Promise<Message | null> {
+    const doc = await MessageDoc.findById(messageId);
+
+    if (!doc) return null;
+
+    return Message.hydrate(await this.toMessageParams(doc));
   }
 
   async findRoomMessages({
@@ -99,6 +112,38 @@ export class MessageRepo {
     });
 
     return Message.hydrate(await this.toMessageParams(doc));
+  }
+
+  /**
+   * Persists a Message already mutated via its domain model methods - the
+   * caller already holds the correct, current Message instance, so this
+   * writes every field the domain model itself can mutate, not just
+   * whichever one the calling service happened to touch. Writing a single
+   * field at a time here would put per-field update logic in the DB layer
+   * instead of the domain model - same reasoning as Room.update.
+   */
+  async update(message: Message): Promise<Message> {
+    const result = await MessageDoc.updateOne(
+      { _id: message.id },
+      {
+        $set: {
+          redacted: message.redacted,
+          reactions: message.getReactions().map((r) => ({
+            user: r.userId,
+            emoji: r.emoji,
+          })),
+          readBy: message.getReadBy().map((r) => ({
+            user: r.userId,
+            readAt: r.readAt,
+          })),
+          deliveredTo: message.getDeliveredTo(),
+        },
+      },
+    );
+
+    if (result.matchedCount === 0) throw new RepoError("Message not found");
+
+    return message;
   }
 
   /**

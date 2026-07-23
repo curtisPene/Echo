@@ -1,7 +1,5 @@
 import { Schema, Types, model } from "mongoose";
 
-export type DeliveryStatus = "sent" | "delivered" | "failed" | "sending";
-
 export interface MessageReaction {
   user: Types.ObjectId;
   emoji: string;
@@ -23,7 +21,7 @@ export interface Message {
   createdAt: Date;
   updatedAt: Date;
   redacted: boolean;
-  deliveryStatus: DeliveryStatus;
+  deliveredTo: Types.ObjectId[];
 }
 
 const messageReactionSchema = new Schema<MessageReaction>(
@@ -84,10 +82,9 @@ export const messageSchema = new Schema<Message>(
       type: Schema.Types.Boolean,
       default: false,
     },
-    deliveryStatus: {
-      type: Schema.Types.String,
-      enum: ["sending", "sent", "delivered", "failed"],
-      default: "sent",
+    deliveredTo: {
+      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      default: [],
     },
   },
   {

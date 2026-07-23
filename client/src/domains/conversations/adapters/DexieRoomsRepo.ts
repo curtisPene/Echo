@@ -36,6 +36,10 @@ export class DexieRoomsRepo implements RoomsRepository {
     await db.rooms.put(room.toDTO());
   }
 
+  async deleteById(roomId: string) {
+    await db.rooms.delete(roomId);
+  }
+
   async getUnreadCount(roomId: string) {
     return await db.roomUnreadCounts.get(roomId);
   }

@@ -13,6 +13,8 @@ const MESSAGE: MessageDTO = {
   createdAt: "2026-07-20T00:00:00.000Z",
   reactions: [],
   readBy: [],
+  deliveredTo: [],
+  deliveryStatus: "sent",
 };
 
 beforeEach(async () => {
@@ -39,6 +41,8 @@ describe("MessageReceiveService", () => {
       createdAt: "2026-07-20T00:01:00.000Z",
       reactions: null,
       readBy: null,
+      deliveredTo: [],
+      deliveryStatus: "sent",
     };
 
     await service.execute({ message: redacted });

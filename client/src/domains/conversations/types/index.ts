@@ -34,7 +34,21 @@ export const onRoomUpdatedPayloadSchema = z.object({
 
 export type RoomUpdatedPayload = z.infer<typeof onRoomUpdatedPayloadSchema>;
 
-export const acceptRoomInviteResponseSchema = apiResponseSchema(roomSchema);
+export const updateRoomInviteResultSchema = z.discriminatedUnion(
+  "roomDeleted",
+  [
+    z.object({ roomDeleted: z.literal(true), roomId: z.string() }),
+    z.object({ roomDeleted: z.literal(false), room: roomSchema }),
+  ],
+);
+
+export type UpdateRoomInviteResult = z.infer<
+  typeof updateRoomInviteResultSchema
+>;
+
+export const acceptRoomInviteResponseSchema = apiResponseSchema(
+  updateRoomInviteResultSchema,
+);
 
 export type AcceptRoomInviteResponse = z.infer<
   typeof acceptRoomInviteResponseSchema

@@ -30,7 +30,9 @@ class Participant {
    */
   accept(): Participant {
     if (this.status !== "pending") {
-      throw new DomainError(`Cannot accept participant ${this.userId}: not pending`);
+      throw new DomainError(
+        `Cannot accept participant ${this.userId}: not pending`,
+      );
     }
 
     return new Participant({
@@ -53,7 +55,11 @@ export class Room {
   readonly name: string;
   private readonly participants: readonly Participant[];
 
-  private constructor(id: string, name: string, participants: readonly Participant[]) {
+  private constructor(
+    id: string,
+    name: string,
+    participants: readonly Participant[],
+  ) {
     this.id = id;
     this.name = name;
     this.participants = participants;
@@ -75,8 +81,20 @@ export class Room {
     return this.findParticipant(userId) !== undefined;
   }
 
+  // Thin today (just a length check), but the name is the point: it's a
+  // domain concept (1:1 vs. group conversation), not an implementation
+  // detail - callers ask "is this a 1:1" rather than compare a length,
+  // so if the definition of "1:1" ever changes only this method changes.
   isOneOnOne(): boolean {
     return this.participants.length === 2;
+  }
+
+  // Mirrors the server's Room.isSelfChat() - needed so the client's own
+  // create-room dedup check (CreateNewRoomService) can apply the exact
+  // same domain rule the server enforces authoritatively, including the
+  // self-chat case.
+  isSelfChat(): boolean {
+    return this.participants.length === 1;
   }
 
   /**
@@ -100,7 +118,9 @@ export class Room {
     const participant = this.findParticipant(userId);
 
     if (!participant) {
-      throw new DomainError(`Cannot accept participant ${userId}: not found in room ${this.id}`);
+      throw new DomainError(
+        `Cannot accept participant ${userId}: not found in room ${this.id}`,
+      );
     }
 
     const accepted = participant.accept();

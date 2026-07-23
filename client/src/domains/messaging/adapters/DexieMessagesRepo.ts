@@ -11,6 +11,10 @@ export class DexieMessagesRepo implements MessagesRepository {
     await db.messages.put(message);
   }
 
+  async deleteMessage(id: string) {
+    await db.messages.delete(id);
+  }
+
   async getMessages() {
     return await db.messages.toArray();
   }

@@ -10,4 +10,12 @@ export const registerMessagingSocketHandlers = (
   socket.on("message:send", (payload, ack) => {
     controllers.onMessageSendController({ socket, payload, ack });
   });
+
+  socket.on("message:delivered", (payload, ack) => {
+    controllers.onMessageDeliveredController({ socket, payload, ack });
+  });
+
+  socket.on("message:read", (payload, ack) => {
+    controllers.onMessageReadController({ socket, payload, ack });
+  });
 };

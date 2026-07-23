@@ -143,6 +143,7 @@ describe("send message", () => {
     await authControllers.login({ email: receiverEmail, password: PASSWORD });
     const acceptResult = await roomsControllers.acceptRequest({
       roomId: createResult.roomId,
+      isAcceptRequest: true,
     });
     expect(acceptResult).toEqual({ success: true });
 
@@ -263,6 +264,7 @@ describe("send message", () => {
     await authControllers.login({ email: secondEmail, password: PASSWORD });
     const secondAcceptResult = await roomsControllers.acceptRequest({
       roomId: createResult.roomId,
+      isAcceptRequest: true,
     });
     expect(secondAcceptResult).toEqual({ success: true });
     // Connect the second participant's own live socket AFTER accepting, so
@@ -274,6 +276,7 @@ describe("send message", () => {
     await authControllers.login({ email: thirdEmail, password: PASSWORD });
     const thirdAcceptResult = await roomsControllers.acceptRequest({
       roomId: createResult.roomId,
+      isAcceptRequest: true,
     });
     expect(thirdAcceptResult).toEqual({ success: true });
     const thirdSocket = connectRawSocket(thirdAuth);

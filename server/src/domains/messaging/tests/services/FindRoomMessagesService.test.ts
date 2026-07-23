@@ -42,7 +42,7 @@ describe("FindRoomMessagesService", () => {
       newMessage: { roomId: room.data.id, text: "second" },
     });
 
-    const result = await findRoomMessagesService.execute({ roomId: room.data.id, userId: a.id });
+    const result = await findRoomMessagesService.execute({ room: room.data, userId: a.id });
 
     expect(result.messages).toHaveLength(2);
     expect(result.messages[0].text).toBe("second");
@@ -64,7 +64,7 @@ describe("FindRoomMessagesService", () => {
     expect(room.success).toBe(true);
     if (!room.success || !room.data) throw new Error("unreachable");
 
-    const result = await findRoomMessagesService.execute({ roomId: room.data.id, userId: a.id });
+    const result = await findRoomMessagesService.execute({ room: room.data, userId: a.id });
 
     expect(result.messages).toEqual([]);
     expect(result.unread).toBe(0);
@@ -90,7 +90,7 @@ describe("FindRoomMessagesService", () => {
       newMessage: { roomId: room.data.id, text: "unread for b" },
     });
 
-    const result = await findRoomMessagesService.execute({ roomId: room.data.id, userId: b.id });
+    const result = await findRoomMessagesService.execute({ room: room.data, userId: b.id });
 
     expect(result.unread).toBe(1);
 
