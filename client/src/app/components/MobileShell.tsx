@@ -1,15 +1,13 @@
 import clsx from "clsx";
 import { Outlet } from "react-router";
 import { ChevronLeftIcon } from "lucide-react";
-import { useLayoutController } from "../hooks/useLayoutController";
-import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
 import { MessageList } from "@/domains/messaging/components/MessageList";
 import { Composer } from "@/domains/messaging/components/Composer";
 
 export const MobileShell = () => {
-  const listHeader = useListHeader();
-  const { mobileNavItems } = useLayoutController();
+  const listHeader = "";
+  const mobileNavItems: { path: string; icon: typeof ChevronLeftIcon }[] = [];
   const room = null;
   const clearActiveRoom = () => {};
 

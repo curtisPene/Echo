@@ -10,16 +10,14 @@ import { Composer } from "@/domains/messaging/components/Composer";
 import { MessageList } from "@/domains/messaging/components/MessageList";
 import { EchoLogo } from "./EchoLogo";
 import { UserAvatar } from "@/components/UserAvatar";
-import { useLayoutController } from "../hooks/useLayoutController";
-import { useListHeader } from "../hooks/useListHeader";
 import { NavItem } from "@/components/NavItem";
 import { Outlet } from "react-router";
 import { ConversationDetailsContent } from "@/domains/conversations/components/ConversationDetailsContent";
 
 export const DesktopShell = () => {
-  const listHeader = useListHeader();
+  const listHeader = "";
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
-  const { desktopNavItems } = useLayoutController();
+  const desktopNavItems: { path: string; icon: typeof MessageCircleIcon }[] = [];
   const room = null;
 
   return (

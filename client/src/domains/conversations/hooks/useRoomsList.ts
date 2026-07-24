@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { liveQuery } from "dexie";
 import { useAuth } from "@/stores/useAuth";
-import { getRoomsService, roomsControllers } from "@/composition";
+import { getRoomsService } from "@/composition";
 import type { RoomDTO } from "../entities/room";
 
-export const useConversationListViewModel = () => {
+export const useRoomsList = () => {
   const currentUserId = useAuth((state) => state.user?.id);
   const [rooms, setRooms] = useState<RoomDTO[]>([]);
   const [pendingRooms, setPendingRooms] = useState<RoomDTO[]>([]);
@@ -32,11 +32,5 @@ export const useConversationListViewModel = () => {
     return () => subscription.unsubscribe();
   }, [currentUserId]);
 
-  return {
-    rooms,
-    pendingRooms,
-    hasPendingRequests: pendingRooms.length > 0,
-    selectRoom: roomsControllers.selectRoom,
-    clearActiveRoom: roomsControllers.clearActiveRoom,
-  };
+  return { rooms, pendingRooms };
 };

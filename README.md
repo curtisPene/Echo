@@ -1,5 +1,7 @@
 # Echo
 
+> **Note if you're visiting the deployed site right now:** the UI is currently gutted down to stripped markup with nothing bound to it — you'll hit a login form with no working functionality. This is deliberate, not broken: the entire application core was built and fully tested headless first, and the View/ViewModel layer is being rebuilt on top of it now. See [In progress](#in-progress) below for what's left and why.
+
 > What if the application, not the framework, was the thing you actually designed — designed well enough that an AI collaborator could extend it correctly too?
 
 This project is about architecture, not chat. I wanted one application core, expressed the same way on the client and the server, decoupled from React and Express to the point that either could be deleted and the core would still work correctly. Chat is the domain I used to force that: it needs two transports at once (a message send is a live event, auth and sync are ordinary requests) and enough cross-cutting rules — membership, blocking, offline sync — that the modeling actually gets hard.
