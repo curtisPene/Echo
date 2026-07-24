@@ -5,7 +5,7 @@ import { db } from "@/infrastructure/sync/db";
 import { User } from "@/domains/authAndAccess/entities/user";
 import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import type { RoomsApi } from "../../ports/RoomsApi";
-import type { RoomDTO } from "../../entities/room";
+import { Room, type RoomDTO } from "../../entities/room";
 
 const CURRENT_USER = User.hydrate({
   id: "user-1",
@@ -46,7 +46,7 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
       return {
         success: true,
         message: "Room created successfully",
-        data: {
+        data: Room.hydrate({
           id: "room-2",
           name: "New Room",
           participants: [
@@ -63,7 +63,7 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
               status: "pending",
             },
           ],
-        },
+        }),
       };
     },
     async acceptInvite() {

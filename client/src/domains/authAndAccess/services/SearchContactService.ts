@@ -1,5 +1,5 @@
 import type { ServiceResult } from "@/types";
-import type { User } from "../entities/user";
+import { User } from "../entities/user";
 import type { ContactsApi } from "../ports/ContactsApi";
 import { DomainError } from "@/errors/DomainError";
 import { RepoError } from "@/errors/RepoError";
@@ -27,7 +27,7 @@ export class SearchContactService {
       return {
         success: true,
         message: response.message,
-        data: response.data,
+        data: User.hydrate(response.data),
       };
     } catch (error) {
       if (

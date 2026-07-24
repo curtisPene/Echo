@@ -2,7 +2,7 @@ import type { AddContactService } from "../services/AddContactService";
 import type { SearchContactService } from "../services/SearchContactService";
 import type { BlockContactService } from "../services/BlockContactService";
 import { useAuth } from "@/stores/useAuth";
-import type { User } from "../entities/user";
+import type { UserDTO } from "../entities/user";
 import type { ContactDTO } from "../entities/contacts";
 import type { RoomDTO } from "@/domains/conversations/entities/room";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
@@ -12,7 +12,7 @@ export type AddContactControllerResult =
   | { success: false; message: string };
 
 export type SearchContactControllerResult =
-  | { success: true; user: User }
+  | { success: true; user: UserDTO }
   | { success: false; message: string };
 
 export type BlockContactControllerResult =
@@ -78,7 +78,12 @@ export class ContactsControllers {
       return { success: false, message: result.message };
     }
 
-    return { success: true, user: result.data };
+    const { id, firstName, lastName, email: userEmail } = result.data;
+
+    return {
+      success: true,
+      user: { id, firstName, lastName, email: userEmail },
+    };
   };
 
   blockContact = async ({

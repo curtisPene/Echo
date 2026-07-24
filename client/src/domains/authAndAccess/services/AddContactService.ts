@@ -2,7 +2,7 @@ import type { ContactsApi } from "../ports/ContactsApi";
 import type { ContactsRepository } from "../ports/ContactsRepository";
 import type { RoomsRepository } from "@/domains/conversations/ports/RoomsRepository";
 import type { ContactDTO } from "../entities/contacts";
-import { Room, type RoomDTO } from "@/domains/conversations/entities/room";
+import type { RoomDTO } from "@/domains/conversations/entities/room";
 import type { ServiceResult } from "@/types";
 import { DomainError } from "@/errors/DomainError";
 import { RepoError } from "@/errors/RepoError";
@@ -60,12 +60,15 @@ export class AddContactService {
       }
 
       await this.contactsRepo.add(response.data.addedUser);
-      await this.roomsRepo.update(Room.hydrate(response.data.room));
+      await this.roomsRepo.update(response.data.room);
 
       return {
         success: true,
         message: "Contact added successfully",
-        data: response.data,
+        data: {
+          addedUser: response.data.addedUser,
+          room: response.data.room.toDTO(),
+        },
       };
     } catch (error) {
       if (

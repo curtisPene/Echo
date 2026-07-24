@@ -3,7 +3,6 @@ import type { ContactsRepository } from "../ports/ContactsRepository";
 import type { RoomsRepository } from "@/domains/conversations/ports/RoomsRepository";
 import type { ContactDTO } from "../entities/contacts";
 import type { BlockedRoomResult } from "../types";
-import { Room } from "@/domains/conversations/entities/room";
 import type { ServiceResult } from "@/types";
 import { DomainError } from "@/errors/DomainError";
 import { RepoError } from "@/errors/RepoError";
@@ -44,7 +43,7 @@ export class BlockContactService {
       await Promise.all(
         response.data.updatedRooms.map((updatedRoom) =>
           "room" in updatedRoom
-            ? this.roomsRepo.update(Room.hydrate(updatedRoom.room))
+            ? this.roomsRepo.update(updatedRoom.room)
             : this.roomsRepo.deleteById(updatedRoom.roomId),
         ),
       );
@@ -52,7 +51,14 @@ export class BlockContactService {
       return {
         success: true,
         message: "Contact blocked successfully",
-        data: response.data,
+        data: {
+          blockedContactId: response.data.blockedContactId,
+          updatedRooms: response.data.updatedRooms.map((updatedRoom) =>
+            "room" in updatedRoom
+              ? { roomId: updatedRoom.roomId, room: updatedRoom.room.toDTO() }
+              : { roomId: updatedRoom.roomId },
+          ),
+        },
       };
     } catch (error) {
       if (

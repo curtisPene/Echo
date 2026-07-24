@@ -4,7 +4,9 @@ import {
   createNewRoomAPIResponseSchema,
   acceptRoomInviteResponseSchema,
 } from "../types";
-import type { RoomsApi } from "../ports/RoomsApi";
+import { Room } from "../entities/room";
+import type { ServiceResult } from "@/types";
+import type { RoomsApi, AcceptRoomInviteResult } from "../ports/RoomsApi";
 
 export class HttpRoomsApi implements RoomsApi {
   async create({
@@ -13,9 +15,19 @@ export class HttpRoomsApi implements RoomsApi {
   }: {
     participants: { id: string }[];
     name: string;
-  }) {
+  }): Promise<ServiceResult<Room>> {
     const response = await httpClient.post("/rooms/", { participants, name });
-    return parseOrThrow(createNewRoomAPIResponseSchema, response.data);
+    const parsed = parseOrThrow(createNewRoomAPIResponseSchema, response.data);
+
+    if (!parsed.success || !parsed.data) {
+      return { success: false, message: parsed.message, data: null };
+    }
+
+    return {
+      success: true,
+      message: parsed.message,
+      data: Room.hydrate(parsed.data),
+    };
   }
 
   async acceptInvite({
@@ -24,11 +36,23 @@ export class HttpRoomsApi implements RoomsApi {
   }: {
     roomId: string;
     isAcceptRequest: boolean;
-  }) {
+  }): Promise<ServiceResult<AcceptRoomInviteResult>> {
     const response = await httpClient.post("/rooms/accept-invite", {
       roomId,
       isAcceptRequest,
     });
-    return parseOrThrow(acceptRoomInviteResponseSchema, response.data);
+    const parsed = parseOrThrow(acceptRoomInviteResponseSchema, response.data);
+
+    if (!parsed.success || !parsed.data) {
+      return { success: false, message: parsed.message, data: null };
+    }
+
+    return {
+      success: true,
+      message: parsed.message,
+      data: parsed.data.roomDeleted
+        ? { roomDeleted: true, roomId: parsed.data.roomId }
+        : { roomDeleted: false, room: Room.hydrate(parsed.data.room) },
+    };
   }
 }

@@ -3,16 +3,16 @@ import { AcceptRequestService } from "../../services/acceptRequestService";
 import { DexieRoomsRepo } from "../../adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
 import type { RoomsApi } from "../../ports/RoomsApi";
-import type { RoomDTO } from "../../entities/room";
+import { Room } from "../../entities/room";
 
-const ACCEPTED_ROOM: RoomDTO = {
+const ACCEPTED_ROOM = Room.hydrate({
   id: "room-1",
   name: "Ada, Grace",
   participants: [
     { userId: "user-1", firstName: "Ada", lastName: "Lovelace", status: "accepted" },
     { userId: "user-2", firstName: "Grace", lastName: "Hopper", status: "accepted" },
   ],
-};
+});
 
 function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
   return {
@@ -46,9 +46,9 @@ describe("AcceptRequestService", () => {
     expect(result).toEqual({
       success: true,
       message: "Request accepted successfully",
-      data: { roomDeleted: false, room: ACCEPTED_ROOM },
+      data: { roomDeleted: false, room: ACCEPTED_ROOM.toDTO() },
     });
-    expect(await db.rooms.get(ACCEPTED_ROOM.id)).toEqual(ACCEPTED_ROOM);
+    expect(await db.rooms.get(ACCEPTED_ROOM.id)).toEqual(ACCEPTED_ROOM.toDTO());
   });
 
   it("deletes the room from Dexie when the server reports it was dissolved (1:1 decline)", async () => {
@@ -62,7 +62,7 @@ describe("AcceptRequestService", () => {
       },
     });
     const service = new AcceptRequestService(roomsApi, new DexieRoomsRepo());
-    await db.rooms.put(ACCEPTED_ROOM);
+    await db.rooms.put(ACCEPTED_ROOM.toDTO());
 
     const result = await service.execute({
       roomId: ACCEPTED_ROOM.id,

@@ -8,7 +8,7 @@ import { useActiveRoom } from "@/stores/useActiveRoom";
 import { User } from "@/domains/authAndAccess/entities/user";
 import type { ContactDTO } from "@/domains/authAndAccess/entities/contacts";
 import type { RoomsApi } from "../../ports/RoomsApi";
-import type { RoomDTO } from "../../entities/room";
+import { Room } from "../../entities/room";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 function createFakeNotificationsPort(): NotificationsPort {
@@ -29,7 +29,7 @@ const CONTACT: ContactDTO = {
   email: "grace@example.com",
 };
 
-const UPDATED_ROOM: RoomDTO = {
+const UPDATED_ROOM = Room.hydrate({
   id: "room-1",
   name: "Ada, Grace",
   participants: [
@@ -46,7 +46,7 @@ const UPDATED_ROOM: RoomDTO = {
       status: "accepted",
     },
   ],
-};
+});
 
 function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
   return {
@@ -54,7 +54,7 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
       return {
         success: true,
         message: "Room created successfully",
-        data: {
+        data: Room.hydrate({
           id: "room-2",
           name: "New Room",
           participants: [
@@ -71,7 +71,7 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
               status: "pending",
             },
           ],
-        },
+        }),
       };
     },
     async acceptInvite() {
@@ -110,7 +110,7 @@ describe("RoomsControllers.acceptRequest", () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(await db.rooms.get(UPDATED_ROOM.id)).toEqual(UPDATED_ROOM);
+    expect(await db.rooms.get(UPDATED_ROOM.id)).toEqual(UPDATED_ROOM.toDTO());
   });
 
   it("returns success and removes the room from Dexie when declining dissolves it", async () => {
@@ -124,7 +124,7 @@ describe("RoomsControllers.acceptRequest", () => {
       },
     });
     const controllers = createRoomsControllers(roomsApi);
-    await db.rooms.put(UPDATED_ROOM);
+    await db.rooms.put(UPDATED_ROOM.toDTO());
 
     const result = await controllers.acceptRequest({
       roomId: UPDATED_ROOM.id,
@@ -188,7 +188,7 @@ describe("RoomsControllers.createRoom", () => {
   });
 
   it("reuses an existing 1:1 room already in Dexie instead of creating a new one", async () => {
-    await db.rooms.put(UPDATED_ROOM);
+    await db.rooms.put(UPDATED_ROOM.toDTO());
     const roomsApi = createFakeRoomsApi({
       async create() {
         throw new Error(

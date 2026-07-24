@@ -3,14 +3,13 @@ import {
   blockContactResponseSchema,
   contactsSearchResponseSchema,
 } from "../types";
-import type { BlockedRoomResult } from "../types";
 import { httpClient } from "@/lib/httpClient";
 import { parseOrThrow } from "@/lib/parseOrThrow";
 import { User } from "../entities/user";
+import { Room } from "@/domains/conversations/entities/room";
 import type { ServiceResult } from "@/types";
 import type { ContactDTO } from "../entities/contacts";
-import type { RoomDTO } from "@/domains/conversations/entities/room";
-import type { ContactsApi } from "../ports/ContactsApi";
+import type { ContactsApi, BlockedRoomUpdate } from "../ports/ContactsApi";
 
 export class HttpContactsApi implements ContactsApi {
   async search(email: string): Promise<ServiceResult<User>> {
@@ -32,11 +31,24 @@ export class HttpContactsApi implements ContactsApi {
     contactId,
   }: {
     contactId: string;
-  }): Promise<ServiceResult<{ addedUser: ContactDTO; room: RoomDTO }>> {
+  }): Promise<ServiceResult<{ addedUser: ContactDTO; room: Room }>> {
     const response = await httpClient.post("/contacts/add", {
       userId: contactId,
     });
-    return parseOrThrow(addContactResponseSchema, response.data);
+    const parsed = parseOrThrow(addContactResponseSchema, response.data);
+
+    if (!parsed.success || !parsed.data) {
+      return { success: false, message: parsed.message, data: null };
+    }
+
+    return {
+      success: true,
+      message: parsed.message,
+      data: {
+        addedUser: parsed.data.addedUser,
+        room: Room.hydrate(parsed.data.room),
+      },
+    };
   }
 
   async block({
@@ -44,11 +56,28 @@ export class HttpContactsApi implements ContactsApi {
   }: {
     blockedContactId: string;
   }): Promise<
-    ServiceResult<{ blockedContactId: string; updatedRooms: BlockedRoomResult[] }>
+    ServiceResult<{ blockedContactId: string; updatedRooms: BlockedRoomUpdate[] }>
   > {
     const response = await httpClient.post("/contacts/block", {
       userId: blockedContactId,
     });
-    return parseOrThrow(blockContactResponseSchema, response.data);
+    const parsed = parseOrThrow(blockContactResponseSchema, response.data);
+
+    if (!parsed.success || !parsed.data) {
+      return { success: false, message: parsed.message, data: null };
+    }
+
+    return {
+      success: true,
+      message: parsed.message,
+      data: {
+        blockedContactId: parsed.data.blockedContactId,
+        updatedRooms: parsed.data.updatedRooms.map((updated) =>
+          "room" in updated
+            ? { roomId: updated.roomId, room: Room.hydrate(updated.room) }
+            : { roomId: updated.roomId },
+        ),
+      },
+    };
   }
 }

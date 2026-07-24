@@ -5,7 +5,7 @@ import { DexieRoomsRepo } from "@/domains/conversations/adapters/DexieRoomsRepo"
 import { db } from "@/infrastructure/sync/db";
 import type { ContactsApi } from "../../ports/ContactsApi";
 import type { ContactDTO } from "../../entities/contacts";
-import type { RoomDTO } from "@/domains/conversations/entities/room";
+import { Room } from "@/domains/conversations/entities/room";
 
 const BLOCKED_CONTACT: ContactDTO = {
   userId: "user-2",
@@ -14,14 +14,14 @@ const BLOCKED_CONTACT: ContactDTO = {
   email: "grace@example.com",
 };
 
-const GROUP_ROOM: RoomDTO = {
+const GROUP_ROOM = Room.hydrate({
   id: "room-group",
   name: "Ada, Grace, Alan",
   participants: [
     { userId: "user-1", firstName: "Ada", lastName: "Lovelace", status: "accepted" },
     { userId: "user-3", firstName: "Alan", lastName: "Turing", status: "accepted" },
   ],
-};
+});
 
 function createFakeContactsApi(overrides: Partial<ContactsApi> = {}): ContactsApi {
   return {
@@ -102,7 +102,7 @@ describe("BlockContactService", () => {
     const result = await service.execute({ blockedContact: BLOCKED_CONTACT });
 
     expect(result.success).toBe(true);
-    expect(await db.rooms.get(GROUP_ROOM.id)).toEqual(GROUP_ROOM);
+    expect(await db.rooms.get(GROUP_ROOM.id)).toEqual(GROUP_ROOM.toDTO());
   });
 
   it("surfaces the api's failure message and does not touch Dexie", async () => {

@@ -4,7 +4,7 @@ import { DexieMessagesRepo } from "../../adapters/DexieMessagesRepo";
 import { db } from "@/infrastructure/sync/db";
 import { User } from "@/domains/authAndAccess/entities/user";
 import type { MessagingSocketApi } from "../../ports/MessagingSocketApi";
-import type { MessageDTO } from "../../entities/message";
+import { Message, type MessageDTO } from "../../entities/message";
 
 const SENDER = User.hydrate({
   id: "user-1",
@@ -13,7 +13,7 @@ const SENDER = User.hydrate({
   email: "ada@example.com",
 });
 
-const SENT_MESSAGE: MessageDTO = {
+const SENT_MESSAGE_DTO: MessageDTO = {
   id: "message-1",
   roomId: "room-1",
   redacted: false,
@@ -25,6 +25,8 @@ const SENT_MESSAGE: MessageDTO = {
   deliveredTo: [],
   deliveryStatus: "sent",
 };
+
+const SENT_MESSAGE = Message.hydrate(SENT_MESSAGE_DTO);
 
 function createFakeMessagingSocketApi(
   overrides: Partial<MessagingSocketApi> = {},
@@ -93,7 +95,7 @@ describe("SendMessageService", () => {
     await executePromise;
 
     expect(await db.messages.get(tempId)).toBeUndefined();
-    expect(await db.messages.get(SENT_MESSAGE.id)).toEqual(SENT_MESSAGE);
+    expect(await db.messages.get(SENT_MESSAGE.id)).toEqual(SENT_MESSAGE_DTO);
   });
 
   it("sends the message via the socket api and replaces the optimistic copy with the real one", async () => {
@@ -111,12 +113,12 @@ describe("SendMessageService", () => {
     expect(result).toEqual({
       success: true,
       message: "Message sent successfully",
-      data: SENT_MESSAGE,
+      data: SENT_MESSAGE_DTO,
     });
 
     const allMessages = await db.messages.toArray();
     expect(allMessages).toHaveLength(1);
-    expect(allMessages[0]).toEqual(SENT_MESSAGE);
+    expect(allMessages[0]).toEqual(SENT_MESSAGE_DTO);
   });
 
   it("marks the optimistic message as 'failed' (not deleted) when the api reports failure", async () => {

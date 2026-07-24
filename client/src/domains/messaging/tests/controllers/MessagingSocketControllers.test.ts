@@ -10,7 +10,7 @@ import { useAuth } from "@/stores/useAuth";
 import { useSocketState } from "@/stores/useSocket";
 import { User } from "@/domains/authAndAccess/entities/user";
 import type { MessagingSocketApi } from "../../ports/MessagingSocketApi";
-import type { MessageDTO } from "../../entities/message";
+import { Message, type MessageDTO } from "../../entities/message";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 function createFakeNotificationsPort(): NotificationsPort {
@@ -58,7 +58,7 @@ function createFakeMessagingSocketApi(
       return {
         success: true,
         message: "Message sent successfully",
-        data: { message: SENT_MESSAGE },
+        data: { message: Message.hydrate(SENT_MESSAGE) },
       };
     },
     async confirmDelivery({ messageId }) {
@@ -66,12 +66,12 @@ function createFakeMessagingSocketApi(
         success: true,
         message: "Delivery confirmed successfully",
         data: {
-          message: {
+          message: Message.hydrate({
             ...OTHER_USER_MESSAGE,
             id: messageId,
             deliveredTo: [AUTHENTICATED_USER.id],
             deliveryStatus: "delivered",
-          },
+          }),
         },
       };
     },
@@ -85,7 +85,7 @@ function createFakeMessagingSocketApi(
       return {
         success: true,
         message: "Read confirmed successfully",
-        data: { message },
+        data: { message: Message.hydrate(message) },
       };
     },
     ...overrides,
@@ -241,7 +241,7 @@ describe("MessagingSocketControllers.onMessageReceive", () => {
         return {
           success: true,
           message: "Delivery confirmed successfully",
-          data: { message: SENT_MESSAGE },
+          data: { message: Message.hydrate(SENT_MESSAGE) },
         };
       },
     });
@@ -270,11 +270,11 @@ describe("MessagingSocketControllers.onMessageReceive", () => {
           success: true,
           message: "Delivery confirmed successfully",
           data: {
-            message: {
+            message: Message.hydrate({
               ...SENT_MESSAGE,
               deliveredTo: [AUTHENTICATED_USER.id],
               deliveryStatus: "delivered",
-            },
+            }),
           },
         };
       },
@@ -318,7 +318,7 @@ describe("MessagingSocketControllers.onMessageReceive", () => {
         return {
           success: true,
           message: "Delivery confirmed successfully",
-          data: { message: SENT_MESSAGE },
+          data: { message: Message.hydrate(SENT_MESSAGE) },
         };
       },
     });

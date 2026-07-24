@@ -65,14 +65,14 @@ export class CreateNewRoomService {
 
       await this.roomsRepo.create({
         roomId: result.data.id,
-        participants: result.data.participants,
+        participants: result.data.getParticipants(),
         name: result.data.name,
       });
 
       return {
         success: true,
         message: "Room created successfully",
-        data: result.data,
+        data: result.data.toDTO(),
       };
     } catch (error) {
       if (

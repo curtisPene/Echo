@@ -51,7 +51,7 @@ export class SyncService {
         since: context.lastSyncedAt ?? undefined,
       });
 
-      if (!syncResponse.success) {
+      if (!syncResponse.success || !syncResponse.data) {
         return {
           success: false,
           message: "Sync failed",
@@ -59,9 +59,16 @@ export class SyncService {
         };
       }
 
-      await this.roomsRepo.sync({ rooms: syncResponse.data.rooms });
-      await this.contactsRepo.sync(syncResponse.data.contacts);
-      await this.messagesRepo.sync(syncResponse.data.messages);
+      await this.roomsRepo.sync({
+        rooms: syncResponse.data.rooms.map(({ room, unread }) => ({
+          room: room.toDTO(),
+          unread,
+        })),
+      });
+      await this.contactsRepo.sync(syncResponse.data.contacts.toDTO());
+      await this.messagesRepo.sync(
+        syncResponse.data.messages.map((message) => message.toDTO()),
+      );
       await this.syncRepo.saveSyncContext(
         SyncContext.hydrate({
           userId: auth.user.id,

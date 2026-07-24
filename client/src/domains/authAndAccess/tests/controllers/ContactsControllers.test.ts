@@ -10,7 +10,7 @@ import { useAuth } from "@/stores/useAuth";
 import { User } from "../../entities/user";
 import type { ContactsApi } from "../../ports/ContactsApi";
 import type { ContactDTO } from "../../entities/contacts";
-import type { RoomDTO } from "@/domains/conversations/entities/room";
+import { Room } from "@/domains/conversations/entities/room";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 function createFakeNotificationsPort(): NotificationsPort {
@@ -26,7 +26,7 @@ const CURRENT_USER = User.hydrate({
 
 const CONTACT_ID = "user-2";
 
-const FAKE_ROOM: RoomDTO = {
+const FAKE_ROOM = Room.hydrate({
   id: "room-1",
   name: "Ada, Grace",
   participants: [
@@ -43,7 +43,7 @@ const FAKE_ROOM: RoomDTO = {
       status: "pending",
     },
   ],
-};
+});
 
 function createFakeContactsApi(
   overrides: Partial<ContactsApi> = {},

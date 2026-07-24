@@ -28,7 +28,7 @@ export class ConfirmMessageDeliveryService {
         messageId,
       });
 
-      if (!response.success) {
+      if (!response.success || !response.data) {
         return {
           success: false,
           message: response.message,
@@ -36,12 +36,14 @@ export class ConfirmMessageDeliveryService {
         };
       }
 
-      await this.messagesRepo.saveMessage(response.data.message);
+      const messageDTO = response.data.message.toDTO();
+
+      await this.messagesRepo.saveMessage(messageDTO);
 
       return {
         success: true,
         message: "Delivery confirmed successfully",
-        data: response.data.message,
+        data: messageDTO,
       };
     } catch (error) {
       if (

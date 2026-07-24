@@ -58,7 +58,7 @@ export class SendMessageService {
         roomId,
       });
 
-      if (!response.success) {
+      if (!response.success || !response.data) {
         await this.messagesRepo.saveMessage({
           ...optimisticMessage,
           deliveryStatus: "failed",
@@ -71,13 +71,15 @@ export class SendMessageService {
         };
       }
 
+      const messageDTO = response.data.message.toDTO();
+
       await this.messagesRepo.deleteMessage(tempId);
-      await this.messagesRepo.saveMessage(response.data.message);
+      await this.messagesRepo.saveMessage(messageDTO);
 
       return {
         success: true,
         message: "Message sent successfully",
-        data: response.data.message,
+        data: messageDTO,
       };
     } catch (error) {
       await this.messagesRepo.saveMessage({

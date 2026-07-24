@@ -1,4 +1,3 @@
-import { Room } from "../entities/room";
 import type { ServiceResult } from "@/types";
 import type { RoomsRepository } from "../ports/RoomsRepository";
 import type { RoomsApi } from "../ports/RoomsApi";
@@ -37,7 +36,7 @@ export class AcceptRequestService {
         isAcceptRequest,
       });
 
-      if (!response.success) {
+      if (!response.success || !response.data) {
         return {
           success: false,
           message: response.message,
@@ -48,7 +47,7 @@ export class AcceptRequestService {
       if (response.data.roomDeleted) {
         await this.roomsRepo.deleteById(response.data.roomId);
       } else {
-        await this.roomsRepo.update(Room.hydrate(response.data.room));
+        await this.roomsRepo.update(response.data.room);
       }
 
       return {
@@ -56,7 +55,9 @@ export class AcceptRequestService {
         message: isAcceptRequest
           ? "Request accepted successfully"
           : "Request declined successfully",
-        data: response.data,
+        data: response.data.roomDeleted
+          ? { roomDeleted: true, roomId: response.data.roomId }
+          : { roomDeleted: false, room: response.data.room.toDTO() },
       };
     } catch (error) {
       if (

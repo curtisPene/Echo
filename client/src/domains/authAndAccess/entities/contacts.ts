@@ -94,4 +94,17 @@ export class Contacts {
       email: c.email,
     }));
   }
+
+  /**
+   * The domain's own canonical, presentable shape - the single place this
+   * aggregate defines how it looks to any caller.
+   */
+  toDTO(): ContactsDTO {
+    return {
+      id: this.id,
+      userId: this.userId,
+      contacts: this.getContacts(),
+      blocked: this.getBlocked(),
+    };
+  }
 }
