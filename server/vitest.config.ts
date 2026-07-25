@@ -5,5 +5,6 @@ export default defineConfig({
     environment: "node",
     reporters: ["default", "json"],
     outputFile: "./test-results.json",
+    exclude: ["**/node_modules/**", "**/dist/**"],
   },
 });
