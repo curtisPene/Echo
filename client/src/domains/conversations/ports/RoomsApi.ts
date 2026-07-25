@@ -15,4 +15,11 @@ export interface RoomsApi {
     roomId: string;
     isAcceptRequest: boolean;
   }): Promise<ServiceResult<AcceptRoomInviteResult>>;
+
+  addParticipant(params: {
+    roomId: string;
+    participantId: string;
+  }): Promise<ServiceResult<Room>>;
+
+  rename(params: { roomId: string; name: string }): Promise<ServiceResult<Room>>;
 }

@@ -640,11 +640,23 @@ The initial project began as an ordinary React/Express application because I und
 
 A domain map and short architecture decision record before implementation would have exposed those concerns earlier.
 
+## No group admin/removal, by omission
+
+Group chats support adding a participant, but not removing one as a standalone action (the only removals that exist are self-removal via declining an invite, and removal as a side effect of blocking). Real "kick someone from a group" needs an admin/creator concept `Room` doesn't have today.
+
+The reason it's missing isn't effort avoidance so much as a dependency I didn't see coming until I tried to add it: the moment an admin can be removed (an admin who gets blocked already goes through the existing removal path), something has to decide the new admin, and that rule would need enforcing at every call site that removes a participant — the block flow, account deletion, declining an invite — not just a new kick feature. That's a real, cross-cutting invariant discovered late, the same category as "Architecture came too late" above, not a UX nicety deferred on purpose.
+
 ## First rebuild preserved weak dependencies
 
 The first attempt used architectural folders but retained direct module imports.
 
 The final constructor-injected version is more verbose, but it makes the seam testable and enforceable.
+
+## Tailwind utility classes clutter the JSX
+
+Every component ends up with a long inline string of utility classes, which mixes display concerns into markup that should just describe structure. I used Tailwind because shadcn's components are styled that way and expect Tailwind classes to customize them.
+
+Given the choice again, I'd keep Tailwind only where shadcn actually requires it and use plain, scoped CSS everywhere else — a `Header`/`Caption` component per repeated visual role instead of a repeated class string, with design tokens as CSS custom properties rather than Tailwind config. That keeps the same "no repeated styling logic" goal the rest of this project already holds itself to, just applied to the View layer instead of stopping short of it.
 
 ## Primitive ids at boundaries
 
@@ -682,6 +694,20 @@ It does not attempt to demonstrate:
 - abuse prevention
 
 One operation uses a real Mongo transaction, but the repository does not pretend to be hardened for public traffic.
+
+## Sync can't detect a phantom optimistic write
+
+If a client makes an optimistic local write (a new room, an added participant) and misses the server's confirmation — disconnect, closed tab, dropped response — reconnect-time sync only reconciles entities the server confirms exist. It never diffs the client's full local dataset against the server's to prune something the server never actually created or persisted.
+
+A correct fix needs either withholding the optimistic UI until the server confirms, or a full reconciliation sync instead of an additive delta — both a bigger change than this project's sync design attempts.
+
+I'm treating this the same way as the hardening gaps above: real, and deliberately not built. This is a portfolio piece demonstrating an architecture, not a production service with real users and real network conditions at scale — the edge case is worth naming honestly, not worth the design cost of closing it here.
+
+## No branching strategy
+
+Every commit in this repo went straight to `master`. That was fine solo, but it means the history mixes finished work with mid-course corrections, and there was never a point where a diff could be reviewed as one clean unit before landing.
+
+Given the choice again, I'd use GitHub Flow: short-lived branches per unit of work, merged back via a pull request once tests pass, `master` only ever changing through a merge. It's the same discipline the rest of this project already applies to code — a clean, reviewable boundary around a unit of work — just not extended to how the work actually lands in version control.
 
 The claim is narrower: application behaviour is modelled deliberately and verified through tests.
 

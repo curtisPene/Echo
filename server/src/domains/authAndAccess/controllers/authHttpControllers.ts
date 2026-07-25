@@ -5,16 +5,22 @@ import { RegistrationService } from "../services/RegistrationService";
 import { VerifyRefreshTokenService } from "../services/VerifyRefreshTokenService";
 import { DeleteUserAccountService } from "../services/DeleteUserAccountService";
 import { userLoginSchema, userRegistrationSchema } from "../types/authTypes";
+import { LogoutService } from "../services/LogoutService";
 
 export class AuthControllers {
   constructor(
     private readonly loginService: LoginService,
+    private readonly logoutService: LogoutService,
     private readonly registrationService: RegistrationService,
     private readonly verifyRefreshTokenService: VerifyRefreshTokenService,
     private readonly deleteUserAccountService: DeleteUserAccountService,
   ) {}
 
-  userLoginController = async (req: Request, res: Response, next: NextFunction) => {
+  userLoginController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const parsed = userLoginSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -54,7 +60,11 @@ export class AuthControllers {
       });
   };
 
-  userRegistrationController = async (req: Request, res: Response, next: NextFunction) => {
+  userRegistrationController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const parsed = userRegistrationSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -65,7 +75,8 @@ export class AuthControllers {
       });
     }
 
-    const { firstName, lastName, email, password, confirmPassword } = parsed.data;
+    const { firstName, lastName, email, password, confirmPassword } =
+      parsed.data;
 
     const result = await this.registrationService.execute({
       firstName,
@@ -91,7 +102,11 @@ export class AuthControllers {
     });
   };
 
-  verifyRefreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
+  verifyRefreshTokenController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const cookies = req.cookies;
 
     if (!cookies?.refreshToken) {
@@ -158,6 +173,43 @@ export class AuthControllers {
       .json({
         success: true,
         message: "Account deleted successfully",
+        data: null,
+      });
+  };
+
+  userLogoutController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - No credentials provided",
+        data: null,
+      });
+    }
+
+    const logoutResult = await this.logoutService.execute();
+
+    if (!logoutResult.success) {
+      return res.status(404).json({
+        success: false,
+        message: logoutResult.message,
+        data: null,
+      });
+    }
+
+    res
+      .clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: logoutResult.message,
         data: null,
       });
   };

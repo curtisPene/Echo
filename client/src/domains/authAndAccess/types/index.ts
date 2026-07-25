@@ -45,6 +45,8 @@ export const registrationResponseSchema = apiResponseSchema(
 
 export const deleteAccountResponseSchema = apiResponseSchema(z.null());
 
+export const logoutResponseSchema = apiResponseSchema(z.null());
+
 export const contactsSearchResponseSchema = apiResponseSchema(userSchema);
 
 export const addContactResponseSchema = apiResponseSchema(

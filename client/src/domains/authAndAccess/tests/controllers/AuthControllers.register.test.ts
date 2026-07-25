@@ -3,13 +3,23 @@ import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
 import { VerificationService } from "../../services/VerificationService";
+import { LogoutService } from "../../services/LogoutService";
 import { DeleteAccountService } from "../../services/DeleteAccountService";
 import type { AuthApi } from "../../ports/AuthApi";
+import type { AuthSocketApi } from "../../ports/AuthSocketApi";
 import type { SyncRepository } from "@/domains/sync/ports/SyncRepository";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 function createFakeNotificationsPort(): NotificationsPort {
   return { notify: () => {} };
+}
+
+function createFakeAuthSocketApi(): AuthSocketApi {
+  return {
+    async logout() {
+      throw new Error("not used in this test");
+    },
+  };
 }
 
 const VALID_PASSWORD = "Password1!";
@@ -35,6 +45,9 @@ function createFakeAuthApi(overrides: Partial<AuthApi> = {}): AuthApi {
     async verifyRefreshToken() {
       throw new Error("not used in this test");
     },
+    async logout() {
+      throw new Error("not used in this test");
+    },
     async deleteAccount() {
       throw new Error("not used in this test");
     },
@@ -47,6 +60,7 @@ function createAuthControllers(authApi: AuthApi) {
     new LoginService(authApi),
     new RegistrationService(authApi),
     new VerificationService(authApi),
+    new LogoutService(authApi, createFakeAuthSocketApi(), createFakeSyncRepo()),
     new DeleteAccountService(authApi, createFakeSyncRepo()),
     createFakeNotificationsPort(),
   );

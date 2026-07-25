@@ -7,18 +7,24 @@ import { registerAuthSocketHandlers } from "./domains/authAndAccess/socketHandle
 import { registerMessagingSocketHandlers } from "./domains/messaging/socketHandlers/registerMessagingSocketHandlers";
 import type { AddUserToRoomsService } from "./domains/authAndAccess/services/AddUserToRoomsService";
 import type { MessagingControllers } from "./domains/messaging/controllers/socketControllers";
+import type { AuthAndAccessSocketControllers } from "./domains/authAndAccess/controllers/socketControllers";
 import type { IdentityDTO } from "./domains/authAndAccess/domainModels/identity";
 import type {
   MessagingClientToServerEvents,
   MessagingServerToClientEvents,
 } from "./domains/messaging/socketEvents";
 import type { ConversationsServerToClientEvents } from "./domains/conversations/socketEvents";
-import type { AuthServerToClientEvents } from "./domains/authAndAccess/socketEvents";
+import type {
+  AuthServerToClientEvents,
+  AuthClientToServerEvents,
+} from "./domains/authAndAccess/socketEvents";
 import type { PresenceServerToClientEvents } from "./domains/presence/socketEvents";
 import type { UserConnectedService } from "./domains/presence/services/UserConnectedService";
 import type { UserDisconnectedService } from "./domains/presence/services/UserDisconnectedService";
 
-interface ClientToServerEvents extends MessagingClientToServerEvents {}
+interface ClientToServerEvents
+  extends MessagingClientToServerEvents,
+    AuthClientToServerEvents {}
 
 interface ServerToClientEvents
   extends MessagingServerToClientEvents,
@@ -51,6 +57,7 @@ export const attachSocket = (
   verifyAccessTokenService: VerifyAccessTokenService,
   addUserToRoomsService: AddUserToRoomsService,
   messagingControllers: MessagingControllers,
+  authAndAccessSocketControllers: AuthAndAccessSocketControllers,
   userConnectedService: UserConnectedService,
   userDisconnectedService: UserDisconnectedService,
 ) => {
@@ -71,7 +78,12 @@ export const attachSocket = (
     // socket has actually joined the rooms it belongs to, causing a
     // spurious "Unauthorized room access" rejection on a legitimate send
     // right after connect/reconnect.
-    await registerAuthSocketHandlers(io, socket, addUserToRoomsService);
+    await registerAuthSocketHandlers(
+      io,
+      socket,
+      addUserToRoomsService,
+      authAndAccessSocketControllers,
+    );
     registerMessagingSocketHandlers(io, socket, messagingControllers);
 
     await userConnectedService.execute({ userId: socket.data.identity.id });

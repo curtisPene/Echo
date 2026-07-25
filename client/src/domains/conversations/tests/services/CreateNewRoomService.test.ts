@@ -69,6 +69,12 @@ function createFakeRoomsApi(overrides: Partial<RoomsApi> = {}): RoomsApi {
     async acceptInvite() {
       throw new Error("not used in this test");
     },
+    async addParticipant() {
+      throw new Error("not used in this test");
+    },
+    async rename() {
+      throw new Error("not used in this test");
+    },
     ...overrides,
   };
 }

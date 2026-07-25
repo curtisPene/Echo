@@ -4,9 +4,11 @@ import type {
   RegistrationServiceArgs,
 } from "../services/RegistrationService";
 import type { VerificationService } from "../services/VerificationService";
+import type { LogoutService } from "../services/LogoutService";
 import type { DeleteAccountService } from "../services/DeleteAccountService";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
+import { useSocketState } from "@/stores/useSocket";
 import type { ServiceResult } from "@/types";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
@@ -20,6 +22,7 @@ export class AuthControllers {
   private readonly loginService: LoginService;
   private readonly registrationService: RegistrationService;
   private readonly verificationService: VerificationService;
+  private readonly logoutService: LogoutService;
   private readonly deleteAccountService: DeleteAccountService;
   private readonly notificationsPort: NotificationsPort;
 
@@ -27,12 +30,14 @@ export class AuthControllers {
     loginService: LoginService,
     registrationService: RegistrationService,
     verificationService: VerificationService,
+    logoutService: LogoutService,
     deleteAccountService: DeleteAccountService,
     notificationsPort: NotificationsPort,
   ) {
     this.loginService = loginService;
     this.registrationService = registrationService;
     this.verificationService = verificationService;
+    this.logoutService = logoutService;
     this.deleteAccountService = deleteAccountService;
     this.notificationsPort = notificationsPort;
   }
@@ -95,6 +100,20 @@ export class AuthControllers {
       accessToken: result.data.accessToken,
     });
     useAppStatus.getState().setAppStatus("syncing");
+  };
+
+  logout = async (): Promise<ServiceResult<null>> => {
+    const result = await this.logoutService.execute();
+
+    if (result.success) {
+      useAuth.getState().setAuth({ authStatus: "unauthenticated", user: null });
+      useAppStatus.getState().setAppStatus("idle");
+      useSocketState.getState().setOnlineStatus("offline");
+    } else {
+      this.notificationsPort.notify(result.message, "error");
+    }
+
+    return result;
   };
 
   deleteAccount = async (): Promise<ServiceResult<null>> => {

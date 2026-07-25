@@ -6,6 +6,7 @@ import { RoomRepository } from "../ports/RoomRepository";
 import { AuthAndAccessSocket } from "../../authAndAccess/ports/AuthAndAccessSocket";
 import { IdentityDTO } from "../../authAndAccess/domainModels/identity";
 import { DeleteRoomService } from "./DeleteRoomService";
+import { RemoveParticipantFromRoomService } from "./RemoveParticipantFromRoomService";
 import { DeleteRoomMessagesService } from "../../messaging/services/DeleteRoomMessagesService";
 import { RedactUserMessagesInRoomService } from "../../messaging/services/RedactUserMessagesInRoomService";
 
@@ -20,6 +21,7 @@ export class UpdateRoomInviteService {
     private readonly deleteRoomService: DeleteRoomService,
     private readonly deleteRoomMessagesService: DeleteRoomMessagesService,
     private readonly redactUserMessagesInRoomService: RedactUserMessagesInRoomService,
+    private readonly removeParticipantFromRoomService: RemoveParticipantFromRoomService,
   ) {}
 
   async execute({
@@ -67,13 +69,28 @@ export class UpdateRoomInviteService {
         };
       }
 
-      const updated = isAcceptRequest
-        ? room.acceptParticipant(user.id)
-        : room.removeParticipant(user.id);
-      const saved = await this.roomRepo.update(updated);
-      const roomView = saved.toDTO();
+      let roomView: RoomDTO;
 
-      if (!isAcceptRequest) {
+      if (isAcceptRequest) {
+        const updated = room.acceptParticipant(user.id);
+        const saved = await this.roomRepo.update(updated);
+        roomView = saved.toDTO();
+      } else {
+        const removeResult = await this.removeParticipantFromRoomService.execute({
+          roomId,
+          userId: user.id,
+        });
+
+        if (!removeResult.success || !removeResult.data) {
+          return {
+            success: false,
+            message: removeResult.message,
+            data: null,
+          };
+        }
+
+        roomView = removeResult.data;
+
         await this.redactUserMessagesInRoomService.execute({
           userId: user.id,
           roomId,

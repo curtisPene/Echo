@@ -8,5 +8,9 @@ export const createRoomsRouter = (controllers: RoomsControllers) => {
 
   router.post("/accept-invite", controllers.acceptRoomInviteController);
 
+  router.post("/participants", controllers.addParticipantController);
+
+  router.post("/rename", controllers.renameRoomController);
+
   return router;
 };

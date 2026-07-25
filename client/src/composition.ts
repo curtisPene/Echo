@@ -1,4 +1,5 @@
 import { HttpAuthApi } from "./domains/authAndAccess/adapters/HttpAuthApi";
+import { SocketIOAuthSocketApi } from "./domains/authAndAccess/adapters/SocketIOAuthSocketApi";
 import { HttpContactsApi } from "./domains/authAndAccess/adapters/HttpContactsApi";
 import { DexieContactsRepo } from "./domains/authAndAccess/adapters/DexieContactsRepo";
 import { DexieRoomsRepo } from "./domains/conversations/adapters/DexieRoomsRepo";
@@ -11,6 +12,7 @@ import { DexieSyncRepo } from "./domains/sync/adapters/DexieSyncRepo";
 import { LoginService } from "./domains/authAndAccess/services/LoginService";
 import { RegistrationService } from "./domains/authAndAccess/services/RegistrationService";
 import { VerificationService } from "./domains/authAndAccess/services/VerificationService";
+import { LogoutService } from "./domains/authAndAccess/services/LogoutService";
 import { DeleteAccountService } from "./domains/authAndAccess/services/DeleteAccountService";
 import { GetContactsService } from "./domains/authAndAccess/services/GetContactsService";
 import { AddContactService } from "./domains/authAndAccess/services/AddContactService";
@@ -18,6 +20,8 @@ import { SearchContactService } from "./domains/authAndAccess/services/SearchCon
 import { BlockContactService } from "./domains/authAndAccess/services/BlockContactService";
 import { AcceptRequestService } from "./domains/conversations/services/acceptRequestService";
 import { CreateNewRoomService } from "./domains/conversations/services/createNewRoomService";
+import { AddParticipantToRoomService } from "./domains/conversations/services/addParticipantToRoomService";
+import { RenameRoomService } from "./domains/conversations/services/renameRoomService";
 import { GetRoomsService } from "./domains/conversations/services/getRoomsService";
 import { GetConversationDetailsService } from "./domains/conversations/services/getConversationDetailsService";
 import { GetMessagesService } from "./domains/messaging/services/getMessagesService";
@@ -38,6 +42,7 @@ import { ShadSonnerAdapter } from "./infrastructure/notifications/ShadSonnerAdap
 
 // 1. Adapters - the leaves, no dependencies on any service.
 const authApi = new HttpAuthApi();
+const authSocketApi = new SocketIOAuthSocketApi();
 const contactsApi = new HttpContactsApi();
 export const contactsRepo = new DexieContactsRepo();
 export const roomsRepo = new DexieRoomsRepo();
@@ -52,6 +57,11 @@ export const notifications = new ShadSonnerAdapter();
 export const loginService = new LoginService(authApi);
 export const registrationService = new RegistrationService(authApi);
 export const verificationService = new VerificationService(authApi);
+export const logoutService = new LogoutService(
+  authApi,
+  authSocketApi,
+  syncRepo,
+);
 export const deleteAccountService = new DeleteAccountService(authApi, syncRepo);
 export const getContactsService = new GetContactsService(contactsRepo);
 export const addContactService = new AddContactService(
@@ -73,6 +83,11 @@ export const createNewRoomService = new CreateNewRoomService(
   roomsApi,
   roomsRepo,
 );
+export const addParticipantToRoomService = new AddParticipantToRoomService(
+  roomsApi,
+  roomsRepo,
+);
+export const renameRoomService = new RenameRoomService(roomsApi, roomsRepo);
 export const getRoomsService = new GetRoomsService(roomsRepo);
 export const getConversationDetailsService = new GetConversationDetailsService(
   roomsRepo,
@@ -105,6 +120,7 @@ export const authControllers = new AuthControllers(
   loginService,
   registrationService,
   verificationService,
+  logoutService,
   deleteAccountService,
   notifications,
 );
@@ -117,8 +133,11 @@ export const contactsControllers = new ContactsControllers(
 export const roomsControllers = new RoomsControllers(
   acceptRequestService,
   createNewRoomService,
+  addParticipantToRoomService,
+  renameRoomService,
   notifications,
 );
+
 export const messagingControllers = new MessagingSocketControllers(
   sendMessageService,
   messageReceiveService,

@@ -230,4 +230,69 @@ export class Room {
       this.participants.filter((p) => p.userId !== userId),
     );
   }
+
+  /**
+   * Adds a new participant, pending until they accept - the same status a
+   * participant starts with on room creation. Any accepted participant can
+   * add anyone; there is no admin/creator role on Room.
+   */
+  addParticipant(entity: ParticipantEntity): Room {
+    if (this.hasParticipant(entity.id)) {
+      throw new DomainError(`Cannot add participant ${entity.id}: already in room ${this.id}`);
+    }
+
+    return new Room(
+      this.id,
+      this.name,
+      [...this.participants, Participant.hydrate(entity, "pending")],
+    );
+  }
+
+  /**
+   * Decides whether a new participant can be added, given every EXISTING
+   * participant's blocked-id list (accepted or still pending - a pending
+   * invite still counts, same contract room creation already upholds) and
+   * the new participant's own blocked-id list. Blocked in either direction,
+   * by anyone already on the room, blocks the add.
+   */
+  canAddParticipant(params: {
+    newParticipantId: string;
+    newParticipantBlockedIds: string[];
+    existingParticipantBlockedIds: Map<string, string[]>;
+  }):
+    | { allowed: true }
+    | {
+        allowed: false;
+        reason: "new_participant_blocked_existing" | "existing_participant_blocked_new";
+      } {
+    if (this.participants.some((p) => params.newParticipantBlockedIds.includes(p.userId))) {
+      return { allowed: false, reason: "new_participant_blocked_existing" };
+    }
+
+    const someExistingHasBlockedNew = this.participants.some((p) =>
+      (params.existingParticipantBlockedIds.get(p.userId) ?? []).includes(
+        params.newParticipantId,
+      ),
+    );
+
+    if (someExistingHasBlockedNew) {
+      return { allowed: false, reason: "existing_participant_blocked_new" };
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Renames the room. Any accepted participant can rename it; there is no
+   * admin/creator role on Room, same as add/removeParticipant.
+   */
+  rename(name: string): Room {
+    const trimmed = name.trim();
+
+    if (trimmed.length === 0) {
+      throw new DomainError(`Cannot rename room ${this.id}: name cannot be empty`);
+    }
+
+    return new Room(this.id, trimmed, this.participants);
+  }
 }

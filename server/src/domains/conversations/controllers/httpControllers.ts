@@ -1,15 +1,21 @@
 import { NextFunction, Request, Response } from "express";
 import { CreateNewRoomService } from "../services/createNewRoomService";
 import { UpdateRoomInviteService } from "../services/UpdateRoomInviteService";
+import { AddParticipantToRoomService } from "../services/AddParticipantToRoomService";
+import { RenameRoomService } from "../services/RenameRoomService";
 import {
   createNewRoomRequestSchema,
   acceptRoomInviteRequestSchema,
+  addParticipantRequestSchema,
+  renameRoomRequestSchema,
 } from "../types/roomsTypes";
 
 export class RoomsControllers {
   constructor(
     private readonly createNewRoomService: CreateNewRoomService,
     private readonly updateRoomInviteService: UpdateRoomInviteService,
+    private readonly addParticipantToRoomService: AddParticipantToRoomService,
+    private readonly renameRoomService: RenameRoomService,
   ) {}
 
   createNewRoomController = async (
@@ -87,6 +93,94 @@ export class RoomsControllers {
 
     if (!serviceResult.success) {
       return res.status(404).json({
+        success: false,
+        message: serviceResult.message,
+        data: null,
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: serviceResult.message,
+      data: serviceResult.data,
+    });
+  };
+
+  addParticipantController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    if (!req.user) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing request fields",
+        data: null,
+      });
+    }
+
+    const parsed = addParticipantRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
+    const serviceResult = await this.addParticipantToRoomService.execute({
+      user: req.user,
+      roomId: parsed.data.roomId,
+      participantId: parsed.data.participantId,
+    });
+
+    if (!serviceResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: serviceResult.message,
+        data: null,
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: serviceResult.message,
+      data: serviceResult.data,
+    });
+  };
+
+  renameRoomController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    if (!req.user) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing request fields",
+        data: null,
+      });
+    }
+
+    const parsed = renameRoomRequestSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+        data: null,
+      });
+    }
+
+    const serviceResult = await this.renameRoomService.execute({
+      user: req.user,
+      roomId: parsed.data.roomId,
+      name: parsed.data.name,
+    });
+
+    if (!serviceResult.success) {
+      return res.status(400).json({
         success: false,
         message: serviceResult.message,
         data: null,

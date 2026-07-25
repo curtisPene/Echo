@@ -9,6 +9,7 @@ import { SocketIOMessagingSocket } from "./domains/messaging/adapters/SocketIOMe
 import { RedisPresenceRepo } from "./domains/presence/adapters/RedisPresenceRepo";
 
 import { LoginService } from "./domains/authAndAccess/services/LoginService";
+import { LogoutService } from "./domains/authAndAccess/services/LogoutService";
 import { RegistrationService } from "./domains/authAndAccess/services/RegistrationService";
 import { VerifyAccessTokenService } from "./domains/authAndAccess/services/VerifyAccessTokenService";
 import { VerifyRefreshTokenService } from "./domains/authAndAccess/services/VerifyRefreshTokenService";
@@ -27,6 +28,8 @@ import { RemoveParticipantFromRoomService } from "./domains/conversations/servic
 import { DeleteRoomService } from "./domains/conversations/services/DeleteRoomService";
 import { CreateNewRoomService } from "./domains/conversations/services/createNewRoomService";
 import { UpdateRoomInviteService } from "./domains/conversations/services/UpdateRoomInviteService";
+import { AddParticipantToRoomService } from "./domains/conversations/services/AddParticipantToRoomService";
+import { RenameRoomService } from "./domains/conversations/services/RenameRoomService";
 
 import { FindRoomMessagesService } from "./domains/messaging/services/FindRoomMessagesService";
 import { DeleteRoomMessagesService } from "./domains/messaging/services/DeleteRoomMessagesService";
@@ -35,6 +38,7 @@ import { CreateMessageService } from "./domains/messaging/services/createMessage
 import { MessageStatusUpdateService } from "./domains/messaging/services/MessageStatusUpdateService";
 
 import { AuthControllers } from "./domains/authAndAccess/controllers/authHttpControllers";
+import { AuthAndAccessSocketControllers } from "./domains/authAndAccess/controllers/socketControllers";
 import { ContactsControllers } from "./domains/authAndAccess/controllers/contactsHttpControllers";
 import { SyncControllers } from "./domains/sync/controllers/httpControllers";
 import { RoomsControllers } from "./domains/conversations/controllers/httpControllers";
@@ -60,6 +64,7 @@ export const loginService = new LoginService(
   passwordHasher,
   tokenSigner,
 );
+export const logoutService = new LogoutService();
 export const registrationService = new RegistrationService(
   userRepo,
   contactsRepo,
@@ -122,6 +127,18 @@ export const acceptRoomInviteService = new UpdateRoomInviteService(
   deleteRoomService,
   deleteRoomMessagesService,
   redactUserMessagesInRoomService,
+  removeParticipantFromRoomService,
+);
+export const addParticipantToRoomService = new AddParticipantToRoomService(
+  roomRepo,
+  verifyUserIdService,
+  getUsersContactsService,
+  findUserIdentitiesService,
+  authAndAccessSocket,
+);
+export const renameRoomService = new RenameRoomService(
+  roomRepo,
+  authAndAccessSocket,
 );
 export const addContactService = new AddContactService(
   userRepo,
@@ -161,10 +178,12 @@ export const addUserToRoomsService = new AddUserToRoomsService(
 // 4. Controllers - built with exactly the services each one needs.
 export const authControllers = new AuthControllers(
   loginService,
+  logoutService,
   registrationService,
   verifyRefreshTokenService,
   deleteUserAccountService,
 );
+export const authAndAccessSocketControllers = new AuthAndAccessSocketControllers();
 export const contactsControllers = new ContactsControllers(
   searchUserService,
   addContactService,
@@ -174,6 +193,8 @@ export const syncControllers = new SyncControllers(syncUserDataService);
 export const roomsControllers = new RoomsControllers(
   createNewRoomService,
   acceptRoomInviteService,
+  addParticipantToRoomService,
+  renameRoomService,
 );
 export const messagingControllers = new MessagingControllers(
   createMessageService,

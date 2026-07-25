@@ -41,6 +41,7 @@ beforeAll(async () => {
     composition.verifyAccessTokenService,
     composition.addUserToRoomsService,
     composition.messagingControllers,
+    composition.authAndAccessSocketControllers,
     new UserConnectedService(
       fakePresenceRepo,
       fakeAuthAndAccessSocket,

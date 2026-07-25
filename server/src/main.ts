@@ -19,6 +19,7 @@ const run = async () => {
       composition.verifyAccessTokenService,
       composition.addUserToRoomsService,
       composition.messagingControllers,
+      composition.authAndAccessSocketControllers,
       composition.userConnectedService,
       composition.userDisconnectedService,
     );

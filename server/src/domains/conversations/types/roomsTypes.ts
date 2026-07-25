@@ -19,3 +19,20 @@ export const acceptRoomInviteRequestSchema = z.object({
 export type AcceptRoomInviteRequest = z.infer<
   typeof acceptRoomInviteRequestSchema
 >;
+
+export const addParticipantRequestSchema = z.object({
+  roomId: z.string(),
+  participantId: z.string(),
+}) satisfies z.ZodType<{
+  roomId: RoomDTO["id"];
+  participantId: ParticipantEntity["id"];
+}>;
+
+export type AddParticipantRequest = z.infer<typeof addParticipantRequestSchema>;
+
+export const renameRoomRequestSchema = z.object({
+  roomId: z.string(),
+  name: z.string().min(1),
+}) satisfies z.ZodType<{ roomId: RoomDTO["id"]; name: RoomDTO["name"] }>;
+
+export type RenameRoomRequest = z.infer<typeof renameRoomRequestSchema>;

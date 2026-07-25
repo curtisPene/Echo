@@ -3,16 +3,26 @@ import { AuthControllers } from "../../controllers/AuthControllers";
 import { LoginService } from "../../services/LoginService";
 import { RegistrationService } from "../../services/RegistrationService";
 import { VerificationService } from "../../services/VerificationService";
+import { LogoutService } from "../../services/LogoutService";
 import { DeleteAccountService } from "../../services/DeleteAccountService";
 import { User } from "../../entities/user";
 import { useAuth } from "@/stores/useAuth";
 import { useAppStatus } from "@/stores/useAppStatus";
 import type { AuthApi } from "../../ports/AuthApi";
+import type { AuthSocketApi } from "../../ports/AuthSocketApi";
 import type { SyncRepository } from "@/domains/sync/ports/SyncRepository";
 import type { NotificationsPort } from "@/infrastructure/notifications/ShadSonnerAdapter";
 
 function createFakeNotificationsPort(): NotificationsPort {
   return { notify: () => {} };
+}
+
+function createFakeAuthSocketApi(): AuthSocketApi {
+  return {
+    async logout() {
+      throw new Error("not used in this test");
+    },
+  };
 }
 
 function createFakeSyncRepo(): SyncRepository {
@@ -57,6 +67,9 @@ function createFakeAuthApi(): AuthApi {
     async deleteAccount() {
       throw new Error("not used in this test");
     },
+    async logout() {
+      throw new Error("not used in this test");
+    },
   };
 }
 
@@ -71,6 +84,7 @@ beforeEach(() => {
     new LoginService(fakeAuthApi),
     new RegistrationService(fakeAuthApi),
     new VerificationService(fakeAuthApi),
+    new LogoutService(fakeAuthApi, createFakeAuthSocketApi(), createFakeSyncRepo()),
     new DeleteAccountService(fakeAuthApi, createFakeSyncRepo()),
     createFakeNotificationsPort(),
   );

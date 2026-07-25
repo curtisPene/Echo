@@ -2,6 +2,7 @@ import "dotenv/config";
 import { beforeAll, afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createNewRoomService } from "../../../../composition";
 import { UpdateRoomInviteService } from "../../services/UpdateRoomInviteService";
+import { RemoveParticipantFromRoomService } from "../../services/RemoveParticipantFromRoomService";
 import { DeleteRoomService } from "../../services/DeleteRoomService";
 import { DeleteRoomMessagesService } from "../../../messaging/services/DeleteRoomMessagesService";
 import { RedactUserMessagesInRoomService } from "../../../messaging/services/RedactUserMessagesInRoomService";
@@ -31,6 +32,7 @@ beforeEach(() => {
     new DeleteRoomService(roomRepo),
     new DeleteRoomMessagesService(messageRepo),
     new RedactUserMessagesInRoomService(messageRepo),
+    new RemoveParticipantFromRoomService(roomRepo),
   );
 });
 

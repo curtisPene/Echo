@@ -33,6 +33,10 @@ export const userLoginSchema = z.object({
 
 export type UserLoginDto = z.infer<typeof userLoginSchema>;
 
+// No request schema for logout - like deleteAccountController, the acting
+// user comes from req.user (set by the auth middleware from the verified
+// access token), never from client-supplied input.
+
 // Socket handshake auth payload - not anchored to a domain DTO since
 // accessToken is a pure auth-transport value, not a field on any domain
 // object (nothing to Pick<> from).

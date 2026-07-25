@@ -53,3 +53,13 @@ export const acceptRoomInviteResponseSchema = apiResponseSchema(
 export type AcceptRoomInviteResponse = z.infer<
   typeof acceptRoomInviteResponseSchema
 >;
+
+export const addParticipantResponseSchema = apiResponseSchema(roomSchema);
+
+export type AddParticipantResponse = z.infer<
+  typeof addParticipantResponseSchema
+>;
+
+export const renameRoomResponseSchema = apiResponseSchema(roomSchema);
+
+export type RenameRoomResponse = z.infer<typeof renameRoomResponseSchema>;

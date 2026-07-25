@@ -4,6 +4,7 @@ import { HttpError } from "@/errors/HttpError";
 import {
   loginResponseSchema,
   registrationResponseSchema,
+  logoutResponseSchema,
   deleteAccountResponseSchema,
 } from "../types";
 import type { LoginArgs } from "../services/LoginService";
@@ -70,6 +71,11 @@ export class HttpAuthApi implements AuthApi {
         data: null,
       };
     }
+  }
+
+  async logout(): Promise<ServiceResult<null>> {
+    const response = await httpClient.post("/auth/logout");
+    return parseOrThrow(logoutResponseSchema, response.data);
   }
 
   async deleteAccount(): Promise<ServiceResult<null>> {

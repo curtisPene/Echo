@@ -3,6 +3,8 @@ import { parseOrThrow } from "@/lib/parseOrThrow";
 import {
   createNewRoomAPIResponseSchema,
   acceptRoomInviteResponseSchema,
+  addParticipantResponseSchema,
+  renameRoomResponseSchema,
 } from "../types";
 import { Room } from "../entities/room";
 import type { ServiceResult } from "@/types";
@@ -53,6 +55,51 @@ export class HttpRoomsApi implements RoomsApi {
       data: parsed.data.roomDeleted
         ? { roomDeleted: true, roomId: parsed.data.roomId }
         : { roomDeleted: false, room: Room.hydrate(parsed.data.room) },
+    };
+  }
+
+  async addParticipant({
+    roomId,
+    participantId,
+  }: {
+    roomId: string;
+    participantId: string;
+  }): Promise<ServiceResult<Room>> {
+    const response = await httpClient.post("/rooms/participants", {
+      roomId,
+      participantId,
+    });
+    const parsed = parseOrThrow(addParticipantResponseSchema, response.data);
+
+    if (!parsed.success || !parsed.data) {
+      return { success: false, message: parsed.message, data: null };
+    }
+
+    return {
+      success: true,
+      message: parsed.message,
+      data: Room.hydrate(parsed.data),
+    };
+  }
+
+  async rename({
+    roomId,
+    name,
+  }: {
+    roomId: string;
+    name: string;
+  }): Promise<ServiceResult<Room>> {
+    const response = await httpClient.post("/rooms/rename", { roomId, name });
+    const parsed = parseOrThrow(renameRoomResponseSchema, response.data);
+
+    if (!parsed.success || !parsed.data) {
+      return { success: false, message: parsed.message, data: null };
+    }
+
+    return {
+      success: true,
+      message: parsed.message,
+      data: Room.hydrate(parsed.data),
     };
   }
 }
