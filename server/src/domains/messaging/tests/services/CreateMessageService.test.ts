@@ -49,10 +49,12 @@ describe("CreateMessageService", () => {
 
     expect(result.success).toBe(true);
     if (!result.success || !result.data) throw new Error("unreachable");
-    expect(result.data.message.text).toBe("hello");
-    expect(result.data.message.sender.userId).toBe(sender.id);
-    expect(result.data.message.roomId).toBe(room.data.id);
-    expect(result.data.message.redacted).toBe(false);
+    const { message } = result.data;
+    if (message.redacted) throw new Error("unreachable");
+    expect(message.text).toBe("hello");
+    expect(message.sender.userId).toBe(sender.id);
+    expect(message.roomId).toBe(room.data.id);
+    expect(message.redacted).toBe(false);
 
     await cleanupUser(sender);
     await cleanupUser(recipient);

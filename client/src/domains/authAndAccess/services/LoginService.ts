@@ -20,6 +20,8 @@ export class LoginService {
     try {
       const result = await this.authApi.login({ email, password });
 
+      console.log(result);
+
       if (!result.success || !result.data) {
         return {
           success: false as const,

@@ -2,11 +2,13 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { ContactsControllers } from "../../controllers/ContactsControllers";
 import { AddContactService } from "../../services/AddContactService";
 import { SearchContactService } from "../../services/SearchContactService";
+import { SearchLocalContactsService } from "../../services/SearchLocalContactsService";
 import { BlockContactService } from "../../services/BlockContactService";
 import { DexieContactsRepo } from "../../adapters/DexieContactsRepo";
 import { DexieRoomsRepo } from "@/domains/conversations/adapters/DexieRoomsRepo";
 import { db } from "@/infrastructure/sync/db";
 import { useAuth } from "@/stores/useAuth";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 import { User } from "../../entities/user";
 import type { ContactsApi } from "../../ports/ContactsApi";
 import type { ContactDTO } from "../../entities/contacts";
@@ -34,12 +36,14 @@ const FAKE_ROOM = Room.hydrate({
       userId: CURRENT_USER.id,
       firstName: "Ada",
       lastName: "Lovelace",
+      email: CURRENT_USER.email,
       status: "accepted",
     },
     {
       userId: CONTACT_ID,
       firstName: "Grace",
       lastName: "Hopper",
+      email: "grace@example.com",
       status: "pending",
     },
   ],
@@ -82,6 +86,7 @@ function createContactsControllers(contactsApi: ContactsApi) {
       new DexieRoomsRepo(),
     ),
     new SearchContactService(contactsApi),
+    new SearchLocalContactsService(new DexieContactsRepo()),
     new BlockContactService(
       contactsApi,
       new DexieContactsRepo(),
@@ -101,6 +106,7 @@ beforeEach(async () => {
     user: CURRENT_USER,
     accessToken: "fake-access-token",
   });
+  useActiveRoom.setState({ activeRoom: null });
 });
 
 describe("ContactsControllers.addContact", () => {
@@ -319,5 +325,84 @@ describe("ContactsControllers.blockContact", () => {
     });
 
     expect(result).toEqual({ success: false, message: "User not found" });
+  });
+
+  it("clears the active room when blocking deletes the currently active 1:1 room", async () => {
+    useActiveRoom.setState({ activeRoom: FAKE_ROOM.toDTO() });
+
+    const contactsApi = createFakeContactsApi({
+      async block() {
+        return {
+          success: true,
+          message: "Contact blocked successfully",
+          data: {
+            blockedContactId: BLOCKED_CONTACT.userId,
+            updatedRooms: [{ roomId: FAKE_ROOM.id }],
+          },
+        };
+      },
+    });
+    const contactsControllers = createContactsControllers(contactsApi);
+
+    await contactsControllers.blockContact({ blockedContact: BLOCKED_CONTACT });
+
+    expect(useActiveRoom.getState().activeRoom).toBeNull();
+  });
+
+  it("refreshes the active room when blocking updates (not deletes) it, e.g. removal from a group", async () => {
+    useActiveRoom.setState({ activeRoom: FAKE_ROOM.toDTO() });
+    const updatedRoom = Room.hydrate({
+      id: FAKE_ROOM.id,
+      name: "Ada, Grace",
+      participants: [
+        {
+          userId: CURRENT_USER.id,
+          firstName: "Ada",
+          lastName: "Lovelace",
+          email: CURRENT_USER.email,
+          status: "accepted",
+        },
+      ],
+    });
+
+    const contactsApi = createFakeContactsApi({
+      async block() {
+        return {
+          success: true,
+          message: "Contact blocked successfully",
+          data: {
+            blockedContactId: BLOCKED_CONTACT.userId,
+            updatedRooms: [{ roomId: FAKE_ROOM.id, room: updatedRoom }],
+          },
+        };
+      },
+    });
+    const contactsControllers = createContactsControllers(contactsApi);
+
+    await contactsControllers.blockContact({ blockedContact: BLOCKED_CONTACT });
+
+    expect(useActiveRoom.getState().activeRoom).toEqual(updatedRoom.toDTO());
+  });
+
+  it("leaves the active room untouched when blocking affects a different room", async () => {
+    useActiveRoom.setState({ activeRoom: FAKE_ROOM.toDTO() });
+
+    const contactsApi = createFakeContactsApi({
+      async block() {
+        return {
+          success: true,
+          message: "Contact blocked successfully",
+          data: {
+            blockedContactId: BLOCKED_CONTACT.userId,
+            updatedRooms: [{ roomId: "some-other-room" }],
+          },
+        };
+      },
+    });
+    const contactsControllers = createContactsControllers(contactsApi);
+
+    await contactsControllers.blockContact({ blockedContact: BLOCKED_CONTACT });
+
+    expect(useActiveRoom.getState().activeRoom).toEqual(FAKE_ROOM.toDTO());
   });
 });

@@ -9,9 +9,9 @@ const UPDATED_ROOM = Room.hydrate({
   id: "room-1",
   name: "Ada, Grace, Alan",
   participants: [
-    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-    { userId: "user-2", firstName: "Grace", lastName: "Hopper", status: "accepted" },
-    { userId: "user-3", firstName: "Alan", lastName: "Turing", status: "pending" },
+    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com", status: "accepted" },
+    { userId: "user-2", firstName: "Grace", lastName: "Hopper", email: "grace@example.com", status: "accepted" },
+    { userId: "user-3", firstName: "Alan", lastName: "Turing", email: "alan@example.com", status: "pending" },
   ],
 });
 

@@ -157,7 +157,7 @@ describe("POST /rooms/accept-invite", () => {
     await cleanupUser(user);
   });
 
-  it("returns 404 for a nonexistent room id", async () => {
+  it("returns 400 for a nonexistent room id", async () => {
     const user = await registerAndLogin("Solo");
     const token = await accessTokenFor(user.email);
 
@@ -169,7 +169,7 @@ describe("POST /rooms/accept-invite", () => {
         isAcceptRequest: true,
       } as AcceptRoomInviteRequest);
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(400);
 
     await cleanupUser(user);
   });

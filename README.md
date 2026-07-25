@@ -38,13 +38,13 @@ Everything below—the testing strategy, the client architecture, the use of AI,
 
 ## Domains
 
-| Domain | Server | Client | Responsibility |
-| --- | --- | --- | --- |
-| `authAndAccess` | ✅ | ✅ | Authentication, public identity, contacts, requests, and blocking |
-| `conversations` | ✅ | ✅ | `Room` aggregate and participant membership |
-| `messaging` | ✅ | ✅ | `Message` aggregate, sending, delivery, and read state |
-| `sync` | ✅ | ✅ | Full/delta synchronization and the client sync cursor |
-| `presence` | ✅ | ✅ | Redis-backed online/offline state and live presence events |
+| Domain          | Server | Client | Responsibility                                                    |
+| --------------- | ------ | ------ | ----------------------------------------------------------------- |
+| `authAndAccess` | ✅     | ✅     | Authentication, public identity, contacts, requests, and blocking |
+| `conversations` | ✅     | ✅     | `Room` aggregate and participant membership                       |
+| `messaging`     | ✅     | ✅     | `Message` aggregate, sending, delivery, and read state            |
+| `sync`          | ✅     | ✅     | Full/delta synchronization and the client sync cursor             |
+| `presence`      | ✅     | ✅     | Redis-backed online/offline state and live presence events        |
 
 ### Domain boundaries
 
@@ -489,11 +489,7 @@ The original `authAndAccess` domain used one `User` model for both authenticatio
 
 ```ts
 {
-  id,
-  firstName,
-  lastName,
-  email,
-  password
+  (id, firstName, lastName, email, password);
 }
 ```
 
@@ -634,17 +630,21 @@ MongoDB, Redis, client, server, and the separate test tiers are still started ma
 
 A root script or containerized development harness should orchestrate that setup.
 
-## Architecture came too late
+## Design came too late
 
-The initial project began as an ordinary React/Express application because I underestimated how quickly messaging, membership, blocking, and synchronization would introduce real invariants.
+Architecture was always the point of this project, but the design work behind it wasn't done up front. I started writing services and figuring out flows ad hoc - no context map, no written list of services/queries/events/invariants - because I assumed the domain would stay simple. It didn't: messaging, membership, blocking, and synchronization all introduced real invariants I only discovered by hitting them in code.
 
-A domain map and short architecture decision record before implementation would have exposed those concerns earlier.
+A domain map and a short written inventory (services, queries, events, invariants) before implementation would have surfaced those concerns earlier, and would have kept decisions I'd already made from getting lost.
+
+A concrete case of this: the server already has two separate, independently-guarded services - `AddContactService` (search any user by email, add as a contact) and `AddParticipantToRoomService` (add an already-known user to a room). Somewhere earlier I'd also worked out that add-participant's search step doesn't need a server call at all - the client's already-synced local contacts list is sufficient and never meaningfully stale for that purpose. But that decision existed only in my head, not on paper, so while wiring the client's "add participant" dialog I forgot it and pointed the search step at the add-contact search instead, which finds any user rather than only the viewer's own contacts. A context map would have recorded that decision the moment it was made, instead of relying on me to remember it correctly weeks later.
 
 ## No group admin/removal, by omission
 
-Group chats support adding a participant, but not removing one as a standalone action (the only removals that exist are self-removal via declining an invite, and removal as a side effect of blocking). Real "kick someone from a group" needs an admin/creator concept `Room` doesn't have today.
+Group chats support adding a participant and leaving voluntarily, but not removing someone else as a standalone action (the only involuntary removals that exist are removal as a side effect of blocking). Real "kick someone from a group" needs an admin/creator concept `Room` doesn't have today.
 
-The reason it's missing isn't effort avoidance so much as a dependency I didn't see coming until I tried to add it: the moment an admin can be removed (an admin who gets blocked already goes through the existing removal path), something has to decide the new admin, and that rule would need enforcing at every call site that removes a participant — the block flow, account deletion, declining an invite — not just a new kick feature. That's a real, cross-cutting invariant discovered late, the same category as "Architecture came too late" above, not a UX nicety deferred on purpose.
+The reason it's missing isn't effort avoidance so much as a dependency I didn't see coming until I tried to add it: the moment an admin can be removed (an admin who gets blocked already goes through the existing removal path), something has to decide the new admin, and that rule would need enforcing at every call site that removes a participant — the block flow, account deletion, declining an invite — not just a new kick feature. That's a real, cross-cutting invariant discovered late, the same category as "Design came too late" above, not a UX nicety deferred on purpose. Full delete-for-everyone was considered and rejected for the same reason: without an owner, there's no principled answer to who's allowed to dissolve a room out from under everyone else.
+
+Voluntary self-removal ("Leave group") is built, and it reuses the invite-decline mechanism rather than being its own feature: a room invite _is_ pending membership (there's no separate invite record - `Room.create`/`addParticipant` add the invitee to the room immediately, just with status `"pending"`), so declining a pending invite and leaving an already-accepted room are the same domain operation - "remove me from this room" - regardless of which status the caller was at. `Room.removeParticipant` and the "deleting the last 1:1 participant dissolves the room" rule never checked status, so no new server code was needed - just a test proving the already-accepted case works, since only the pending case had ever been exercised. See the comments on `UpdateRoomInviteService` (server) and `useDeclineInviteViewModel` (client) for the full reasoning.
 
 ## First rebuild preserved weak dependencies
 
@@ -715,19 +715,19 @@ The claim is narrower: application behaviour is modelled deliberately and verifi
 
 # Current API surface
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/auth/register` | Create an account |
-| POST | `/auth/login` | Authenticate and issue a session |
-| POST | `/auth/verify` | Refresh/verify a session |
-| POST | `/auth/delete-account` | Delete the authenticated account |
-| GET | `/sync/user` | Full or delta user sync |
-| POST | `/contacts/search` | Search identities by email |
-| POST | `/contacts/add` | Add or request a contact |
-| POST | `/contacts/block` | Block a contact |
-| POST | `/rooms` | Create a room |
-| POST | `/rooms/accept-invite` | Accept a pending invitation |
-| GET | `/health` | Health check |
+| Method | Path                   | Purpose                          |
+| ------ | ---------------------- | -------------------------------- |
+| POST   | `/auth/register`       | Create an account                |
+| POST   | `/auth/login`          | Authenticate and issue a session |
+| POST   | `/auth/verify`         | Refresh/verify a session         |
+| POST   | `/auth/delete-account` | Delete the authenticated account |
+| GET    | `/sync/user`           | Full or delta user sync          |
+| POST   | `/contacts/search`     | Search identities by email       |
+| POST   | `/contacts/add`        | Add or request a contact         |
+| POST   | `/contacts/block`      | Block a contact                  |
+| POST   | `/rooms`               | Create a room                    |
+| POST   | `/rooms/accept-invite` | Accept a pending invitation      |
+| GET    | `/health`              | Health check                     |
 
 Socket events include:
 

@@ -1,25 +1,70 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import {
-  UserPlusIcon,
-  LogOutIcon,
-  BanIcon,
-  ChevronDownIcon,
-  MoreVerticalIcon,
-} from "lucide-react";
+import { UserPlusIcon, LogOutIcon, BanIcon } from "lucide-react";
 import clsx from "clsx";
+import { useActiveRoom } from "@/stores/useActiveRoom";
+import { useAuth } from "@/stores/useAuth";
+import { Room } from "@/domains/conversations/entities/room";
+import type { ParticipantDTO } from "@/domains/conversations/entities/room";
+import { getInitials } from "@/lib/utils";
+import { useBlockContactViewModel } from "@/domains/authAndAccess/viewModels/useBlockContactViewModel";
+import { useDeclineInviteViewModel } from "@/domains/conversations/viewModels/useDeclineInviteViewModel";
+import { useLayoutController } from "@/app/hooks/useLayoutController";
+import { MembersList } from "./MembersList";
+import { BlockConfirmDialog } from "./BlockConfirmDialog";
+import { AddParticipantDialog } from "./AddParticipantDialog";
+import { LeaveGroupDialog } from "./LeaveGroupDialog";
 
 export const ConversationDetailsContent = () => {
+  const { activeRoom } = useActiveRoom();
+  const currentUserId = useAuth((state) => state.user?.id);
+  const { isConfirming, isBlocking, openConfirm, cancel, confirmBlock } =
+    useBlockContactViewModel();
+  const [blockTarget, setBlockTarget] = useState<ParticipantDTO | null>(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isLeaveOpen, setIsLeaveOpen] = useState(false);
+  const { isDeclining, declineInvite } = useDeclineInviteViewModel();
+  const { viewConversations } = useLayoutController();
+
+  const handleLeaveGroup = async (roomId: string) => {
+    const result = await declineInvite(roomId);
+    if (result.success) {
+      setIsLeaveOpen(false);
+      viewConversations();
+    }
+  };
+
+  const toggleBlockTarget = (participant: ParticipantDTO) => {
+    if (isConfirming && blockTarget?.userId === participant.userId) {
+      cancel();
+    } else {
+      setBlockTarget(participant);
+      openConfirm();
+    }
+  };
+
+  if (!activeRoom || !currentUserId) return null;
+
+  const room = Room.hydrate(activeRoom);
+  const isOneOnOne = room.isOneOnOne();
+  const otherParticipants = room.getOtherParticipants(currentUserId);
+
+  const headerName = isOneOnOne
+    ? `${otherParticipants[0]?.firstName ?? ""} ${otherParticipants[0]?.lastName ?? ""}`.trim()
+    : activeRoom.name;
+
+  const headerInitials = isOneOnOne
+    ? getInitials(
+        otherParticipants[0]?.firstName ?? "",
+        otherParticipants[0]?.lastName ?? "",
+      )
+    : getInitials(activeRoom.name, "");
+
+  const headerSubtitle = isOneOnOne
+    ? undefined
+    : `${activeRoom.participants.length} members`;
+
   return (
     <div className={clsx("root", "flex flex-col gap-4 p-4")}>
       <div
@@ -32,107 +77,92 @@ export const ConversationDetailsContent = () => {
           size="lg"
           className={clsx("ring-brand", "size-16 rounded-full ring-2")}
         >
-          <AvatarFallback className={clsx("text-lg")}></AvatarFallback>
+          <AvatarFallback className={clsx("text-lg")}>
+            {headerInitials}
+          </AvatarFallback>
         </Avatar>
         <div>
-          <h2 className={clsx("text-foreground", "font-semibold")}></h2>
-          <p className={clsx("text-muted-foreground", "text-xs")}></p>
+          <h2 className={clsx("text-foreground", "font-semibold")}>
+            {headerName}
+          </h2>
+          <p className={clsx("text-muted-foreground", "text-xs")}>
+            {headerSubtitle}
+          </p>
         </div>
       </div>
 
       <div
-        className={clsx("detailsActions", "flex flex-row justify-center gap-3")}
+        className={clsx("detailsActions", "flex flex-row justify-center gap-6")}
       >
-        <Button variant="outline" size="icon" aria-label="Add member">
-          <UserPlusIcon size={16} strokeWidth={2} />
-        </Button>
-        <Button variant="outline" size="icon" aria-label="Leave group">
-          <LogOutIcon size={16} strokeWidth={2} />
-        </Button>
-        <Button variant="destructive" size="icon" aria-label="Block">
-          <BanIcon size={16} strokeWidth={2} />
-        </Button>
+        <div className={clsx("detailsActionAdd", "flex flex-col items-center gap-1")}>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Add member"
+            onClick={() => setIsAddOpen(true)}
+          >
+            <UserPlusIcon size={16} strokeWidth={2} />
+          </Button>
+          <span className={clsx("text-muted-foreground", "text-xs")}>Add</span>
+        </div>
+        <div className={clsx("detailsActionLeave", "flex flex-col items-center gap-1")}>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Leave group"
+            onClick={() => setIsLeaveOpen(true)}
+          >
+            <LogOutIcon size={16} strokeWidth={2} />
+          </Button>
+          <span className={clsx("text-muted-foreground", "text-xs")}>
+            Leave
+          </span>
+        </div>
+        {isOneOnOne && otherParticipants[0] && (
+          <div className={clsx("detailsActionBlock", "flex flex-col items-center gap-1")}>
+            <Button
+              variant="destructive"
+              size="icon"
+              aria-label="Block"
+              onClick={() => toggleBlockTarget(otherParticipants[0])}
+            >
+              <BanIcon size={16} strokeWidth={2} />
+            </Button>
+            <span className={clsx("text-muted-foreground", "text-xs")}>
+              Block
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className={clsx("membersSection", "flex flex-col gap-2")}>
-        <Collapsible defaultOpen>
-          <CollapsibleTrigger
-            className={clsx(
-              "text-muted-foreground hover:text-foreground group",
-              "mb-2 flex w-full items-center justify-between px-1 text-xs font-medium tracking-wide uppercase",
-            )}
-          >
-            Members
-            <ChevronDownIcon
-              size={14}
-              strokeWidth={2}
-              className={clsx(
-                "transition-transform group-data-panel-open:rotate-180",
-              )}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className={clsx("membersList", "flex flex-col gap-2")}>
-              <ul className={clsx("flex flex-col gap-1 pt-1")}>
-                <li
-                  className={clsx(
-                    "hover:bg-brand/10",
-                    "flex items-center gap-2 rounded-lg p-2",
-                  )}
-                >
-                  <Avatar
-                    className={clsx(
-                      "ring-brand",
-                      "size-8 rounded-full ring-2",
-                    )}
-                  >
-                    <AvatarFallback className={clsx("text-xs")}></AvatarFallback>
-                  </Avatar>
-                  <span className={clsx("text-foreground", "flex-1 text-sm")}></span>
-                  <Popover>
-                    <PopoverTrigger
-                      render={
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label="Member options"
-                        />
-                      }
-                    >
-                      <MoreVerticalIcon size={16} strokeWidth={2} />
-                    </PopoverTrigger>
-                    <PopoverContent
-                      align="end"
-                      className={clsx("w-auto p-1")}
-                    >
-                      <Button
-                        variant="destructive"
-                        className={clsx(
-                          "blockMemberButton",
-                          "w-full justify-start gap-2",
-                        )}
-                      >
-                        <BanIcon size={16} strokeWidth={2} />
-                        Block
-                      </Button>
-                    </PopoverContent>
-                  </Popover>
-                </li>
-              </ul>
-              <Button
-                variant="outline"
-                className={clsx(
-                  "addMemberButton",
-                  "mt-1 w-full justify-start gap-2",
-                )}
-              >
-                <UserPlusIcon size={16} strokeWidth={2} />
-                Add people to the chat
-              </Button>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
+      <MembersList
+        participants={room.getParticipants()}
+        currentUserId={currentUserId}
+        onToggleBlockTarget={toggleBlockTarget}
+        onOpenAddParticipant={() => setIsAddOpen(true)}
+      />
+
+      <BlockConfirmDialog
+        isOpen={isConfirming}
+        isBlocking={isBlocking}
+        blockTarget={blockTarget}
+        onCancel={cancel}
+        onConfirmBlock={confirmBlock}
+      />
+
+      <AddParticipantDialog
+        isOpen={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        roomId={activeRoom.id}
+        isParticipant={(userId) => room.hasParticipant(userId)}
+      />
+
+      <LeaveGroupDialog
+        isOpen={isLeaveOpen}
+        isLeaving={isDeclining}
+        onOpenChange={setIsLeaveOpen}
+        onConfirmLeave={() => handleLeaveGroup(activeRoom.id)}
+      />
     </div>
   );
 };

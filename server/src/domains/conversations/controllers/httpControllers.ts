@@ -92,7 +92,7 @@ export class RoomsControllers {
     });
 
     if (!serviceResult.success) {
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
         message: serviceResult.message,
         data: null,

@@ -1,24 +1,30 @@
-import { useState } from "react";
 import clsx from "clsx";
-import { Input } from "@/components/ui/input";
-import {
-  EllipsisVerticalIcon,
-  MessageCircleIcon,
-  SearchIcon,
-} from "lucide-react";
-import { Composer } from "@/domains/messaging/components/Composer";
-import { MessageList } from "@/domains/messaging/components/MessageList";
+import { BellIcon, MessageCircleIcon } from "lucide-react";
+import { ConversationScreen } from "@/domains/messaging/components/ConversationScreen";
 import { EchoLogo } from "./EchoLogo";
-import { UserAvatar } from "@/components/UserAvatar";
-import { NavItem } from "@/components/NavItem";
-import { Outlet } from "react-router";
+import { ProfileButton } from "./ProfileButton";
+import { ConversationsList } from "@/domains/conversations/components/ConversationList";
+import { RequestsList } from "@/domains/conversations/components/RequstsList";
 import { ConversationDetailsContent } from "@/domains/conversations/components/ConversationDetailsContent";
+import { useActiveRoom } from "@/stores/useActiveRoom";
+import {
+  useLayoutController,
+  type ActivePanel,
+} from "@/app/hooks/useLayoutController";
+
+const PANELS: Record<
+  ActivePanel,
+  { label: string; Component: () => React.JSX.Element }
+> = {
+  conversations: { label: "Chats", Component: ConversationsList },
+  notifications: { label: "Notifications", Component: RequestsList },
+};
 
 export const DesktopShell = () => {
-  const listHeader = "";
-  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
-  const desktopNavItems: { path: string; icon: typeof MessageCircleIcon }[] = [];
-  const room = null;
+  const { activeRoom } = useActiveRoom();
+  const { activePanel, viewConversations, viewNotifications } =
+    useLayoutController();
+  const { label: listHeader, Component: ActiveListPanel } = PANELS[activePanel];
 
   return (
     <div className="desktopShell from-brand/15 via-background to-background hidden h-dvh w-full flex-row gap-5 bg-linear-to-br p-4 sm:flex">
@@ -44,64 +50,53 @@ export const DesktopShell = () => {
             "flex flex-1 flex-col items-center gap-3",
           )}
         >
-          {desktopNavItems.map((item) => {
-            return <NavItem icon={item.icon} to={item.path} />;
-          })}
+          <button
+            type="button"
+            aria-label="Conversations"
+            onClick={viewConversations}
+            className={clsx(
+              "iconBarItem",
+              "text-muted-foreground hover:bg-brand/10 hover:text-brand flex size-11 cursor-pointer items-center justify-center rounded-full transition-colors",
+              activePanel === "conversations" && "bg-brand/15 text-brand",
+            )}
+          >
+            <MessageCircleIcon size={18} />
+          </button>
+          <button
+            type="button"
+            aria-label="Notifications"
+            onClick={viewNotifications}
+            className={clsx(
+              "iconBarItem",
+              "text-muted-foreground hover:bg-brand/10 hover:text-brand flex size-11 cursor-pointer items-center justify-center rounded-full transition-colors",
+              activePanel === "notifications" && "bg-brand/15 text-brand",
+            )}
+          >
+            <BellIcon size={18} />
+          </button>
         </div>
         <div
           className={clsx("iconBarFooter", "flex flex-col items-center gap-3")}
         >
-          <button className="cursor-pointer">
-            <UserAvatar />
-          </button>
+          <ProfileButton />
         </div>
       </div>
       <div
         className={clsx(
           "listPanel",
-          "listPanel bg-card flex w-55 shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md sm:hidden md:flex xl:w-80",
+          "listPanel bg-card flex w-60 shrink-0 flex-col overflow-y-auto rounded-2xl p-3 shadow-md sm:flex xl:w-80",
         )}
       >
         <div className="listPanelHeader flex flex-col gap-3 pb-3">
-          <h1 className="text-foreground flex flex-row items-center justify-between px-1 text-xl font-semibold">
+          <h1 className="text-foreground px-1 text-xl font-semibold">
             {listHeader}
           </h1>
-          <div className="relative">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input placeholder="Search" className="pl-9" />
-          </div>
         </div>
-        <Outlet />
+        <ActiveListPanel />
       </div>
-      {room ? (
-        <div className="conversationPanel flex flex-1 flex-col gap-5">
-          <div className="messagesPanel bg-card flex min-h-0 flex-1 flex-col rounded-2xl shadow-md">
-            <div
-              className={clsx(
-                "messageListHeader",
-                "border-border hidden shrink-0 flex-row items-center justify-between border-b-2 px-4 py-2 sm:flex lg:justify-center",
-              )}
-            >
-              <span className={clsx("size-8")} aria-hidden />
-              <h2
-                className={clsx("text-foreground", "text-center font-semibold")}
-              ></h2>
-              <button
-                className={clsx("roomDetailsTrigger", "lg:hidden")}
-                onClick={() => setIsDetailsVisible(!isDetailsVisible)}
-              >
-                <EllipsisVerticalIcon size={18} />
-              </button>
-            </div>
-            <div className="min-h-0 flex-1">
-              {isDetailsVisible ? (
-                <ConversationDetailsContent />
-              ) : (
-                <MessageList />
-              )}
-            </div>
-          </div>
-          <Composer />
+      {activeRoom ? (
+        <div className="conversationPanel flex flex-1 flex-col">
+          <ConversationScreen />
         </div>
       ) : (
         <div className="conversationPanel bg-card flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl shadow-md">

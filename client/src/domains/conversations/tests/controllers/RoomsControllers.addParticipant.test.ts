@@ -48,4 +48,29 @@ describe("RoomsControllers.addParticipant", () => {
       message: "This user has blocked someone already in this conversation",
     });
   });
+
+  it("refreshes the active room when it's the one just added to", async () => {
+    useActiveRoom.setState({ activeRoom: UPDATED_ROOM.toDTO() });
+    const controllers = createRoomsControllers(createFakeRoomsApi());
+
+    await controllers.addParticipant({
+      roomId: UPDATED_ROOM.id,
+      participantId: "user-3",
+    });
+
+    expect(useActiveRoom.getState().activeRoom).toEqual(UPDATED_ROOM.toDTO());
+  });
+
+  it("leaves the active room untouched when a different room was added to", async () => {
+    const otherRoom = { id: "room-other", name: "Other", participants: [] };
+    useActiveRoom.setState({ activeRoom: otherRoom });
+    const controllers = createRoomsControllers(createFakeRoomsApi());
+
+    await controllers.addParticipant({
+      roomId: UPDATED_ROOM.id,
+      participantId: "user-3",
+    });
+
+    expect(useActiveRoom.getState().activeRoom).toEqual(otherRoom);
+  });
 });

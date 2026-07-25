@@ -225,6 +225,7 @@ describe("MessageStatusUpdateService - read", () => {
 
     expect(result.success).toBe(true);
     if (!result.success || !result.data) throw new Error("unreachable");
+    if (result.data.message.redacted) throw new Error("unreachable");
     expect(result.data.message.deliveryStatus).toBe("read");
     expect(result.data.message.readBy.map((r) => r.userId)).toEqual([recipient.id]);
     // reading doesn't also mark it delivered - the two arrays stay independent
@@ -309,6 +310,7 @@ describe("MessageStatusUpdateService - read", () => {
 
     expect(second.success).toBe(true);
     if (!second.success || !second.data) throw new Error("unreachable");
+    if (second.data.message.redacted) throw new Error("unreachable");
     expect(second.data.message.readBy.map((r) => r.userId)).toEqual([recipient.id]);
 
     await cleanupUser(sender);
@@ -347,6 +349,7 @@ describe("MessageStatusUpdateService - read", () => {
 
     expect(afterRead.success).toBe(true);
     if (!afterRead.success || !afterRead.data) throw new Error("unreachable");
+    if (afterRead.data.message.redacted) throw new Error("unreachable");
     expect(afterRead.data.message.deliveredTo).toEqual([recipient.id]);
     expect(afterRead.data.message.readBy.map((r) => r.userId)).toEqual([recipient.id]);
     expect(afterRead.data.message.deliveryStatus).toBe("read");

@@ -8,8 +8,8 @@ const ROOM: RoomDTO = {
   id: "room-1",
   name: "Ada, Grace",
   participants: [
-    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-    { userId: "user-2", firstName: "Grace", lastName: "Hopper", status: "pending" },
+    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com", status: "accepted" },
+    { userId: "user-2", firstName: "Grace", lastName: "Hopper", email: "grace@example.com", status: "pending" },
   ],
 };
 

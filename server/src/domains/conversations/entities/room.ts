@@ -4,6 +4,7 @@ export interface ParticipantEntity {
   id: string;
   firstName: string;
   lastName: string;
+  email: string;
 }
 
 class Participant {
@@ -11,6 +12,7 @@ class Participant {
     readonly userId: string,
     readonly firstName: string,
     readonly lastName: string,
+    readonly email: string,
     readonly status: "pending" | "accepted",
   ) {}
 
@@ -18,7 +20,13 @@ class Participant {
     entity: ParticipantEntity,
     status: "pending" | "accepted",
   ): Participant {
-    return new Participant(entity.id, entity.firstName, entity.lastName, status);
+    return new Participant(
+      entity.id,
+      entity.firstName,
+      entity.lastName,
+      entity.email,
+      status,
+    );
   }
 
   /**
@@ -32,7 +40,13 @@ class Participant {
       );
     }
 
-    return new Participant(this.userId, this.firstName, this.lastName, "accepted");
+    return new Participant(
+      this.userId,
+      this.firstName,
+      this.lastName,
+      this.email,
+      "accepted",
+    );
   }
 }
 
@@ -45,6 +59,7 @@ export interface ParticipantDTO {
   userId: string;
   firstName: string;
   lastName: string;
+  email: string;
   status: "pending" | "accepted";
 }
 
@@ -177,6 +192,7 @@ export class Room {
       userId: p.userId,
       firstName: p.firstName,
       lastName: p.lastName,
+      email: p.email,
       status: p.status,
     }));
   }

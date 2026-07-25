@@ -4,6 +4,7 @@ export interface UserIdentity {
   id: string;
   firstName: string;
   lastName: string;
+  email: string;
 }
 
 export class FindUserIdentitiesService {
@@ -16,6 +17,7 @@ export class FindUserIdentitiesService {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
+      email: user.email,
     }));
   }
 }

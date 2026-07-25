@@ -30,3 +30,33 @@ export function formatMessageTime(isoDate: string) {
     minute: "2-digit",
   });
 }
+
+function ordinal(day: number) {
+  if (day >= 11 && day <= 13) return `${day}th`;
+  switch (day % 10) {
+    case 1:
+      return `${day}st`;
+    case 2:
+      return `${day}nd`;
+    case 3:
+      return `${day}rd`;
+    default:
+      return `${day}th`;
+  }
+}
+
+export function formatMessageTimestamp(isoDate: string) {
+  const date = new Date(isoDate);
+  const diffMs = Date.now() - date.getTime();
+  const diffDays = diffMs / (24 * 60 * 60 * 1000);
+  const time = formatMessageTime(isoDate);
+
+  if (diffDays < 1) return time;
+
+  const weekday = date.toLocaleDateString([], { weekday: "short" });
+
+  if (diffDays < 7) return `${weekday} ${time}`;
+
+  const month = date.toLocaleDateString([], { month: "short" });
+  return `${weekday} ${ordinal(date.getDate())} ${month} ${time}`;
+}

@@ -18,6 +18,8 @@ export class HttpSyncApi implements SyncApi {
     );
     const parsed = parseOrThrow(appSyncResponseSchema, response.data);
 
+    console.log(parsed);
+
     if (!parsed.success || !parsed.data) {
       return { success: false, message: parsed.message, data: null };
     }

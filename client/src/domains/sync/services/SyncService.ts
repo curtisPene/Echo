@@ -37,19 +37,17 @@ export class SyncService {
     auth: Extract<Auth, { authStatus: "authenticated" }>;
   }): Promise<ServiceResult<null>> {
     try {
-      let context = await this.syncRepo.getSyncContext();
+      const context = await this.syncRepo.getSyncContext();
 
-      if (!context || context.userId !== auth.user.id) {
-        if (context) await this.syncRepo.dropDatabase();
-        context = SyncContext.hydrate({
-          userId: auth.user.id,
-          lastSyncedAt: null,
-        });
+      // Only wipe local data when switching to a different user - the same
+      // user re-syncing (e.g. every login) should never lose their cache.
+      if (context && context.userId !== auth.user.id) {
+        await this.syncRepo.dropDatabase();
       }
 
-      const syncResponse = await this.syncApi.fetchSyncData({
-        since: context.lastSyncedAt ?? undefined,
-      });
+      // Always a full sync - the server's delta support (via `since`) is
+      // unused on purpose, so there's no local timestamp to thread through.
+      const syncResponse = await this.syncApi.fetchSyncData({});
 
       if (!syncResponse.success || !syncResponse.data) {
         return {
@@ -82,6 +80,8 @@ export class SyncService {
         data: null,
       };
     } catch (error) {
+      console.error("[SyncService] real error:", error);
+
       if (
         error instanceof DomainError ||
         error instanceof RepoError ||

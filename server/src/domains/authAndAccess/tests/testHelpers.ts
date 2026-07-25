@@ -97,7 +97,7 @@ export function createFakeMessagingSocket() {
   return { socket, calls };
 }
 
-export function createFakePresenceRepo() {
+export function createFakePresenceRepo(onlineUserIds: string[] = []) {
   const calls: { method: string; args: unknown }[] = [];
 
   const repo: PresenceRepository = {
@@ -109,7 +109,9 @@ export function createFakePresenceRepo() {
     },
     getOnlineStatuses: async (params) => {
       calls.push({ method: "getOnlineStatuses", args: params });
-      return Object.fromEntries(params.userIds.map((userId) => [userId, false]));
+      return Object.fromEntries(
+        params.userIds.map((userId) => [userId, onlineUserIds.includes(userId)]),
+      );
     },
   };
 

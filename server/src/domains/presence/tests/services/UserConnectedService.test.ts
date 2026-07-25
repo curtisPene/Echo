@@ -114,4 +114,59 @@ describe("UserConnectedService", () => {
       userConnectedService.execute({ userId: new mongoose.Types.ObjectId().toString() }),
     ).resolves.toBeUndefined();
   });
+
+  it("sends the connecting user a snapshot of which contacts are already online", async () => {
+    const a = await registerAndLogin("A");
+    const b = await registerAndLogin("B");
+    const c = await registerAndLogin("C");
+
+    await addContactService.execute({ userId: a.id, contactId: b.id });
+    await addContactService.execute({ userId: a.id, contactId: c.id });
+
+    // B is already online (in Redis) before A connects; C is not.
+    const presenceRepoWithBOnline = createFakePresenceRepo([b.id]).repo;
+    const service = new UserConnectedService(
+      presenceRepoWithBOnline,
+      fakeSocket.socket,
+      getUsersContactsService,
+    );
+
+    await service.execute({ userId: a.id });
+
+    const onlineEmits = fakeSocket.calls.filter(
+      (call) => call.method === "emitToUser",
+    );
+
+    expect(onlineEmits).toContainEqual({
+      method: "emitToUser",
+      args: { userId: a.id, event: "user:online", payload: { userId: b.id } },
+    });
+    expect(onlineEmits).not.toContainEqual({
+      method: "emitToUser",
+      args: { userId: a.id, event: "user:online", payload: { userId: c.id } },
+    });
+
+    await cleanupUser(a);
+    await cleanupUser(b);
+    await cleanupUser(c);
+  });
+
+  it("sends no snapshot emits when none of the user's contacts are online", async () => {
+    const a = await registerAndLogin("A");
+    const b = await registerAndLogin("B");
+
+    await addContactService.execute({ userId: a.id, contactId: b.id });
+
+    await userConnectedService.execute({ userId: a.id });
+
+    const selfEmits = fakeSocket.calls.filter(
+      (call) =>
+        call.method === "emitToUser" &&
+        (call.args as { userId: string }).userId === a.id,
+    );
+    expect(selfEmits).toEqual([]);
+
+    await cleanupUser(a);
+    await cleanupUser(b);
+  });
 });

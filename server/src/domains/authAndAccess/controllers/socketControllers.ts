@@ -9,7 +9,7 @@ export class AuthAndAccessSocketControllers {
     socket: AuthSocket;
     ack: (response: ServiceResult<null>) => void;
   }) => {
-    socket.disconnect(true);
     ack({ success: true, message: "Logged out successfully", data: null });
+    socket.disconnect(true);
   };
 }

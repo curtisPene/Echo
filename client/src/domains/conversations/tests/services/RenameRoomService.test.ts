@@ -9,8 +9,8 @@ const RENAMED_ROOM = Room.hydrate({
   id: "room-1",
   name: "New Room Name",
   participants: [
-    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-    { userId: "user-2", firstName: "Grace", lastName: "Hopper", status: "accepted" },
+    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com", status: "accepted" },
+    { userId: "user-2", firstName: "Grace", lastName: "Hopper", email: "grace@example.com", status: "accepted" },
   ],
 });
 

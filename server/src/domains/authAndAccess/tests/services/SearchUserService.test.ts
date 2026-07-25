@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
-import { searchUserService } from "../../../../composition";
+import { searchUserService, createNewRoomService } from "../../../../composition";
 import { BlockContactService } from "../../services/BlockContactService";
+import { AddContactService } from "../../services/AddContactService";
 import { userRepo } from "../../repo/UserRepo";
 import { contactsRepo } from "../../repo/ContactsRepo";
 import { FindUserIdentitiesService } from "../../services/FindUserIdentitiesService";
@@ -19,10 +20,11 @@ import mongoose from "mongoose";
 const roomRepo = new RoomRepo(new FindUserIdentitiesService(userRepo));
 const messageRepo = new MessageRepo(new FindUserIdentitiesService(userRepo));
 
-// blockContactService is only used here as setup (to establish a blocked
-// relationship) - not the subject under test - but it still needs a socket
-// that won't throw, so it's constructed locally with a fake one rather than
-// using the real composed instance from composition.ts.
+// blockContactService and addContactService are only used here as setup (to
+// establish a blocked/contact relationship) - not the subject under test -
+// but they still need a socket that won't throw, so they're constructed
+// locally with a fake one rather than using the real composed instances
+// from composition.ts.
 const blockContactService = new BlockContactService(
   userRepo,
   contactsRepo,
@@ -32,6 +34,13 @@ const blockContactService = new BlockContactService(
   new DeleteRoomService(roomRepo),
   new DeleteRoomMessagesService(messageRepo),
   new RedactUserMessagesInRoomService(messageRepo),
+);
+
+const addContactService = new AddContactService(
+  userRepo,
+  contactsRepo,
+  createFakeSocket().socket,
+  createNewRoomService,
 );
 
 beforeAll(async () => {
@@ -93,6 +102,51 @@ describe("SearchUserService", () => {
 
     expect(result.success).toBe(false);
     expect(result.message).toBe("User blocked");
+
+    await cleanupUser(searcher);
+    await cleanupUser(target);
+  });
+
+  it("fails with 'User not found' when the viewer has blocked the found user", async () => {
+    const searcher = await registerAndLogin("Searcher");
+    const target = await registerAndLogin("Target");
+
+    const blockResult = await blockContactService.execute({
+      user: searcher.id,
+      blockedUser: target.id,
+    });
+    expect(blockResult.success).toBe(true);
+
+    const result = await searchUserService.execute({
+      email: target.email,
+      viewerId: searcher.id,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.message).toBe("User not found");
+
+    await cleanupUser(searcher);
+    await cleanupUser(target);
+  });
+
+  it("still finds a user who is already a contact - that check belongs to the caller (AddContactService), not this shared search", async () => {
+    const searcher = await registerAndLogin("Searcher");
+    const target = await registerAndLogin("Target");
+
+    const addResult = await addContactService.execute({
+      userId: searcher.id,
+      contactId: target.id,
+    });
+    expect(addResult.success).toBe(true);
+
+    const result = await searchUserService.execute({
+      email: target.email,
+      viewerId: searcher.id,
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success || !result.data) throw new Error("unreachable");
+    expect(result.data.user.id).toBe(target.id);
 
     await cleanupUser(searcher);
     await cleanupUser(target);

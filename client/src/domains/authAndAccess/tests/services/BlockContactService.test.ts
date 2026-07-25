@@ -18,8 +18,8 @@ const GROUP_ROOM = Room.hydrate({
   id: "room-group",
   name: "Ada, Grace, Alan",
   participants: [
-    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", status: "accepted" },
-    { userId: "user-3", firstName: "Alan", lastName: "Turing", status: "accepted" },
+    { userId: "user-1", firstName: "Ada", lastName: "Lovelace", email: "ada@example.com", status: "accepted" },
+    { userId: "user-3", firstName: "Alan", lastName: "Turing", email: "alan@example.com", status: "accepted" },
   ],
 });
 

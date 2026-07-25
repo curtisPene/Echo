@@ -71,18 +71,31 @@ export interface ReadDTO {
   readAt: Date;
 }
 
-export interface MessageDTO {
-  id: string;
-  roomId: string;
-  sender: SenderDTO;
-  text: string;
-  redacted: boolean;
-  createdAt: Date;
-  reactions: ReactionDTO[];
-  readBy: ReadDTO[];
-  deliveredTo: string[];
-  deliveryStatus: DeliveryStatus;
-}
+export type MessageDTO =
+  | {
+      id: string;
+      roomId: string;
+      redacted: false;
+      sender: SenderDTO;
+      text: string;
+      createdAt: Date;
+      reactions: ReactionDTO[];
+      readBy: ReadDTO[];
+      deliveredTo: string[];
+      deliveryStatus: DeliveryStatus;
+    }
+  | {
+      id: string;
+      roomId: string;
+      redacted: true;
+      sender: null;
+      text: null;
+      createdAt: Date;
+      reactions: null;
+      readBy: null;
+      deliveredTo: string[];
+      deliveryStatus: DeliveryStatus;
+    };
 
 export interface NewMessage {
   roomId: string;
@@ -255,16 +268,31 @@ export class Message {
    * getDeliveryStatus above for why this can't be computed without it.
    */
   toDTO(roomDTO: RoomDTO): MessageDTO {
+    if (this.redacted) {
+      return {
+        id: this.id,
+        roomId: this.roomId,
+        redacted: true,
+        sender: null,
+        text: null,
+        createdAt: this.createdAt,
+        reactions: null,
+        readBy: null,
+        deliveredTo: [...this.deliveredTo],
+        deliveryStatus: this.getDeliveryStatus(roomDTO),
+      };
+    }
+
     return {
       id: this.id,
       roomId: this.roomId,
+      redacted: false,
       sender: {
         userId: this.sender.userId,
         firstName: this.sender.firstName,
         lastName: this.sender.lastName,
       },
       text: this.text,
-      redacted: this.redacted,
       createdAt: this.createdAt,
       reactions: this.reactions.map((r) => ({
         userId: r.userId,

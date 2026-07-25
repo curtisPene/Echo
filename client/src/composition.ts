@@ -17,6 +17,7 @@ import { DeleteAccountService } from "./domains/authAndAccess/services/DeleteAcc
 import { GetContactsService } from "./domains/authAndAccess/services/GetContactsService";
 import { AddContactService } from "./domains/authAndAccess/services/AddContactService";
 import { SearchContactService } from "./domains/authAndAccess/services/SearchContactService";
+import { SearchLocalContactsService } from "./domains/authAndAccess/services/SearchLocalContactsService";
 import { BlockContactService } from "./domains/authAndAccess/services/BlockContactService";
 import { AcceptRequestService } from "./domains/conversations/services/acceptRequestService";
 import { CreateNewRoomService } from "./domains/conversations/services/createNewRoomService";
@@ -70,6 +71,9 @@ export const addContactService = new AddContactService(
   roomsRepo,
 );
 export const searchContactService = new SearchContactService(contactsApi);
+export const searchLocalContactsService = new SearchLocalContactsService(
+  contactsRepo,
+);
 export const blockContactService = new BlockContactService(
   contactsApi,
   contactsRepo,
@@ -127,6 +131,7 @@ export const authControllers = new AuthControllers(
 export const contactsControllers = new ContactsControllers(
   addContactService,
   searchContactService,
+  searchLocalContactsService,
   blockContactService,
   notifications,
 );

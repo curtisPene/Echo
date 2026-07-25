@@ -5,9 +5,10 @@ import { PublicOnlyPath } from "./components/PublicOnlyPath";
 import { RegistrationPage } from "@/domains/authAndAccess/components/RegistrationPage";
 import { ProtectedPath } from "./components/ProtectedPath";
 import { ConversationsList } from "@/domains/conversations/components/ConversationList";
-import { MobileChatScreen } from "@/domains/messaging/components/MobileChatScreen";
+import { ConversationScreen } from "@/domains/messaging/components/ConversationScreen";
+import { ConversationDetailsContent } from "@/domains/conversations/components/ConversationDetailsContent";
 import { RequestsList } from "@/domains/conversations/components/RequstsList";
-import { ProfilePage } from "@/domains/authAndAccess/components/ProfilePage";
+import { ProfileContent } from "@/domains/authAndAccess/components/ProfileContent";
 
 export const router = createBrowserRouter([
   {
@@ -46,7 +47,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/chats/:roomId",
-        element: <MobileChatScreen />,
+        element: <ConversationScreen />,
+      },
+      {
+        path: "/chats/:roomId/details",
+        element: <ConversationDetailsContent />,
       },
       {
         path: "/requests",
@@ -54,7 +59,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <ProfilePage />,
+        element: <ProfileContent />,
       },
     ],
     hydrateFallbackElement: <div>Loading...</div>,

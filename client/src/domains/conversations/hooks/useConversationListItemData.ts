@@ -11,6 +11,7 @@ export const useConversationListItemData = (room: RoomDTO) => {
   const entity = Room.hydrate(room);
 
   const isOneOnOne = entity.isOneOnOne();
+  const isSelfChat = entity.isSelfChat();
   const otherParticipants = currentUserId
     ? entity.getOtherParticipants(currentUserId)
     : entity.getParticipants();
@@ -54,6 +55,7 @@ export const useConversationListItemData = (room: RoomDTO) => {
 
   return {
     isOneOnOne,
+    isSelfChat,
     otherParticipants,
     status,
     isOnline,

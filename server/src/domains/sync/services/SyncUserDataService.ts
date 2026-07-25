@@ -34,6 +34,7 @@ export class SyncUserDataService {
         userId,
         since: sinceDate,
       });
+
       const findMessagesResult = await Promise.all(
         rooms.map(async (room) => {
           const { messages, unread } =

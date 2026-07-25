@@ -122,6 +122,7 @@ describe("MessagingControllers (socket entry point)", () => {
 
     expect(ack.success).toBe(true);
     if (!ack.success || !ack.data) throw new Error("unreachable");
+    if (ack.data.message.redacted) throw new Error("unreachable");
     expect(ack.data.message.text).toBe("hello from the socket controller");
     expect(ack.data.message.sender.userId).toBe(sender.id);
 
@@ -253,6 +254,7 @@ describe("MessagingControllers (socket entry point)", () => {
     if (!readAck.success || !readAck.data) {
       throw new Error("unreachable");
     }
+    if (readAck.data.message.redacted) throw new Error("unreachable");
     expect(readAck.data.message.deliveryStatus).toBe("read");
     expect(readAck.data.message.readBy.map((r) => r.userId)).toEqual([
       recipient.id,

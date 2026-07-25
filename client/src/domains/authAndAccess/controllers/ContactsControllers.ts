@@ -1,7 +1,9 @@
 import type { AddContactService } from "../services/AddContactService";
 import type { SearchContactService } from "../services/SearchContactService";
+import type { SearchLocalContactsService } from "../services/SearchLocalContactsService";
 import type { BlockContactService } from "../services/BlockContactService";
 import { useAuth } from "@/stores/useAuth";
+import { useActiveRoom } from "@/stores/useActiveRoom";
 import type { UserDTO } from "../entities/user";
 import type { ContactDTO } from "../entities/contacts";
 import type { RoomDTO } from "@/domains/conversations/entities/room";
@@ -15,6 +17,10 @@ export type SearchContactControllerResult =
   | { success: true; user: UserDTO }
   | { success: false; message: string };
 
+export type SearchLocalContactsControllerResult =
+  | { success: true; contact: ContactDTO }
+  | { success: false; message: string };
+
 export type BlockContactControllerResult =
   | { success: true; blockedContactId: string }
   | { success: false; message: string };
@@ -22,17 +28,20 @@ export type BlockContactControllerResult =
 export class ContactsControllers {
   private readonly addContactService: AddContactService;
   private readonly searchContactService: SearchContactService;
+  private readonly searchLocalContactsService: SearchLocalContactsService;
   private readonly blockContactService: BlockContactService;
   private readonly notificationsPort: NotificationsPort;
 
   constructor(
     addContactService: AddContactService,
     searchContactService: SearchContactService,
+    searchLocalContactsService: SearchLocalContactsService,
     blockContactService: BlockContactService,
     notificationsPort: NotificationsPort,
   ) {
     this.addContactService = addContactService;
     this.searchContactService = searchContactService;
+    this.searchLocalContactsService = searchLocalContactsService;
     this.blockContactService = blockContactService;
     this.notificationsPort = notificationsPort;
   }
@@ -86,6 +95,20 @@ export class ContactsControllers {
     };
   };
 
+  searchLocalContacts = async ({
+    email,
+  }: {
+    email: string;
+  }): Promise<SearchLocalContactsControllerResult> => {
+    const contact = await this.searchLocalContactsService.execute({ email });
+
+    if (!contact) {
+      return { success: false, message: "Contact not found" };
+    }
+
+    return { success: true, contact };
+  };
+
   blockContact = async ({
     blockedContact,
   }: {
@@ -103,6 +126,20 @@ export class ContactsControllers {
     if (!result.success || !result.data) {
       this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
+    }
+
+    const activeRoomId = useActiveRoom.getState().activeRoom?.id;
+
+    if (activeRoomId) {
+      const updatedRoom = result.data.updatedRooms.find(
+        (updated) => updated.roomId === activeRoomId,
+      );
+
+      if (updatedRoom && "room" in updatedRoom) {
+        useActiveRoom.getState().setActiveRoom(updatedRoom.room);
+      } else if (updatedRoom) {
+        useActiveRoom.getState().clearActiveRoom();
+      }
     }
 
     return { success: true, blockedContactId: result.data.blockedContactId };

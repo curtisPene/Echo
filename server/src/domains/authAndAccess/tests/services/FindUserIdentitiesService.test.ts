@@ -27,8 +27,18 @@ describe("FindUserIdentitiesService", () => {
     const identityA = identities.find((identity) => identity.id === a.id);
     const identityB = identities.find((identity) => identity.id === b.id);
 
-    expect(identityA).toEqual({ id: a.id, firstName: "A", lastName: "Demo" });
-    expect(identityB).toEqual({ id: b.id, firstName: "B", lastName: "Demo" });
+    expect(identityA).toEqual({
+      id: a.id,
+      firstName: "A",
+      lastName: "Demo",
+      email: a.email,
+    });
+    expect(identityB).toEqual({
+      id: b.id,
+      firstName: "B",
+      lastName: "Demo",
+      email: b.email,
+    });
 
     await cleanupUser(a);
     await cleanupUser(b);

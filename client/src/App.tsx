@@ -6,12 +6,16 @@ import { useAppBootstrap } from "./domains/sync/hooks/useAppBootstrap";
 import { useSocketState } from "./stores/useSocket";
 import { SoundProvider } from "./infrastructure/sound/SoundProvider";
 import { Router } from "./app/routing/Router";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   const auth = useAuth((state) => state);
   const { authStatus } = auth;
   const { appStatus } = useAppStatus((state) => state);
   const { onlineStatus, setOnlineStatus } = useSocketState();
+
+  console.log("AuthStatus: ", authStatus);
+  console.log("AppStatus: ", appStatus);
 
   useAppBootstrap({
     appStatus,
@@ -25,6 +29,7 @@ function App() {
   return (
     <SoundProvider>
       <Router />
+      <Toaster position="top-center" />
     </SoundProvider>
   );
 }

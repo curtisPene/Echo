@@ -6,6 +6,7 @@ export const participantSchema = z.object({
   userId: z.string(),
   firstName: z.string(),
   lastName: z.string(),
+  email: z.string(),
   status: z.enum(["pending", "accepted"]),
 }) satisfies z.ZodType<ParticipantDTO>;
 

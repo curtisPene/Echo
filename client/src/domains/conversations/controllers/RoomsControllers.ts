@@ -54,9 +54,21 @@ export class RoomsControllers {
       isAcceptRequest,
     });
 
-    if (!result.success) {
+    if (!result.success || !result.data) {
       this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
+    }
+
+    // Keep the active room in sync if it's the one that was just accepted/
+    // declined - otherwise a currently-open conversation would keep showing
+    // its pre-update (still "pending") state until the user reselects it.
+    if (!result.data.roomDeleted) {
+      const active = useActiveRoom.getState().activeRoom;
+      if (active?.id === result.data.room.id) {
+        this.selectRoom(result.data.room);
+      }
+    } else if (useActiveRoom.getState().activeRoom?.id === result.data.roomId) {
+      this.clearActiveRoom();
     }
 
     return { success: true };
@@ -93,9 +105,16 @@ export class RoomsControllers {
       participantId,
     });
 
-    if (!result.success) {
+    if (!result.success || !result.data) {
       this.notificationsPort.notify(result.message, "error");
       return { success: false, message: result.message };
+    }
+
+    // Keep the active room in sync if it's the one that was just added to -
+    // otherwise a currently-open conversation's member list would keep
+    // showing its pre-update state until the user reselects it.
+    if (useActiveRoom.getState().activeRoom?.id === result.data.id) {
+      this.selectRoom(result.data);
     }
 
     return { success: true };

@@ -34,6 +34,17 @@ export class SearchUserService {
       if (userContacts.hasBlocked(viewerId))
         return { success: false, message: "User blocked", data: null };
 
+      const viewerContacts = await this.contactsRepo.findByUserId({
+        userId: viewerId,
+      });
+
+      // Don't surface someone the viewer has already blocked - whether
+      // they're already a contact, or already in a given room, is a
+      // decision for the caller (AddContactService, room-participant
+      // search, etc.), not this shared find-by-email primitive.
+      if (viewerContacts.hasBlocked(user.id))
+        return { success: false, message: "User not found", data: null };
+
       return {
         success: true,
         message: "User found",

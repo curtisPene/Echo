@@ -193,6 +193,88 @@ describe("AcceptRoomInviteService", () => {
     await cleanupUser(invitee);
   });
 
+  it("lets an already-accepted participant leave a group room (same mechanism as declining a pending invite - there's no separate 'leave' operation)", async () => {
+    const creator = await registerAndLogin("Creator");
+    const invitee = await registerAndLogin("Invitee");
+    const other = await registerAndLogin("Other");
+
+    const room = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: invitee.id }, { id: other.id }],
+      name: "Group",
+    });
+    expect(room.success).toBe(true);
+    if (!room.success || !room.data) throw new Error("unreachable");
+
+    const acceptResult = await acceptRoomInviteService.execute({
+      user: invitee,
+      roomId: room.data.id,
+      isAcceptRequest: true,
+    });
+    expect(acceptResult.success).toBe(true);
+
+    const leaveResult = await acceptRoomInviteService.execute({
+      user: invitee,
+      roomId: room.data.id,
+      isAcceptRequest: false,
+    });
+
+    expect(leaveResult.success).toBe(true);
+    if (!leaveResult.success || !leaveResult.data) throw new Error("unreachable");
+    if (leaveResult.data.roomDeleted) throw new Error("unreachable");
+
+    const leftParticipant = leaveResult.data.room.participants.find(
+      (p) => p.userId === invitee.id,
+    );
+    expect(leftParticipant).toBeUndefined();
+
+    const stillExists = await roomRepo.findById({ roomId: room.data.id });
+    expect(stillExists).not.toBeNull();
+    expect(stillExists?.hasParticipant(creator.id)).toBe(true);
+    expect(stillExists?.hasParticipant(other.id)).toBe(true);
+    expect(stillExists?.hasParticipant(invitee.id)).toBe(false);
+
+    await cleanupUser(creator);
+    await cleanupUser(invitee);
+    await cleanupUser(other);
+  });
+
+  it("deletes the whole room when the last remaining accepted participant leaves a 1:1", async () => {
+    const creator = await registerAndLogin("Creator");
+    const invitee = await registerAndLogin("Invitee");
+
+    const room = await createNewRoomService.execute({
+      user: creator,
+      participants: [{ id: invitee.id }],
+      name: "Creator, Invitee",
+    });
+    expect(room.success).toBe(true);
+    if (!room.success || !room.data) throw new Error("unreachable");
+
+    const acceptResult = await acceptRoomInviteService.execute({
+      user: invitee,
+      roomId: room.data.id,
+      isAcceptRequest: true,
+    });
+    expect(acceptResult.success).toBe(true);
+
+    const leaveResult = await acceptRoomInviteService.execute({
+      user: invitee,
+      roomId: room.data.id,
+      isAcceptRequest: false,
+    });
+
+    expect(leaveResult.success).toBe(true);
+    if (!leaveResult.success || !leaveResult.data) throw new Error("unreachable");
+    if (!leaveResult.data.roomDeleted) throw new Error("unreachable");
+
+    const stillExists = await roomRepo.findById({ roomId: room.data.id });
+    expect(stillExists).toBeNull();
+
+    await cleanupUser(creator);
+    await cleanupUser(invitee);
+  });
+
   it("fails when the accepting user is not a participant of the room", async () => {
     const creator = await registerAndLogin("Creator");
     const invitee = await registerAndLogin("Invitee");

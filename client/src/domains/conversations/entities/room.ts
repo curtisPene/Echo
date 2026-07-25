@@ -4,6 +4,7 @@ export interface ParticipantDTO {
   userId: string;
   firstName: string;
   lastName: string;
+  email: string;
   status: "pending" | "accepted";
 }
 
@@ -11,12 +12,14 @@ class Participant {
   readonly userId: string;
   readonly firstName: string;
   readonly lastName: string;
+  readonly email: string;
   readonly status: "pending" | "accepted";
 
   private constructor(dto: ParticipantDTO) {
     this.userId = dto.userId;
     this.firstName = dto.firstName;
     this.lastName = dto.lastName;
+    this.email = dto.email;
     this.status = dto.status;
   }
 
@@ -39,6 +42,7 @@ class Participant {
       userId: this.userId,
       firstName: this.firstName,
       lastName: this.lastName,
+      email: this.email,
       status: "accepted",
     });
   }
@@ -146,6 +150,7 @@ export class Room {
       userId: p.userId,
       firstName: p.firstName,
       lastName: p.lastName,
+      email: p.email,
       status: p.status,
     }));
   }

@@ -1,15 +1,24 @@
 import clsx from "clsx";
 import { Outlet } from "react-router";
-import { ChevronLeftIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  EllipsisVerticalIcon,
+  MessageCircleIcon,
+  BellIcon,
+  UserIcon,
+} from "lucide-react";
 import { NavItem } from "@/components/NavItem";
-import { MessageList } from "@/domains/messaging/components/MessageList";
-import { Composer } from "@/domains/messaging/components/Composer";
+import { useMobileHeader } from "@/app/hooks/useMobileHeader";
+
+const MOBILE_NAV_ITEMS: { path: string; icon: typeof ChevronLeftIcon }[] = [
+  { path: "/chats", icon: MessageCircleIcon },
+  { path: "/requests", icon: BellIcon },
+  { path: "/profile", icon: UserIcon },
+];
 
 export const MobileShell = () => {
-  const listHeader = "";
-  const mobileNavItems: { path: string; icon: typeof ChevronLeftIcon }[] = [];
-  const room = null;
-  const clearActiveRoom = () => {};
+  const { title, showBackButton, showRoomDetailsButton, goBack, viewRoomDetails } =
+    useMobileHeader();
 
   return (
     <div
@@ -24,19 +33,29 @@ export const MobileShell = () => {
           "from-brand/15 via-background to-background flex shrink-0 items-center gap-2 bg-linear-to-br px-5 pt-6 pb-4",
         )}
       >
-        {room && (
+        {showBackButton && (
           <button
             type="button"
             aria-label="Back to conversations"
-            onClick={clearActiveRoom}
+            onClick={goBack}
             className="text-foreground -ml-1 flex size-8 shrink-0 items-center justify-center"
           >
             <ChevronLeftIcon size={22} />
           </button>
         )}
         <h1 className="text-foreground min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">
-          {listHeader}
+          {title}
         </h1>
+        {showRoomDetailsButton && (
+          <button
+            type="button"
+            aria-label="Conversation details"
+            onClick={viewRoomDetails}
+            className="text-foreground -mr-1 flex size-8 shrink-0 items-center justify-center"
+          >
+            <EllipsisVerticalIcon size={20} />
+          </button>
+        )}
       </div>
       <div
         className={clsx(
@@ -44,18 +63,7 @@ export const MobileShell = () => {
           "flex min-h-0 flex-1 flex-col overflow-y-auto p-4 pb-24",
         )}
       >
-        {room ? (
-          <div
-            className={clsx("mobileChatScreen", "flex h-full min-h-0 flex-col")}
-          >
-            <div className={clsx("messagesPanel", "min-h-0 flex-1")}>
-              <MessageList />
-            </div>
-            <Composer />
-          </div>
-        ) : (
-          <Outlet />
-        )}
+        <Outlet />
       </div>
       <div
         className={clsx(
@@ -69,7 +77,7 @@ export const MobileShell = () => {
             "bg-card pointer-events-auto flex w-full max-w-sm items-center justify-between rounded-full px-4 py-2 shadow-md",
           )}
         >
-          {mobileNavItems.map((item) => (
+          {MOBILE_NAV_ITEMS.map((item) => (
             <NavItem key={item.path} icon={item.icon} to={item.path} />
           ))}
         </div>
