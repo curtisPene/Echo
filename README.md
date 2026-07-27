@@ -1,5 +1,7 @@
 # Echo
 
+**Actively in progress.** The core domains (auth, contacts, conversations, messaging, sync, presence) work end-to-end and are tested, but the client UI and several features below are still being built — see [What's built](#whats-built) for the honest current split.
+
 > What if the application, not the framework, was the thing you actually designed — designed well enough that another developer, or an AI collaborator, could extend it correctly too?
 
 Echo is a chat application built to explore a larger engineering question: **what changes when an application is designed around its own domain instead of around the framework delivering it?**
